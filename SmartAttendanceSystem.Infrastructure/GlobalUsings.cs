@@ -12,5 +12,6 @@ global using Microsoft.AspNetCore.Identity;
 #region MyMethods
 
 global using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
+global using SmartAttendanceSystem.Core.Abstraction;
 
 #endregion

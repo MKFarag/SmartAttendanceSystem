@@ -16,7 +16,9 @@ public static class DependencyInjection
         services.AddOpenApi();
         services.AddMapsterConfig();
         services.AddFluentValidationConfig();
+        services.AddExceptionHandlerConfig();
         services.AddDbSqlConfig(configuration);
+        services.AddCorsConfig(configuration);
 
         return services;
     }
@@ -47,6 +49,28 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseLazyLoadingProxies().UseSqlServer(connectionString)
+        );
+
+        return services;
+    }
+
+    private static IServiceCollection AddExceptionHandlerConfig(this IServiceCollection services)
+    {
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
+
+        return services;
+    }
+
+    private static IServiceCollection AddCorsConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddCors(options =>
+            options.AddDefaultPolicy(builder =>
+                builder
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>()!)
+            )
         );
 
         return services;

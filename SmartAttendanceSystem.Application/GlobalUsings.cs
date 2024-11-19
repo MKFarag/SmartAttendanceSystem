@@ -8,6 +8,6 @@ global using Mapster;
 
 #region MyMethods
 
-
+global using SmartAttendanceSystem.Core.Abstraction;
 
 #endregion
