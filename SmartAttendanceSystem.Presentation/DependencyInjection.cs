@@ -5,6 +5,13 @@ using MapsterMapper;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SmartAttendanceSystem.Infrastructure.Persistence;
+using SmartAttendanceSystem.Infrastructure.Authentication;
+using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
+using Microsoft.AspNetCore.Identity;
+using SmartAttendanceSystem.Core.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace SmartAttendanceSystem.Presentation;
 
@@ -19,6 +26,7 @@ public static class DependencyInjection
         services.AddExceptionHandlerConfig();
         services.AddDbSqlConfig(configuration);
         services.AddCorsConfig(configuration);
+        services.AddAuthConfig(configuration);
 
         return services;
     }
@@ -72,6 +80,44 @@ public static class DependencyInjection
                 .WithOrigins(configuration.GetSection("AllowedOrigins").Get<string[]>()!)
             )
         );
+
+        return services;
+    }
+
+    private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton<IJwtProvider<ApplicationUser>, JwtProvider>();
+
+        services.AddIdentity<ApplicationUser, IdentityRole>()
+            .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        var settings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
+
+        services
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(o =>
+            {
+                o.SaveToken = true;
+                o.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(settings?.Key!)),
+                    ValidIssuer = settings?.Issuer,
+                    ValidAudience = settings?.Audience
+                };
+            });
 
         return services;
     }
