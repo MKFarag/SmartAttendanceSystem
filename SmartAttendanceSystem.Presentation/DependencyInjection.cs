@@ -1,17 +1,21 @@
-﻿using FluentValidation;
-using FluentValidation.AspNetCore;
+﻿# region Usings
+
 using Mapster;
 using MapsterMapper;
-using System.Reflection;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SmartAttendanceSystem.Infrastructure.Persistence;
 using SmartAttendanceSystem.Infrastructure.Authentication;
 using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
-using Microsoft.AspNetCore.Identity;
-using SmartAttendanceSystem.Core.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
+using System.Reflection;
 using System.Text;
+using SmartAttendanceSystem.Application.ServicesImplementation;
+
+#endregion
 
 namespace SmartAttendanceSystem.Presentation;
 
@@ -27,6 +31,8 @@ public static class DependencyInjection
         services.AddDbSqlConfig(configuration);
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
+
+        services.AddScoped<IAuthService<AuthResponse>, AuthService>();
 
         return services;
     }
