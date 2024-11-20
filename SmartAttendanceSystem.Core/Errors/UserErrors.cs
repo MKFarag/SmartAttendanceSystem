@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Http;
-
-namespace SmartAttendanceSystem.Core.Errors;
+﻿namespace SmartAttendanceSystem.Core.Errors;
 
 public static class UserErrors
 {
@@ -10,6 +8,6 @@ public static class UserErrors
     public static readonly Error InvalidTokenCredential =
         new("User.InvalidCredentials", "Invalid token/refresh token", StatusCodes.Status400BadRequest);
 
-    public static readonly Error UserNotFount =
+    public static readonly Error UserNotFound =
         new("User.UserNotFount", "No data was found by this Id", StatusCodes.Status404NotFound);
 }
