@@ -10,6 +10,7 @@ global using Microsoft.AspNetCore.Http;
 #region MyMethods
 
 global using SmartAttendanceSystem.Core.Abstraction;
+global using SmartAttendanceSystem.Presentation.Extensions;
 global using SmartAttendanceSystem.Presentation.Abstraction;
 global using SmartAttendanceSystem.Application.Contracts.Authentication;
 global using SmartAttendanceSystem.Core.Services;
