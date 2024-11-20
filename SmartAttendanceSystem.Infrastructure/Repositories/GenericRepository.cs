@@ -60,7 +60,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
     /// status of it (Success or Failure) and the Value from database which has the passing Id</returns>
     public async Task<Result<Response>> GetAsync(int id, CancellationToken cancellationToken = default)
     {
-        var response = await _dbSet.FindAsync(id, cancellationToken);
+        var response = await _dbSet.FindAsync([id], cancellationToken: cancellationToken);
 
         return response is not null
             ? Result.Success(response.Adapt<Response>())
@@ -77,7 +77,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
     /// status of it (Success or Failure) and the Value from database which has the passing Id</returns>
     public async Task<Result<Main>> GetMainAsync(int id, CancellationToken cancellationToken = default)
     {
-        var response = await _dbSet.FindAsync(id, cancellationToken);
+        var response = await _dbSet.FindAsync([id], cancellationToken: cancellationToken);
 
         return response is not null
             ? Result.Success(response)
