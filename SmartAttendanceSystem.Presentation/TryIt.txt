@@ -1,0 +1,46 @@
+public class MyDbContext : DbContext
+{
+    public DbSet<EntityA> EntitiesA { get; set; }
+    public DbSet<EntityB> EntitiesB { get; set; }
+    public DbSet<JoinEntity> JoinEntities { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<JoinEntity>(entity =>
+        {
+            // Define the composite key
+            entity.HasKey(e => new { e.EntityAId, e.EntityBId });
+
+            // Define the foreign key for EntityAId
+            entity.HasOne(e => e.EntityA)
+                .WithMany(a => a.JoinEntities)
+                .HasForeignKey(e => e.EntityAId);
+
+            // Define the foreign key for EntityBId
+            entity.HasOne(e => e.EntityB)
+                .WithMany(b => b.JoinEntities)
+                .HasForeignKey(e => e.EntityBId);
+        });
+    }
+}
+
+public class EntityA
+{
+    public int Id { get; set; }
+    public ICollection<JoinEntity> JoinEntities { get; set; }
+}
+
+public class EntityB
+{
+    public int Id { get; set; }
+    public ICollection<JoinEntity> JoinEntities { get; set; }
+}
+
+public class JoinEntity
+{
+    public int EntityAId { get; set; }
+    public EntityA EntityA { get; set; }
+
+    public int EntityBId { get; set; }
+    public EntityB EntityB { get; set; }
+}

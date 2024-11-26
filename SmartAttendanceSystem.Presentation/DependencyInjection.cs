@@ -24,6 +24,7 @@ public static class DependencyInjection
     public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddControllers();
+        services.AddDistributedMemoryCache();
         services.AddOpenApi();
         services.AddMapsterConfig();
         services.AddFluentValidationConfig();
@@ -32,7 +33,7 @@ public static class DependencyInjection
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
 
-        services.AddScoped<IAuthService<AuthResponse>, AuthService>();
+        services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
 
         return services;
     }
@@ -100,7 +101,8 @@ public static class DependencyInjection
         services.AddSingleton<IJwtProvider<ApplicationUser>, JwtProvider>();
 
         services.AddIdentity<ApplicationUser, IdentityRole>()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
 
         var settings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
 
@@ -124,6 +126,13 @@ public static class DependencyInjection
                     ValidAudience = settings?.Audience
                 };
             });
+
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Password.RequiredLength = 8;
+            options.SignIn.RequireConfirmedEmail = true;
+            options.User.RequireUniqueEmail = true;
+        });
 
         return services;
     }

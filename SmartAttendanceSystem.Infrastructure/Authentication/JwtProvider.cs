@@ -14,8 +14,7 @@ public class JwtProvider(IOptions<JwtOptions> jwtOptions) : IJwtProvider<Applica
         Claim[] claims = [
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email!),
-            new(JwtRegisteredClaimNames.GivenName, user.FirstName),
-            new(JwtRegisteredClaimNames.FamilyName, user.LastName),
+            new(JwtRegisteredClaimNames.GivenName, user.Name),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         ];
 
