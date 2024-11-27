@@ -2,7 +2,7 @@
 
 public class JwtOptions
 {
-    public static string SectionName = "Jwt";
+    public static readonly string SectionName = "Jwt";
 
     [Required]
     public string Key { get; init; } = string.Empty;

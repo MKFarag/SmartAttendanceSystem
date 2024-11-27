@@ -1,19 +1,21 @@
 ﻿# region Usings
 
 using Mapster;
+using System.Text;
 using MapsterMapper;
 using FluentValidation;
+using System.Reflection;
 using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
+using SmartAttendanceSystem.Core.Settings;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SmartAttendanceSystem.Infrastructure.Persistence;
 using SmartAttendanceSystem.Infrastructure.Authentication;
-using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
-using System.Reflection;
-using System.Text;
 using SmartAttendanceSystem.Application.ServicesImplementation;
+using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
 
 #endregion
 
@@ -34,6 +36,9 @@ public static class DependencyInjection
         services.AddAuthConfig(configuration);
 
         services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
+        services.AddScoped<IEmailSender, EmailService>();
+
+        services.AddHttpContextAccessor();
 
         return services;
     }
@@ -93,16 +98,30 @@ public static class DependencyInjection
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
+        #region OptionLoad
+
         services.AddOptions<JwtOptions>()
             .BindConfiguration(JwtOptions.SectionName)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
+
+        services.Configure<EmailConfirmationSettings>(configuration.GetSection(nameof(EmailConfirmationSettings)));
+
+        #endregion
+
         services.AddSingleton<IJwtProvider<ApplicationUser>, JwtProvider>();
+
+        #region AddingTheIdentity
 
         services.AddIdentity<ApplicationUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
+
+        #endregion
+
+        #region Validations
 
         var settings = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>();
 
@@ -127,12 +146,18 @@ public static class DependencyInjection
                 };
             });
 
+        #endregion
+
+        #region IdentityConfigurations
+
         services.Configure<IdentityOptions>(options =>
         {
             options.Password.RequiredLength = 8;
             options.SignIn.RequireConfirmedEmail = true;
             options.User.RequireUniqueEmail = true;
         });
+
+        #endregion
 
         return services;
     }

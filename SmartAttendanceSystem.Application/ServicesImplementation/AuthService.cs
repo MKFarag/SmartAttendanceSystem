@@ -6,19 +6,31 @@ using Microsoft.AspNetCore.WebUtilities;
 namespace SmartAttendanceSystem.Application.ServicesImplementation;
 
 public class AuthService(
-    UserManager<ApplicationUser> userManager,
-    IJwtProvider<ApplicationUser> jwtProvider,
+    IOptions<EmailConfirmationSettings> emailOptions,
     SignInManager<ApplicationUser> signInManager,
-    ILogger<AuthService> logger
+    IJwtProvider<ApplicationUser> jwtProvider,
+    UserManager<ApplicationUser> userManager,
+    IHttpContextAccessor httpContextAccessor,
+    ILogger<AuthService> logger,
+    IEmailSender emailSender
     ) 
     : IAuthService<AuthResponse, RegisterRequest>
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IJwtProvider<ApplicationUser> _jwtProvider = jwtProvider;
+    #region InitializeTheFields
+
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
+    private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
+    private readonly IJwtProvider<ApplicationUser> _jwtProvider = jwtProvider;
+    private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
 
     private readonly int _refreshTokenExpiryDays = 14;
+
+    #endregion
+
+    #region Login
 
     public async Task<Result<AuthResponse>> GetTokenAsync(string email, string password, CancellationToken cancellationToken = default)
     {
@@ -98,6 +110,10 @@ public class AuthService(
         return Result.Success();
     }
 
+    #endregion
+
+    #region Register
+
     public async Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
         if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
@@ -114,7 +130,8 @@ public class AuthService(
 
             _logger.LogInformation("Confirm code: {code}", code);
 
-            //TODO: Send email
+            await SendConfirmationEmail(user, code);
+
             return Result.Success();
         }
 
@@ -161,9 +178,38 @@ public class AuthService(
 
         _logger.LogInformation("Confirm code: {code}", code);
 
-        //TODO: Send email
+        await SendConfirmationEmail(user, code);
+
         return Result.Success();
     }
 
+    #endregion
+
+    #region PrivatesMethods
+
     private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
+
+    private async Task SendConfirmationEmail(ApplicationUser user, string code)
+    {
+        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+        var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+            new Dictionary<string, string>
+            {
+                    { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
+                    { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
+                    { EmailConfirmationSettings.PAddress, _emailOptions.Address },
+                    { EmailConfirmationSettings.PCity, _emailOptions.City },
+                    { EmailConfirmationSettings.PCountry, _emailOptions.Country },
+                    { EmailConfirmationSettings.PUserName,  user.Name},
+
+                //FrontEnd should tell me where the user will go with what queries
+                    { EmailConfirmationSettings.PAction_url, $"{origin}/auth/emailConfirmation?userId={user.Id}$code={code}" }
+            }
+        );
+
+        await _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody);
+    }
+
+    #endregion
 }
