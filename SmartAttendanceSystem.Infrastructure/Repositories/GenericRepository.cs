@@ -1,7 +1,7 @@
 ﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class GenericRepository<Main, Response, Request> : IGenericRepository<Main, Response, Request>
-    where Main : Table
+    where Main : class
     where Response : class
     where Request : class
 {
@@ -94,7 +94,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
     /// <param name="requestEntity">Pass the request entity you want to add</param>
     /// <param name="cancellationToken">Send it to allow this feature</param>
     /// <returns>Added data</returns>
-    public async Task<Response> AddAsync(Request requestEntity, CancellationToken cancellationToken = default)
+    public virtual async Task<Result<Response>> AddAsync(Request requestEntity, CancellationToken cancellationToken = default)
     {
         var entityEntry = await _dbSet.AddAsync(requestEntity.Adapt<Main>(), cancellationToken);
 
@@ -102,7 +102,9 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
 
         var addedEntry = entityEntry.Entity;
 
-        return addedEntry.Adapt<Response>();
+        var responseEntity = addedEntry.Adapt<Response>();
+
+        return Result.Success(responseEntity);
     }
 
     #endregion

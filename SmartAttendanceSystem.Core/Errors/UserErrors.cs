@@ -22,4 +22,7 @@ public static class UserErrors
 
     public static readonly Error DuplicatedConfirmation =
         new("User.DuplicatedConfirmation", "Email already confirmed", StatusCodes.Status400BadRequest);
+    
+    public static readonly Error NoPermission=
+        new("User.NoPermission", "You do not have permission to perform this action", StatusCodes.Status403Forbidden);
 }

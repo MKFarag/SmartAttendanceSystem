@@ -6,6 +6,9 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
 {
     #region DbSet
 
+    public DbSet<Course> Courses { get; set; } = default!;
+    public DbSet<Department> Departments { get; set; } = default!;
+    public DbSet<Student> Students { get; set; } = default!;
 
     #endregion
 
@@ -27,4 +30,29 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
 
         #endregion
     }
+
+    #region Override-SaveChangesAsync
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = ChangeTracker.Entries<ApplicationUser>();
+
+        foreach (var entityEntry in entities)
+        {
+            var user = entityEntry.Entity;
+
+            if (user.IsStudent && user.StudentInfo == null)
+            {
+                throw new InvalidOperationException("A user marked as a student must have associated student information");
+            }
+            if (!user.IsStudent && user.StudentInfo != null)
+            {
+                throw new InvalidOperationException("A user not marked as a student cannot have associated student information");
+            }
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
+    }
+
+    #endregion
 }

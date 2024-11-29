@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartAttendanceSystem.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SmartAttendanceSystem.Infrastructure.Persistence;
 namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241129165708_AddCourseAndDepartment")]
+    partial class AddCourseAndDepartment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -184,7 +187,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("SmartAttendanceSystem.Core.Entities.Department", b =>
@@ -205,7 +208,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities.ApplicationUser", b =>
@@ -279,34 +282,6 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities.Student", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("DepartmentId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Level")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("DepartmentId");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("Students", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -395,30 +370,6 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         });
 
                     b.Navigation("RefreshTokens");
-                });
-
-            modelBuilder.Entity("SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities.Student", b =>
-                {
-                    b.HasOne("SmartAttendanceSystem.Core.Entities.Department", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities.ApplicationUser", "User")
-                        .WithOne("StudentInfo")
-                        .HasForeignKey("SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities.Student", "UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Department");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities.ApplicationUser", b =>
-                {
-                    b.Navigation("StudentInfo");
                 });
 #pragma warning restore 612, 618
         }

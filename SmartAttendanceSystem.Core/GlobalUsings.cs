@@ -10,5 +10,6 @@ global using Microsoft.AspNetCore.Http;
 #region MyMethods
 
 global using SmartAttendanceSystem.Core.Abstraction;
+global using SmartAttendanceSystem.Core.Entities;
 
 #endregion

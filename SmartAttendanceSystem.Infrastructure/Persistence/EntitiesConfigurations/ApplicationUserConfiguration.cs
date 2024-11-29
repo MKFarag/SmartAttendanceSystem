@@ -5,12 +5,17 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
     public void Configure(EntityTypeBuilder<ApplicationUser> builder)
     {
         builder
-            .OwnsMany(x => x.RefreshTokens)
+            .OwnsMany(u => u.RefreshTokens)
             .ToTable("RefreshTokens")
             .WithOwner()
             .HasForeignKey("UserId");
 
-        builder.Property(x => x.Name)
+        builder.Property(u => u.Name)
             .HasMaxLength(200);
+
+        builder.HasOne(u => u.StudentInfo)
+            .WithOne(s => s.User)
+            //.HasForeignKey<ApplicationUser>(u => u.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

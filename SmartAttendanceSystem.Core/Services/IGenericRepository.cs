@@ -22,5 +22,5 @@ public interface IGenericRepository<Main, Response, Request>
 
     Task<Result<Main>> GetMainAsync(int id, CancellationToken cancellationToken = default);
 
-    Task<Response> AddAsync(Request requestEntity, CancellationToken cancellationToken = default);
+    Task<Result<Response>> AddAsync(Request requestEntity, CancellationToken cancellationToken = default);
 }

@@ -44,3 +44,15 @@ public class JoinEntity
     public int EntityBId { get; set; }
     public EntityB EntityB { get; set; }
 }
+
+
+//
+
+    public ApplicationUserValidator()
+    {
+        // Validate that if IsStudent is true, StudentInfo should not be null
+        RuleFor(user => user.StudentInfo)
+            .NotNull()
+            .When(user => user.IsStudent)
+            .WithMessage("StudentInfo is required when IsStudent is true.");
+    }
