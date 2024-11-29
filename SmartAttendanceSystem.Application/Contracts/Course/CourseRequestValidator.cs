@@ -12,6 +12,6 @@ public class CourseRequestValidator : AbstractValidator<CourseRequest>
             .NotEmpty()
             .Matches(RegexPatterns.CourseCode)
             .Length(4)
-            .WithMessage("The code must be like \"r000\"");
+            .WithMessage("The code must be like -r000");
     }
 }

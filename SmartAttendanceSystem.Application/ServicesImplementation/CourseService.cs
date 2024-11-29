@@ -20,7 +20,7 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         if (courseResult.IsFailure)
             return Result.Failure(GlobalErrors.IdNotFound);
 
-        if (await _context.Courses.AnyAsync(x => (x.Name == request.Name) || (x.Code == request.Code), cancellationToken))
+        if (await _context.Courses.AnyAsync(x => (x.Name == request.Name && x.Id != Id) || (x.Code == request.Code && x.Id != Id), cancellationToken))
             return Result.Failure<CourseResponse>(GlobalErrors.DuplicatedData);
 
         courseResult.Value.Name = request.Name;
@@ -47,6 +47,8 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         {
             return Result.Failure(GlobalErrors.RelationError);
         }
+
+        await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }

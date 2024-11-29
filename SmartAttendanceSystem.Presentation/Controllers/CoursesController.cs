@@ -17,7 +17,7 @@ public class CoursesController(ICourseService<Course, CourseResponse, CourseRequ
         var courseResult = await _courseService.GetAsync(Id, cancellationToken);
 
         return courseResult.IsSuccess
-            ? Ok(courseResult)
+            ? Ok(courseResult.Value)
             : courseResult.ToProblem();
     }
 
