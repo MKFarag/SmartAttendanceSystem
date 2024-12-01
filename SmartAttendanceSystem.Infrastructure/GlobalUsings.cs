@@ -21,7 +21,7 @@ global using SmartAttendanceSystem.Infrastructure.CustomAttribute;
 global using SmartAttendanceSystem.Infrastructure.Persistence;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Entities;
-global using SmartAttendanceSystem.Core.Services;
+global using SmartAttendanceSystem.Core.GenericServices;
 global using SmartAttendanceSystem.Core.Errors;
 
 #endregion

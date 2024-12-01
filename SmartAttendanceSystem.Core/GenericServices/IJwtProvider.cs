@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Core.Services;
+﻿namespace SmartAttendanceSystem.Core.GenericServices;
 
 public interface IJwtProvider<TUser>
 {

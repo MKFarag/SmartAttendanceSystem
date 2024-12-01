@@ -1,6 +1,6 @@
-﻿namespace SmartAttendanceSystem.Core.Services;
+﻿namespace SmartAttendanceSystem.Core.GenericServices;
 
-public interface ICourseService<Main, Response, Request> : IGenericRepository<Main, Response, Request>, IHardDelete
+public interface ICRUDService<Main, Response, Request> : IGenericRepository<Main, Response, Request>
     where Main : class
     where Response : class
     where Request : class

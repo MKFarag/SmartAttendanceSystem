@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Core.Services;
+﻿namespace SmartAttendanceSystem.Core.GenericServices;
 
 /// <summary>
 /// Generic Repository interface for data access
@@ -23,4 +23,6 @@ public interface IGenericRepository<Main, Response, Request>
     Task<Result<Main>> GetMainAsync(int id, CancellationToken cancellationToken = default);
 
     Task<Result<Response>> AddAsync(Request requestEntity, CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default);
 }

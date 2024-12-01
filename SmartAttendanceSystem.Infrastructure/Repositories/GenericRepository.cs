@@ -109,4 +109,37 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
 
     #endregion
 
+    #region HardDelete
+
+    //TODO: After Create a studentTable should delete a try catch block and add custom check on the relation
+    //If we want to delete it we can Add IHardDelete or ISoftDelete
+
+    /// <summary>
+    /// Delete the entity data with the passed id permanently from db
+    /// </summary>
+    /// <param name="id">Pass the request entity you want to delete</param>
+    /// <param name="cancellationToken">Send it to allow this feature</param>
+    /// <returns>Result which contains the error details if it had, status of it (Success or Failure)</returns>
+    public async Task<Result> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var delResult = await GetMainAsync(id, cancellationToken);
+
+        if (delResult.IsFailure)
+            return Result.Failure(GlobalErrors.IdNotFound);
+
+        try
+        {
+            _dbSet.Remove(delResult.Value);
+        }
+        catch
+        {
+            return Result.Failure(GlobalErrors.RelationError);
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
+    #endregion
 }
