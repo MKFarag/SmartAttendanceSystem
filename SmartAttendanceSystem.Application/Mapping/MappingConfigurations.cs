@@ -1,6 +1,4 @@
-﻿using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
-
-namespace SmartAttendanceSystem.Application.Mapping;
+﻿namespace SmartAttendanceSystem.Application.Mapping;
 
 public class MappingConfigurations : IRegister
 {

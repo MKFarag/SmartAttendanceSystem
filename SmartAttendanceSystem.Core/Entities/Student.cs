@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
+﻿namespace SmartAttendanceSystem.Core.Entities;
 
 public class Student
 {

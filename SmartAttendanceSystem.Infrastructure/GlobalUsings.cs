@@ -16,8 +16,6 @@ global using Mapster;
 
 #region MyMethods
 
-global using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
-global using SmartAttendanceSystem.Infrastructure.CustomAttribute;
 global using SmartAttendanceSystem.Infrastructure.Persistence;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Entities;

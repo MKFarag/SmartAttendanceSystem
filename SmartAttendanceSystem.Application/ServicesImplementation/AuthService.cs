@@ -1,5 +1,4 @@
-﻿using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 
@@ -120,6 +119,12 @@ public class AuthService(
             return Result.Failure(UserErrors.DuplicatedEmail);
 
         var user = request.Adapt<ApplicationUser>();
+
+        #region AddStudentData
+
+
+
+        #endregion
 
         var result = await _userManager.CreateAsync(user, request.Password);
 

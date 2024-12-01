@@ -1,21 +1,20 @@
 ﻿# region Usings
 
-using Mapster;
-using System.Text;
-using MapsterMapper;
-using FluentValidation;
-using System.Reflection;
-using FluentValidation.AspNetCore;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.IdentityModel.Tokens;
-using SmartAttendanceSystem.Core.Settings;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using SmartAttendanceSystem.Infrastructure.Persistence;
-using SmartAttendanceSystem.Infrastructure.Authentication;
 using SmartAttendanceSystem.Application.ServicesImplementation;
-using SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
+using SmartAttendanceSystem.Infrastructure.Authentication;
+using SmartAttendanceSystem.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using SmartAttendanceSystem.Core.Settings;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using FluentValidation.AspNetCore;
+using System.Reflection;
+using FluentValidation;
+using MapsterMapper;
+using System.Text;
+using Mapster;
 
 #endregion
 

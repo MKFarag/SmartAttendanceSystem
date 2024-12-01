@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Infrastructure.CustomAttribute;
+﻿namespace SmartAttendanceSystem.Core.CustomAttribute;
 
 public class StudentCheckAttribute : ValidationAttribute
 {

@@ -1,6 +1,5 @@
-﻿namespace SmartAttendanceSystem.Infrastructure.Persistence.IdentityEntities;
+﻿namespace SmartAttendanceSystem.Core.Entities;
 
-[Owned]
 public class RefreshToken
 {
     public string Token { get; set; } = string.Empty;
