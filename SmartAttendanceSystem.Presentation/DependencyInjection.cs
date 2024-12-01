@@ -36,8 +36,8 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
         services.AddScoped<IEmailSender, EmailService>();
-        services.AddScoped<ICRUDService<Course, CourseResponse, CourseRequest>, CourseService>();
-        services.AddScoped<ICRUDService<Department, DepartmentResponse, DepartmentRequest>, DepartmentService>();
+        services.AddScoped<ICourseService, CourseService>();
+        services.AddScoped<IDepartmentService, DepartmentService>();
 
         services.AddHttpContextAccessor();
 

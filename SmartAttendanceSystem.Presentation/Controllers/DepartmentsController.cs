@@ -3,9 +3,9 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class DepartmentsController(ICRUDService<Department, DepartmentResponse, DepartmentRequest> deptService) : ControllerBase
+public class DepartmentsController(IDepartmentService deptService) : ControllerBase
 {
-    private readonly ICRUDService<Department, DepartmentResponse, DepartmentRequest> _deptService = deptService;
+    private readonly IDepartmentService _deptService = deptService;
 
     [HttpGet("")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>

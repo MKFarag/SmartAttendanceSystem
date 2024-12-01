@@ -10,6 +10,7 @@ public class AuthService(
     IJwtProvider<ApplicationUser> jwtProvider,
     UserManager<ApplicationUser> userManager,
     IHttpContextAccessor httpContextAccessor,
+    IDepartmentService departmentService,
     ILogger<AuthService> logger,
     IEmailSender emailSender
     ) 
@@ -22,6 +23,7 @@ public class AuthService(
     private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
     private readonly IJwtProvider<ApplicationUser> _jwtProvider = jwtProvider;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
+    private readonly IDepartmentService _deptService = departmentService;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
 
@@ -122,8 +124,19 @@ public class AuthService(
 
         #region AddStudentData
 
+        if (request.IsStudent)
+        {
+            if (await _deptService.AnyAsync(x => x.Id == request.DeptId, cancellationToken))
+                return Result.Failure(UserErrors.AddDeptRelation);
 
-
+            user.StudentInfo = new Student
+            {
+                UserId = user.Id,
+                Level = request.Level,
+                DepartmentId = request.DeptId
+            };
+        }
+            
         #endregion
 
         var result = await _userManager.CreateAsync(user, request.Password);

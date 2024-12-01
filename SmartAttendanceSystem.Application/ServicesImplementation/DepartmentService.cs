@@ -2,13 +2,13 @@
 
 public class DepartmentService(ApplicationDbContext context) :
     GenericRepository<Department, DepartmentResponse, DepartmentRequest>(context),
-    ICRUDService<Department, DepartmentResponse, DepartmentRequest>
+    IDepartmentService
 {
     private readonly ApplicationDbContext _context = context;
 
     public override async Task<Result<DepartmentResponse>> AddAsync(DepartmentRequest requestEntity, CancellationToken cancellationToken = default)
     {
-        if (await _context.Departments.AnyAsync(x => x.Name == requestEntity.Name, cancellationToken))
+        if (await AnyAsync(x => x.Name == requestEntity.Name, cancellationToken))
             return Result.Failure<DepartmentResponse>(GlobalErrors.DuplicatedData("Name"));
 
         return await base.AddAsync(requestEntity, cancellationToken);
@@ -21,7 +21,7 @@ public class DepartmentService(ApplicationDbContext context) :
         if (deptResult.IsFailure)
             return Result.Failure(GlobalErrors.IdNotFound);
 
-        if (await _context.Departments.AnyAsync(x => x.Name == request.Name && x.Id != Id, cancellationToken))
+        if (await AnyAsync(x => x.Name == request.Name && x.Id != Id, cancellationToken))
             return Result.Failure<DepartmentResponse>(GlobalErrors.DuplicatedData("Name"));
 
         deptResult.Value.Name = request.Name;

@@ -3,9 +3,9 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CoursesController(ICRUDService<Course, CourseResponse, CourseRequest> courseService) : ControllerBase
+public class CoursesController(ICourseService courseService) : ControllerBase
 {
-    private readonly ICRUDService<Course, CourseResponse, CourseRequest> _courseService = courseService;
+    private readonly ICourseService _courseService = courseService;
 
     [HttpGet("")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>

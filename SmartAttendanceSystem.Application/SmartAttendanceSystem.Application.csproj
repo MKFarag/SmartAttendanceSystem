@@ -19,8 +19,4 @@
     <ProjectReference Include="..\SmartAttendanceSystem.Infrastructure\SmartAttendanceSystem.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Abstraction\DTOsServices\" />
-  </ItemGroup>
-
 </Project>

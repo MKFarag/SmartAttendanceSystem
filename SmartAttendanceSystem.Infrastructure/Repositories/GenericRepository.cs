@@ -109,6 +109,23 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
 
     #endregion
 
+    #region AnyAsync
+
+    /// <summary>
+    /// Check the value with Func expression
+    /// </summary>
+    /// <param name="predicate">Func<Main, bool></param>
+    /// <param name="cancellationToken">Send it to allow this feature</param>
+    /// <returns>Boolean</returns>
+    public async Task<bool> AnyAsync(Expression<Func<Main, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        predicate ??= x => true;
+
+        return await _dbSet.AnyAsync(predicate, cancellationToken);
+    }
+
+    #endregion
+
     #region HardDelete
 
     //TODO: After Create a studentTable should delete a try catch block and add custom check on the relation

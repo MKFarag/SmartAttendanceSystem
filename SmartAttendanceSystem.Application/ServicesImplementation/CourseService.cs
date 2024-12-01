@@ -1,13 +1,13 @@
 ﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
 
 public class CourseService(ApplicationDbContext context) : GenericRepository<Course, CourseResponse, CourseRequest>(context),
-    ICRUDService<Course, CourseResponse, CourseRequest>
+    ICourseService
 {
     private readonly ApplicationDbContext _context = context;
 
     public override async Task<Result<CourseResponse>> AddAsync(CourseRequest request, CancellationToken cancellationToken = default)
     {
-        if (await _context.Courses.AnyAsync(x => (x.Name == request.Name) || (x.Code == request.Code), cancellationToken))
+        if (await AnyAsync(x => (x.Name == request.Name) || (x.Code == request.Code), cancellationToken))
             return Result.Failure<CourseResponse>(GlobalErrors.DuplicatedData("Name/Code"));
 
         return await base.AddAsync(request, cancellationToken);
@@ -20,7 +20,7 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         if (courseResult.IsFailure)
             return Result.Failure(GlobalErrors.IdNotFound);
 
-        if (await _context.Courses.AnyAsync(x => (x.Name == request.Name && x.Id != Id) || (x.Code == request.Code && x.Id != Id), cancellationToken))
+        if (await AnyAsync(x => (x.Name == request.Name && x.Id != Id) || (x.Code == request.Code && x.Id != Id), cancellationToken))
             return Result.Failure<CourseResponse>(GlobalErrors.DuplicatedData("Name/Code"));
 
         courseResult.Value.Name = request.Name;
