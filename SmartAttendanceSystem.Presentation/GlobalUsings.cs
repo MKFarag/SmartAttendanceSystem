@@ -19,5 +19,6 @@ global using SmartAttendanceSystem.Presentation.Extensions;
 global using SmartAttendanceSystem.Core.GenericServices;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Entities;
+global using SmartAttendanceSystem.Core.Errors;
 
 #endregion

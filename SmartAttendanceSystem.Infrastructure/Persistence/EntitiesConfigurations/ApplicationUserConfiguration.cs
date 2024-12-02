@@ -15,7 +15,6 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 
         builder.HasOne(u => u.StudentInfo)
             .WithOne(s => s.User)
-            //.HasForeignKey<ApplicationUser>(u => u.StudentId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
