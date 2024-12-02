@@ -15,6 +15,7 @@ using FluentValidation;
 using MapsterMapper;
 using System.Text;
 using Mapster;
+using SmartAttendanceSystem.Fingerprint;
 
 #endregion
 
@@ -33,6 +34,7 @@ public static class DependencyInjection
         services.AddDbSqlConfig(configuration);
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
+        services.AddFingerprint();
 
         services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
         services.AddScoped<IEmailSender, EmailService>();

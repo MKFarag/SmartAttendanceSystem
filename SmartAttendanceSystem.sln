@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116 d17.12
+VisualStudioVersion = 17.12.35506.116
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Presentation", "SmartAttendanceSystem.Presentation\SmartAttendanceSystem.Presentation.csproj", "{1E170D39-46B5-42CC-AFE2-B43DE6DE55A3}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Core", "SmartAttendanceSystem.Core\SmartAttendanceSystem.Core.csproj", "{2D6C2966-C807-45C0-9BC5-08EA69ADBC56}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Application", "SmartAttendanceSystem.Application\SmartAttendanceSystem.Application.csproj", "{1EC2E99A-557E-4E26-8287-469886909366}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Fingerprint", "SmartAttendanceSystem.Fingerprint\SmartAttendanceSystem.Fingerprint.csproj", "{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{1EC2E99A-557E-4E26-8287-469886909366}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EC2E99A-557E-4E26-8287-469886909366}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EC2E99A-557E-4E26-8287-469886909366}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -135,8 +135,13 @@ public class AuthService(
                 Level = request.Level,
                 DepartmentId = request.DeptId
             };
+
+            //TODO: Fingerprint Register
+
+
+
         }
-            
+
         #endregion
 
         var result = await _userManager.CreateAsync(user, request.Password);
