@@ -6,6 +6,7 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
 {
     #region DbSet
 
+    public DbSet<Attendance> Attendances { get; set; } = default!;
     public DbSet<Course> Courses { get; set; } = default!;
     public DbSet<Department> Departments { get; set; } = default!;
     public DbSet<Student> Students { get; set; } = default!;
