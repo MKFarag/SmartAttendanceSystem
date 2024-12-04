@@ -1,10 +1,10 @@
 ﻿namespace SmartAttendanceSystem.Application.Contracts.Student;
 
-public record StudentResponse(
+public record StdAttendanceByCourseResponse(
     int Id,
     string Name,
     string Email,
     int Level,
     DepartmentResponse Department,
-    IEnumerable<CourseResponse>? Courses
+    string Total
 );

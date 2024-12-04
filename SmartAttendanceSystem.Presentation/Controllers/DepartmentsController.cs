@@ -3,9 +3,10 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class DepartmentsController(IDepartmentService deptService) : ControllerBase
+public class DepartmentsController(IDepartmentService deptService, IPermissionService permissionService) : ControllerBase
 {
     private readonly IDepartmentService _deptService = deptService;
+    private readonly IPermissionService _permissionService = permissionService;
 
     [HttpGet("")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>
@@ -24,6 +25,9 @@ public class DepartmentsController(IDepartmentService deptService) : ControllerB
     [HttpPost("")]
     public async Task<IActionResult> Add([FromBody] DepartmentRequest request, CancellationToken cancellationToken)
     {
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
+
         var courseResult = await _deptService.AddAsync(request, cancellationToken);
 
         return courseResult.IsSuccess
@@ -37,6 +41,9 @@ public class DepartmentsController(IDepartmentService deptService) : ControllerB
         if (Id is null || Id == 0)
             return BadRequest();
 
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
+
         var courseResult = await _deptService.DeleteAsync(Id.Value, cancellationToken);
 
         return courseResult.IsSuccess
@@ -49,6 +56,9 @@ public class DepartmentsController(IDepartmentService deptService) : ControllerB
     {
         if (Id is null || Id == 0)
             return BadRequest();
+
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
 
         var courseResult = await _deptService.UpdateAsync(Id.Value, request, cancellationToken);
 

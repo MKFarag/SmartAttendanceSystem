@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace SmartAttendanceSystem.Application.ServicesImplementation;
@@ -218,20 +217,22 @@ public class AuthService(
 
         var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
             new Dictionary<string, string>
-            {
-                    { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
-                    { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
-                    { EmailConfirmationSettings.PAddress, _emailOptions.Address },
-                    { EmailConfirmationSettings.PCity, _emailOptions.City },
-                    { EmailConfirmationSettings.PCountry, _emailOptions.Country },
-                    { EmailConfirmationSettings.PUserName,  user.Name},
+            {  
+                { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
+                { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
+                { EmailConfirmationSettings.PAddress, _emailOptions.Address },
+                { EmailConfirmationSettings.PCity, _emailOptions.City },
+                { EmailConfirmationSettings.PCountry, _emailOptions.Country },
+                { EmailConfirmationSettings.PUserName,  user.Name},
 
                 //FrontEnd should tell me where the user will go with what queries
-                    { EmailConfirmationSettings.PAction_url, $"{origin}/auth/emailConfirmation?userId={user.Id}$code={code}" }
+                { EmailConfirmationSettings.PAction_url, $"{origin}/auth/emailConfirmation?userId={user.Id}$code={code}" }
             }
         );
 
-        await _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody);
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+
+        await Task.CompletedTask;
     }
 
     #endregion

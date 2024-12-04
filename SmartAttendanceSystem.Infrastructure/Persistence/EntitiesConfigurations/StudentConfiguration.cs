@@ -1,11 +1,11 @@
-﻿
-namespace SmartAttendanceSystem.Infrastructure.Persistence.EntitiesConfigurations;
+﻿namespace SmartAttendanceSystem.Infrastructure.Persistence.EntitiesConfigurations;
 
-internal class StudentConfiguration : IEntityTypeConfiguration<Student>
+public class StudentConfiguration : IEntityTypeConfiguration<Student>
 {
     public void Configure(EntityTypeBuilder<Student> builder)
     {
-        builder.HasOne(s => s.User)
+        builder
+            .HasOne(s => s.User)
             .WithOne(u => u.StudentInfo)
             .HasForeignKey<Student>(s => s.UserId);
     }

@@ -12,9 +12,5 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
 
         builder.Property(u => u.Name)
             .HasMaxLength(200);
-
-        builder.HasOne(u => u.StudentInfo)
-            .WithOne(s => s.User)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

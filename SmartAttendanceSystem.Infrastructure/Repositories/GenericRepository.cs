@@ -64,7 +64,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
 
         return response is not null
             ? Result.Success(response.Adapt<Response>())
-            : Result.Failure<Response>(GlobalErrors.IdNotFound);
+            : Result.Failure<Response>(GlobalErrors.IdNotFound(typeof(Main).Name));
     }
 
     /// <summary>
@@ -81,7 +81,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
 
         return response is not null
             ? Result.Success(response)
-            : Result.Failure<Main>(GlobalErrors.IdNotFound);
+            : Result.Failure<Main>(GlobalErrors.IdNotFound(typeof(Main).Name));
     }
 
     #endregion
@@ -142,7 +142,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
         var delResult = await GetMainAsync(id, cancellationToken);
 
         if (delResult.IsFailure)
-            return Result.Failure(GlobalErrors.IdNotFound);
+            return Result.Failure(GlobalErrors.IdNotFound(typeof(Main).Name));
 
         try
         {

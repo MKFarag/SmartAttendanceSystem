@@ -18,7 +18,7 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         var courseResult = await GetMainAsync(Id, cancellationToken);
 
         if (courseResult.IsFailure)
-            return Result.Failure(GlobalErrors.IdNotFound);
+            return Result.Failure(GlobalErrors.IdNotFound("Courses"));
 
         if (await AnyAsync(x => (x.Name == request.Name && x.Id != Id) || (x.Code == request.Code && x.Id != Id), cancellationToken))
             return Result.Failure<CourseResponse>(GlobalErrors.DuplicatedData("Name/Code"));

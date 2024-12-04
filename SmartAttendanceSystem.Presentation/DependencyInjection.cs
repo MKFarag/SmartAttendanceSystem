@@ -6,6 +6,7 @@ using SmartAttendanceSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SmartAttendanceSystem.Core.Settings;
+using SmartAttendanceSystem.Fingerprint;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -15,7 +16,6 @@ using FluentValidation;
 using MapsterMapper;
 using System.Text;
 using Mapster;
-using SmartAttendanceSystem.Fingerprint;
 
 #endregion
 
@@ -34,6 +34,7 @@ public static class DependencyInjection
         services.AddDbSqlConfig(configuration);
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
+        services.AddHangfireConfig(configuration);
         services.AddFingerprint();
 
         services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
@@ -41,6 +42,7 @@ public static class DependencyInjection
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<IPermissionService, PermissionService>();
 
         services.AddHttpContextAccessor();
 
@@ -162,6 +164,19 @@ public static class DependencyInjection
         });
 
         #endregion
+
+        return services;
+    }
+
+    private static IServiceCollection AddHangfireConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
+
+        services.AddHangfireServer();
 
         return services;
     }

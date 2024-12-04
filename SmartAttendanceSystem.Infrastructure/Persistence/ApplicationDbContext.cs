@@ -15,9 +15,9 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
-
         base.OnModelCreating(builder);
+
+        builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
         #region Change delete behavior
 
@@ -29,7 +29,22 @@ public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<
         foreach (var Fk in CascadeFk)
             Fk.DeleteBehavior = DeleteBehavior.Restrict;
 
+        #region Configure Specific Cascade Delete Relationships
+
+        builder.Entity<ApplicationUser>()
+            .HasOne(u => u.StudentInfo)
+            .WithOne(s => s.User)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Student>()
+            .HasMany(s => s.Attendances)
+            .WithOne(a => a.Student)
+            .OnDelete(DeleteBehavior.Cascade);
+
         #endregion
+
+        #endregion
+
     }
 
     #region Override-SaveChangesAsync

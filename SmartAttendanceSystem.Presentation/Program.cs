@@ -1,6 +1,12 @@
+#region Usings
+
+using Hangfire.Dashboard;
+using HangfireBasicAuthenticationFilter;
 using Scalar.AspNetCore;
 using Serilog;
 using SmartAttendanceSystem.Presentation;
+
+#endregion
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +28,24 @@ if (app.Environment.IsDevelopment())
 app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
+
+#region Hangfire
+
+app.UseHangfireDashboard("/jobs", new DashboardOptions
+{
+    Authorization =
+    [
+        new HangfireCustomBasicAuthenticationFilter
+        {
+            User = app.Configuration.GetValue<string>("HangfireSettings:Username"),
+            Pass = app.Configuration.GetValue<string>("HangfireSettings:Password")
+        }
+    ],
+    DashboardTitle = "SmartAttendanceSystem Dashboard",
+    IsReadOnlyFunc = (DashboardContext context) => true
+});
+
+#endregion
 
 app.UseCors();
 

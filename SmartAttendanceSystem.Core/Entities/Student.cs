@@ -14,4 +14,5 @@ public class Student
 
     public virtual ApplicationUser User { get; set; } = default!;
     public virtual Department Department { get; set; } = default!;
+    public virtual ICollection<Attendance>? Attendances { get; set; } = default!;
 }

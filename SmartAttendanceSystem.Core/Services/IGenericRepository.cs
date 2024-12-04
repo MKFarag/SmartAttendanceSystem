@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Core.GenericServices;
+﻿namespace SmartAttendanceSystem.Core.Services;
 
 /// <summary>
 /// Generic Repository interface for data access

@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Core.GenericServices;
+﻿namespace SmartAttendanceSystem.Core.Services;
 
 public interface IAuthService<Response, Request>
 {

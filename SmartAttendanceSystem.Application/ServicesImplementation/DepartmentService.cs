@@ -19,7 +19,7 @@ public class DepartmentService(ApplicationDbContext context) :
         var deptResult = await GetMainAsync(Id, cancellationToken);
 
         if (deptResult.IsFailure)
-            return Result.Failure(GlobalErrors.IdNotFound);
+            return Result.Failure(GlobalErrors.IdNotFound("Departments"));
 
         if (await AnyAsync(x => x.Name == request.Name && x.Id != Id, cancellationToken))
             return Result.Failure<DepartmentResponse>(GlobalErrors.DuplicatedData("Name"));

@@ -3,9 +3,10 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CoursesController(ICourseService courseService) : ControllerBase
+public class CoursesController(ICourseService courseService, IPermissionService permissionService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
+    private readonly IPermissionService _permissionService = permissionService;
 
     [HttpGet("")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>
@@ -24,6 +25,9 @@ public class CoursesController(ICourseService courseService) : ControllerBase
     [HttpPost("")]
     public async Task<IActionResult> Add([FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
+
         var courseResult = await _courseService.AddAsync(request, cancellationToken);
 
         return courseResult.IsSuccess
@@ -37,6 +41,9 @@ public class CoursesController(ICourseService courseService) : ControllerBase
         if (Id is null || Id == 0)
             return BadRequest();
 
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
+
         var courseResult = await _courseService.DeleteAsync(Id.Value, cancellationToken);
 
         return courseResult.IsSuccess
@@ -49,6 +56,9 @@ public class CoursesController(ICourseService courseService) : ControllerBase
     {
         if (Id is null || Id == 0)
             return BadRequest();
+
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
 
         var courseResult = await _courseService.UpdateAsync(Id.Value, request, cancellationToken);
 
