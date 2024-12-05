@@ -18,5 +18,7 @@ public interface IStudentService
 
     Task<Result<IEnumerable<StdAttendanceByCourseResponse>>> GetAttendance_ByCourse(int courseId, CancellationToken cancellationToken = default);
 
+    Task<Result<IEnumerable<StdAttendanceByWeekResponse>>> GetAttendance_WeekCourse(int weekNum, int courseId, CancellationToken cancellationToken = default);
+    
     Task<Result<StudentAttendanceResponse>> StudentAttendance(string? UserId, CancellationToken cancellationToken = default);
 }

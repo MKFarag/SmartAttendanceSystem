@@ -179,6 +179,22 @@ public class StudentsController(IStudentService studentService,
             : courseAttendance.ToProblem();
     }
     
+    [HttpGet("CourseWeekAttendance/{courseId}/{weekNum}")]
+    public async Task<IActionResult> GetAttendance_ByWeek([FromRoute] int? weekNum, [FromRoute] int? courseId, CancellationToken cancellationToken)
+    {
+        if (courseId is null || courseId <= 0 || weekNum is null || weekNum <= 0 || weekNum > 12)
+            return BadRequest();
+
+        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
+            return Result.Failure(UserErrors.NoPermission).ToProblem();
+
+        var weekAttendance = await _studentService.GetAttendance_WeekCourse(weekNum.Value, courseId.Value, cancellationToken);
+
+        return weekAttendance.IsSuccess
+            ? Ok(weekAttendance.Value)
+            : weekAttendance.ToProblem();
+    }
+    
     [HttpGet("MyAttendance")]
     public async Task<IActionResult> GetAttendance_ByCourse(CancellationToken cancellationToken)
     {

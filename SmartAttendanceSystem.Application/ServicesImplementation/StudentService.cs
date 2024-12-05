@@ -1,4 +1,6 @@
-﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
+﻿using SmartAttendanceSystem.Core.Entities;
+
+namespace SmartAttendanceSystem.Application.ServicesImplementation;
 
 public class StudentService(ApplicationDbContext context, ICourseService courseService) : IStudentService
 {
@@ -127,7 +129,7 @@ public class StudentService(ApplicationDbContext context, ICourseService courseS
 
     #endregion
 
-    #region Get Total Attendance
+    #region Get Attendance
 
     public async Task<Result<IEnumerable<StdAttendanceByCourseResponse>>> GetAttendance_ByCourse(int courseId, CancellationToken cancellationToken = default)
     {
@@ -140,7 +142,7 @@ public class StudentService(ApplicationDbContext context, ICourseService courseS
             .ProjectToType<StdAttendanceByCourseResponse>()
             .ToListAsync(cancellationToken);
 
-        return attendances is not null
+        return attendances.Count > 0
             ? Result.Success<IEnumerable<StdAttendanceByCourseResponse>>(attendances)
             : Result.Failure<IEnumerable<StdAttendanceByCourseResponse>>(StudentErrors.NotAddedCourse);
     }
@@ -170,6 +172,30 @@ public class StudentService(ApplicationDbContext context, ICourseService courseS
             response.CourseAttendances.Add(new CourseWithAttendance(item.Course.Adapt<CourseResponse>(), item.Total));
 
         return Result.Success(response);
+    }
+
+    public async Task<Result<IEnumerable<StdAttendanceByWeekResponse>>> GetAttendance_WeekCourse(int weekNum, int courseId, CancellationToken cancellationToken = default)
+    {
+        if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
+            return Result.Failure<IEnumerable<StdAttendanceByWeekResponse>>(GlobalErrors.IdNotFound("Courses"));
+
+        if (await _context.Attendances.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken) is not { } weekCheck)
+            return Result.Failure<IEnumerable<StdAttendanceByWeekResponse>>(StudentErrors.NotAddedCourse);
+
+        if (weekCheck.Weeks is null || weekCheck.Weeks.Week(weekNum) is null)
+            return Result.Success<IEnumerable<StdAttendanceByWeekResponse>>([]);
+
+        var mapContext = new MapContext();
+        mapContext.Set("weekNum", weekNum);
+        MapContext.Current = mapContext;
+
+        var attendances = await _context.Attendances
+            .AsNoTracking()
+            .Where(x => x.CourseId == courseId)
+            .ProjectToType<StdAttendanceByWeekResponse>()
+            .ToListAsync(cancellationToken);
+
+        return Result.Success<IEnumerable<StdAttendanceByWeekResponse>>(attendances);
     }
 
     #endregion
