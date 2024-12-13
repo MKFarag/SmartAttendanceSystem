@@ -39,5 +39,18 @@ public class MappingConfigurations : IRegister
         config.NewConfig<Student, StudentAttendanceResponse>()
             .Map(dest => dest.Name, src => src.User.Name)
             .Map(dest => dest.Email, src => src.User.Email);
+
+        config.NewConfig<ApplicationUser, StudentProfileResponse>()
+            .Map(dest => dest.Level, src => src.StudentInfo!.Level)
+            .Map(dest => dest.StudentId, src => src.StudentInfo!.Id)
+            .Map(dest => dest.Department, src => src.StudentInfo!.Department);
+
+        config.NewConfig<StudentAttendanceResponse, StudentProfileResponse>()
+            .Map(dest => dest.StudentId, src => src.Id)
+            .Map(dest => dest.Courses, src => src.CourseAttendances)
+            .Map(dest => dest.Type, src => "Student");
+        
+        config.NewConfig<ApplicationUser, InstructorProfileResponse>()
+            .Map(dest => dest.Type, src => "Instructor");
     }
 }

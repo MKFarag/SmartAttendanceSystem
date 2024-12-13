@@ -38,11 +38,12 @@ public static class DependencyInjection
         services.AddFingerprint();
 
         services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
-        services.AddScoped<IEmailSender, EmailService>();
-        services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
-        services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IPermissionService, PermissionService>();
+        services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<ICourseService, CourseService>();
+        services.AddScoped<IEmailSender, EmailService>();
+        services.AddScoped<IUserService, UserService>();
 
         services.AddHttpContextAccessor();
 
