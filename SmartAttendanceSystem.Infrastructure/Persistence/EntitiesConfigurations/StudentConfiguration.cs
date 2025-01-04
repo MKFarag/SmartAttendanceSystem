@@ -8,5 +8,9 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
             .HasOne(s => s.User)
             .WithOne(u => u.StudentInfo)
             .HasForeignKey<Student>(s => s.UserId);
+
+        builder
+            .HasIndex(s => s.FingerId)
+            .IsUnique();
     }
 }

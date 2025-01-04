@@ -12,13 +12,13 @@ public interface IStudentService
 
     Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
-    Task<Result> AddStdCourse(StdCourseRequest request, string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
+    Task<Result> AddStdCourse(StdCourseRequest request, string UserId, CancellationToken cancellationToken = default);
 
-    Task<Result> DeleteStdCourse(StdCourseRequest request, string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
+    Task<Result> DeleteStdCourse(StdCourseRequest request, string UserId, CancellationToken cancellationToken = default);
 
     Task<Result<IEnumerable<StdAttendanceByCourseResponse>>> GetAttendance_ByCourse(int courseId, CancellationToken cancellationToken = default);
 
     Task<Result<IEnumerable<StdAttendanceByWeekResponse>>> GetAttendance_WeekCourse(int weekNum, int courseId, CancellationToken cancellationToken = default);
     
-    Task<Result<StudentAttendanceResponse>> StudentAttendance(string? UserId, CancellationToken cancellationToken = default);
+    Task<Result<StudentAttendanceResponse>> StudentAttendance(string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
 }

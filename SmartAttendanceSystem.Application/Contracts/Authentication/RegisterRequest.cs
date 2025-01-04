@@ -4,7 +4,7 @@ public record RegisterRequest(
     string Email, 
     string Password,
     string Name,
-    bool IsStudent,
+    bool? IsStudent,
     int Level,
     int DeptId
 );

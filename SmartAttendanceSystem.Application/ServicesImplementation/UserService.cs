@@ -7,7 +7,7 @@ public class UserService(UserManager<ApplicationUser> userManager, IStudentServi
 
     public async Task<Result<StudentProfileResponse>> GetStudentProfileAsync(string userId)
     {
-        var userResult = await _studentService.StudentAttendance(userId);
+        var userResult = await _studentService.StudentAttendance(UserId: userId);
 
         if (userResult.IsFailure)
             return Result.Failure<StudentProfileResponse>(userResult.Error);

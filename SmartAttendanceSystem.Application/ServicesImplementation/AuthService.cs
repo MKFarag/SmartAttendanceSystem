@@ -121,11 +121,14 @@ public class AuthService(
 
         var user = request.Adapt<ApplicationUser>();
 
+        if (!request.IsStudent.HasValue)
+            user.IsStudent = false;
+
         #region AddStudentData
 
-        if (request.IsStudent)
+        if (user.IsStudent)
         {
-            if (await _deptService.AnyAsync(x => x.Id == request.DeptId, cancellationToken))
+            if (!await _deptService.AnyAsync(x => x.Id == request.DeptId, cancellationToken))
                 return Result.Failure(UserErrors.AddDeptRelation);
 
             user.StudentInfo = new Student

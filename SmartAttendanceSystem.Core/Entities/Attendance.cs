@@ -10,11 +10,13 @@ public class Attendance
     public int CourseId { get; set; }
     public virtual Course Course { get; set; } = default!;
 
+    public virtual Weeks? Weeks { get; set; } = default!;
+
+    #region TotalService
+
     public string Total => Weeks is not null
         ? TotalAttendance()
         : "0/0";
-
-    public virtual Weeks? Weeks { get; set; } = default!;
 
     private string TotalAttendance()
     {
@@ -27,25 +29,8 @@ public class Attendance
         int Attend = weeks.Count(w => w == true);
         int TotalLec = weeks.Count(w => w.HasValue);
 
-        /* AnotherWay
-         * 
-        for (int i = 1; i <= 12; i++)
-        {
-            var weekProperty = typeof(Weeks).GetProperty($"Week{i}");
-            if (weekProperty is not null)
-            {
-                var value = weekProperty.GetValue(Weeks) as bool?;
-                if (value.HasValue)
-                {
-                    TotalLec++;
-                    if (value.Value)
-                        Attend++;
-                }
-            }
-        }
-        *
-        */
-
         return $"{Attend}/{TotalLec}";
     }
+
+    #endregion
 }
