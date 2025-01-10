@@ -16,6 +16,7 @@ using FluentValidation;
 using MapsterMapper;
 using System.Text;
 using Mapster;
+using SurveyBasket.OpenApiTransformers;
 
 #endregion
 
@@ -27,7 +28,7 @@ public static class DependencyInjection
     {
         services.AddControllers();
         services.AddDistributedMemoryCache();
-        services.AddOpenApi();
+        services.AddOpenApiConfig();
         services.AddMapsterConfig();
         services.AddFluentValidationConfig();
         services.AddExceptionHandlerConfig();
@@ -178,6 +179,18 @@ public static class DependencyInjection
             .UseSqlServerStorage(configuration.GetConnectionString("HangfireConnection")));
 
         services.AddHangfireServer();
+
+        return services;
+    }
+
+    private static IServiceCollection AddOpenApiConfig(this IServiceCollection services)
+    {
+        services
+            .AddEndpointsApiExplorer()
+            .AddOpenApi(options =>
+            {
+                options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+            });
 
         return services;
     }
