@@ -1,9 +1,15 @@
-﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
+﻿using SmartAttendanceSystem.Core.Entities;
 
-public class StudentService(ApplicationDbContext context, ICourseService courseService) : IStudentService
+namespace SmartAttendanceSystem.Application.ServicesImplementation;
+
+public class StudentService(
+    ApplicationDbContext context,
+    ICourseService courseService,
+    ILogger<StudentService> logger) : IStudentService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly ICourseService _courseService = courseService;
+    private readonly ILogger<StudentService> _logger = logger;
 
     #region Get
 
@@ -22,16 +28,31 @@ public class StudentService(ApplicationDbContext context, ICourseService courseS
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Result<StudentResponse>> GetAsync(string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default)
+    public async Task<Result<StudentResponse>> GetAsync(Expression<Func<Student, bool>>? predicate = null, string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default)
     {
-        var checkerResult = await CheckStudentId(UserId, StdId, cancellationToken);
+        Student? response;
 
-        if (checkerResult.IsFailure)
-            return Result.Failure<StudentResponse>(checkerResult.Error);
+        if (predicate is not null && (UserId is not null || StdId is not null))
+            throw new InvalidOperationException("GetAsync cannot use predicate with Id.");
 
-        StdId = checkerResult.Value;
+        if (predicate is null)
+        {
+            var checkerResult = await CheckStudentId(UserId, StdId, cancellationToken);
 
-        var response = await _context.Students.AsNoTracking().FirstOrDefaultAsync(x => x.Id == StdId, cancellationToken);
+            if (checkerResult.IsFailure)
+                return Result.Failure<StudentResponse>(checkerResult.Error);
+
+            StdId = checkerResult.Value;
+
+            response = await _context.Students.AsNoTracking().FirstOrDefaultAsync(x => x.Id == StdId, cancellationToken);
+        }
+        else
+        {
+            predicate ??= x => true;
+
+            response = await _context.Students.Where(predicate).AsNoTracking().FirstOrDefaultAsync(cancellationToken);
+
+        }
 
         return response is not null
             ? Result.Success(response.Adapt<StudentResponse>())
@@ -45,6 +66,19 @@ public class StudentService(ApplicationDbContext context, ICourseService courseS
         return response is not null
             ? Result.Success(response)
             : Result.Failure<Student>(StudentErrors.IdNotFount);
+    }
+
+    public async Task<Result<int>> GetId(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
+    {
+        var StdId = await _context.Students.Where(predicate)
+            .AsNoTracking().Select(x => x.Id).ToListAsync(cancellationToken);
+
+        if (StdId.Count > 1)
+            throw new InvalidOperationException("Student_GetId.Invalid predicate: This predicate return more than one student");
+
+        return StdId.Count == 0
+            ? Result.Failure<int>(StudentErrors.NotFount)
+            : Result.Success(StdId.FirstOrDefault());
     }
 
     #endregion
@@ -196,6 +230,68 @@ public class StudentService(ApplicationDbContext context, ICourseService courseS
 
         return Result.Success<IEnumerable<StdAttendanceByWeekResponse>>(attendances);
     }
+
+    #endregion
+
+    #region Fingerprint ServicesPart
+
+    //Start Action
+    public async Task<Result> Attended(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default)
+    {
+        if (weekNum < 1 || weekNum > 12)
+            return Result.Failure(GlobalErrors.InvalidInput);
+
+        if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
+            return Result.Failure(GlobalErrors.IdNotFound("Courses"));
+
+        var studentAttendance = await _context.Attendances
+            .FirstOrDefaultAsync(x => x.CourseId == courseId && x.StudentId == stdId, cancellationToken);
+
+        if (studentAttendance == null)
+            return Result.Failure(StudentErrors.NotAddedCourse);
+
+        studentAttendance.Weeks ??= new();
+
+        var weeksProperties = new List<bool?>(new bool?[12])
+        {
+            studentAttendance.Weeks.Week1,
+            studentAttendance.Weeks.Week2,
+            studentAttendance.Weeks.Week3,
+            studentAttendance.Weeks.Week4,
+            studentAttendance.Weeks.Week5,
+            studentAttendance.Weeks.Week6,
+            studentAttendance.Weeks.Week7,
+            studentAttendance.Weeks.Week8,
+            studentAttendance.Weeks.Week9,
+            studentAttendance.Weeks.Week10,
+            studentAttendance.Weeks.Week11,
+            studentAttendance.Weeks.Week12
+        };
+
+        if (weeksProperties[weekNum - 1] is not null)
+            return Result.Failure(StudentErrors.AlreadyRegistered);
+
+        studentAttendance.Weeks = new Weeks
+        {
+            Week1 = weeksProperties[0],
+            Week2 = weeksProperties[1],
+            Week3 = weeksProperties[2],
+            Week4 = weeksProperties[3],
+            Week5 = weeksProperties[4],
+            Week6 = weeksProperties[5],
+            Week7 = weeksProperties[6],
+            Week8 = weeksProperties[7],
+            Week9 = weeksProperties[8],
+            Week10 = weeksProperties[9],
+            Week11 = weeksProperties[10],
+            Week12 = weeksProperties[11]
+        };
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return Result.Success();
+    }
+
+    //End Action
 
     #endregion
 

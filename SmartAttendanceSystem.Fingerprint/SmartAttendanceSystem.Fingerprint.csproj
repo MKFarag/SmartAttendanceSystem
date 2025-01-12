@@ -7,12 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SmartAttendanceSystem.Core\SmartAttendanceSystem.Core.csproj" />
-    <ProjectReference Include="..\SmartAttendanceSystem.Infrastructure\SmartAttendanceSystem.Infrastructure.csproj" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="FingerprintService\" />
+    <ProjectReference Include="..\SmartAttendanceSystem.Application\SmartAttendanceSystem.Application.csproj" />
+    <ProjectReference Include="..\SmartAttendanceSystem.Core\SmartAttendanceSystem.Core.csproj" />
   </ItemGroup>
 
 </Project>

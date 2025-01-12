@@ -10,4 +10,7 @@ public static class GlobalErrors
     
     public static Error DuplicatedData(string value) =>
         new("db.DuplicatedData", $"The '{value}' is duplicated", StatusCodes.Status409Conflict);
+
+    public static readonly Error InvalidInput =
+        new("InvalidInput", "You passed unaccepted input", StatusCodes.Status400BadRequest);
 }

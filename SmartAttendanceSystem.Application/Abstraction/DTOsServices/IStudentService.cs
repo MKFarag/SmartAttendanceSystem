@@ -6,9 +6,11 @@ public interface IStudentService
         Expression<Func<Student, bool>>? predicate = null,
         CancellationToken cancellationToken = default);
 
-    Task<Result<StudentResponse>> GetAsync(string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
+    Task<Result<StudentResponse>> GetAsync(Expression<Func<Student, bool>>? predicate = null, string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
 
     Task<Result<Student>> GetMainAsync(int id, CancellationToken cancellationToken = default);
+
+    Task<Result<int>> GetId(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
     Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 

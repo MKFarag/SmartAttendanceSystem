@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartAttendanceSystem.Core\SmartAttendanceSystem.Core.csproj" />
-    <ProjectReference Include="..\SmartAttendanceSystem.Fingerprint\SmartAttendanceSystem.Fingerprint.csproj" />
     <ProjectReference Include="..\SmartAttendanceSystem.Infrastructure\SmartAttendanceSystem.Infrastructure.csproj" />
   </ItemGroup>
 

@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartAttendanceSystem.Application\SmartAttendanceSystem.Application.csproj" />
+    <ProjectReference Include="..\SmartAttendanceSystem.Fingerprint\SmartAttendanceSystem.Fingerprint.csproj" />
   </ItemGroup>
 
 </Project>

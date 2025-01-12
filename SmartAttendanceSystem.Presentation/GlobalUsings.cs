@@ -1,6 +1,7 @@
 ﻿#region Packges | Microsoft
 
 global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.Extensions.Logging;
 global using Microsoft.AspNetCore.Http;
 global using Microsoft.AspNetCore.Mvc;
 global using Hangfire;
@@ -19,6 +20,7 @@ global using SmartAttendanceSystem.Application.Contracts.Course;
 global using SmartAttendanceSystem.Application.Contracts.Users;
 global using SmartAttendanceSystem.Presentation.Abstraction;
 global using SmartAttendanceSystem.Presentation.Extensions;
+global using SmartAttendanceSystem.Fingerprint.Services;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Services;
 global using SmartAttendanceSystem.Core.Entities;
