@@ -1,15 +1,11 @@
-﻿using SmartAttendanceSystem.Core.Entities;
-
-namespace SmartAttendanceSystem.Application.ServicesImplementation;
+﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
 
 public class StudentService(
     ApplicationDbContext context,
-    ICourseService courseService,
-    ILogger<StudentService> logger) : IStudentService
+    ICourseService courseService) : IStudentService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly ICourseService _courseService = courseService;
-    private readonly ILogger<StudentService> _logger = logger;
 
     #region Get
 

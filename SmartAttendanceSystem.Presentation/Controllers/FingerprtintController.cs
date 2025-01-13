@@ -49,21 +49,16 @@ public class FingerprintController(
 
     #region Matching
 
-    [HttpGet("match-student")]
+    [HttpGet("Students/FpMatch")]
     public async Task<IActionResult> MatchStudent()
     {
-        // Fetch the latest processed fingerprint ID
         var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
 
         if (string.IsNullOrEmpty(latestFingerprintId))
-        {
-            _logger.LogWarning("No fingerprint ID available for matching.");
-            return BadRequest("No fingerprint ID available to match.");
-        }
+            throw new InvalidOperationException("Fingerprint id cannot be null");
 
         _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
 
-        // Attempt to match the fingerprint ID in the database
         var matchResult = await _attendanceRepository.MatchFingerprint(latestFingerprintId);
 
         if (matchResult.IsSuccess)
@@ -73,7 +68,29 @@ public class FingerprintController(
         }
 
         _logger.LogWarning("No match found for Fingerprint ID: {FingerprintId}", latestFingerprintId);
-        return NotFound(new { Error = "No student found with the given fingerprint ID." });
+        return matchResult.ToProblem();
+    }
+    
+    [HttpGet("Students/FpMatch-Simple")]
+    public async Task<IActionResult> SimpleMatchStudent()
+    {
+        var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
+
+        if (string.IsNullOrEmpty(latestFingerprintId))
+            throw new InvalidOperationException("Fingerprint id cannot be null");
+
+        _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
+
+        var matchResult = await _attendanceRepository.SimpleMatchFingerprint(latestFingerprintId);
+
+        if (matchResult.IsSuccess)
+        {
+            _logger.LogInformation("Matched student: {@Student}", matchResult.Value);
+            return Ok(matchResult.Value);
+        }
+
+        _logger.LogWarning("No match found for Fingerprint ID: {FingerprintId}", latestFingerprintId);
+        return matchResult.ToProblem();
     }
 
     #endregion

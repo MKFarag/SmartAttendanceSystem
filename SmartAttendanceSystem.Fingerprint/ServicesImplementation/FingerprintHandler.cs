@@ -11,9 +11,7 @@ public class FingerprintHandler(
     private readonly ConcurrentDictionary<string, DateTime> _fingerprintIds = new(); // Store fingerprint IDs with timestamps
 
     public bool TryGetFingerprintId(string fingerprintId, out DateTime timestamp)
-    {
-        return _fingerprintIds.TryGetValue(fingerprintId, out timestamp);
-    }
+        => _fingerprintIds.TryGetValue(fingerprintId, out timestamp);
 
     public void StartListening()
     {

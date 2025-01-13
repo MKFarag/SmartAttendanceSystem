@@ -41,7 +41,11 @@ public class AttendanceRepository(IStudentService studentService, ILogger<Attend
 
     #endregion
 
+    #region Attend
 
+
+
+    #endregion
 
     #region Register
 
@@ -55,7 +59,7 @@ public class AttendanceRepository(IStudentService studentService, ILogger<Attend
 
     #region PrivateMethods
 
-    private int FingerIdParse(string FingerprintId)
+    private static int FingerIdParse(string FingerprintId)
         => int.TryParse(FingerprintId, out int fid)
         ? fid
         : throw new InvalidOperationException(FingerprintErrors.InvalidData.Description);

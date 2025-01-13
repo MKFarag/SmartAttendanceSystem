@@ -2,7 +2,7 @@
 
 namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
-public class SerialPortService : ISerialPortService, IDisposable
+public class SerialPortService : ISerialPortService
 {
     private readonly SerialPort _serialPort;
     private string _lastReceivedData = string.Empty;
@@ -62,6 +62,10 @@ public class SerialPortService : ISerialPortService, IDisposable
         private set => _latestProcessedFingerprintId = value;
     }
 
+
+
+    #region PrivateMethods
+
     private async void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
     {
         try
@@ -86,33 +90,22 @@ public class SerialPortService : ISerialPortService, IDisposable
 
     private async Task ProcessFingerprintDataAsync(string data)
     {
+        await Task.Delay(1);
+
         if (string.IsNullOrEmpty(data))
-        {
-            Console.WriteLine("Received empty or null fingerprint data.");
             return;
-        }
 
         if (data.StartsWith("MATCH:ID:"))
         {
             string fingerprintId = data.Replace("MATCH:ID:", "").Trim();
             Console.WriteLine($"Extracted Fingerprint ID: {fingerprintId}");
 
-            // Update the latest processed fingerprint ID
             LatestProcessedFingerprintId = fingerprintId;
             Console.WriteLine($"Updated _latestProcessedFingerprintId: {fingerprintId}");
         }
         else
-        {
             Console.WriteLine($"Unexpected fingerprint data format: {data}");
-        }
-
-        // You can implement other async logic here if necessary.
-        await Task.CompletedTask;
     }
 
-    public void Dispose()
-    {
-        Stop();
-        _serialPort?.Dispose();
-    }
+    #endregion
 }
