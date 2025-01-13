@@ -5,12 +5,14 @@
 public class FingerprintController(
     ISerialPortService serialPortService,
     IAttendanceRepository attendanceRepository,
+    IStudentService studentService,
     ILogger<FingerprintController> logger) : ControllerBase
 {
     #region Initial
 
-    private readonly ISerialPortService _serialPortService = serialPortService;
     private readonly IAttendanceRepository _attendanceRepository = attendanceRepository;
+    private readonly ISerialPortService _serialPortService = serialPortService;
+    private readonly IStudentService _studentService = studentService;
     private readonly ILogger<FingerprintController> _logger = logger;
 
     #endregion
@@ -50,7 +52,7 @@ public class FingerprintController(
     #region Matching
 
     [HttpGet("Students/FpMatch")]
-    public async Task<IActionResult> MatchStudent()
+    public async Task<IActionResult> MatchStudent(CancellationToken cancellationToken)
     {
         var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
 
@@ -59,7 +61,7 @@ public class FingerprintController(
 
         _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
 
-        var matchResult = await _attendanceRepository.MatchFingerprint(latestFingerprintId);
+        var matchResult = await _attendanceRepository.MatchFingerprint(latestFingerprintId, cancellationToken);
 
         if (matchResult.IsSuccess)
         {
@@ -72,7 +74,7 @@ public class FingerprintController(
     }
     
     [HttpGet("Students/FpMatch-Simple")]
-    public async Task<IActionResult> SimpleMatchStudent()
+    public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
     {
         var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
 
@@ -81,7 +83,7 @@ public class FingerprintController(
 
         _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
 
-        var matchResult = await _attendanceRepository.SimpleMatchFingerprint(latestFingerprintId);
+        var matchResult = await _attendanceRepository.SimpleMatchFingerprint(latestFingerprintId, cancellationToken);
 
         if (matchResult.IsSuccess)
         {
@@ -91,6 +93,35 @@ public class FingerprintController(
 
         _logger.LogWarning("No match found for Fingerprint ID: {FingerprintId}", latestFingerprintId);
         return matchResult.ToProblem();
+    }
+
+    #endregion
+
+    #region StudentAttend
+
+    [HttpPut("Students/Attend/{weekNum}/{courseId}")]
+    public async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
+    {
+        if (weekNum < 1 || weekNum > 12)
+            return BadRequest(GlobalErrors.InvalidInput.Description);
+
+        var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
+
+        if (string.IsNullOrEmpty(latestFingerprintId))
+            throw new InvalidOperationException("Fingerprint id cannot be null");
+
+        _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
+
+        var matchResult = await _attendanceRepository.SimpleMatchFingerprint(latestFingerprintId, cancellationToken);
+
+        if (matchResult.IsFailure)
+            return matchResult.ToProblem();
+
+        var attendCheck = await _studentService.Attended(matchResult.Value, weekNum, courseId, cancellationToken);
+
+        return attendCheck.IsSuccess
+            ? Ok($"Student with id #{matchResult.Value} has been registered successfully")
+            : attendCheck.ToProblem();
     }
 
     #endregion

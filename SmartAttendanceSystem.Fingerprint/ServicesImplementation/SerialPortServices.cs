@@ -4,11 +4,11 @@ namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
 public class SerialPortService : ISerialPortService
 {
+    #region Initialize
+
     private readonly SerialPort _serialPort;
     private string _lastReceivedData = string.Empty;
-    private string _latestProcessedFingerprintId = string.Empty; // Field to store the latest processed fingerprint ID
-
-    // Properly implement the DataReceived event
+    private string _latestProcessedFingerprintId = string.Empty;
     public event Action<string> DataReceived = delegate { };
 
     public SerialPortService(string portName, int baudRate)
@@ -26,29 +26,9 @@ public class SerialPortService : ISerialPortService
         _serialPort.DataReceived += OnDataReceived;
     }
 
-    public void Start()
-    {
-        if (!_serialPort.IsOpen)
-        {
-            _serialPort.Open();
-        }
-    }
+    #endregion
 
-    public void Stop()
-    {
-        if (_serialPort.IsOpen)
-        {
-            _serialPort.Close();
-        }
-    }
-
-    public void SendCommand(string command)
-    {
-        if (_serialPort.IsOpen)
-        {
-            _serialPort.WriteLine(command);
-        }
-    }
+    #region Property
 
     public string LastReceivedData
     {
@@ -56,36 +36,48 @@ public class SerialPortService : ISerialPortService
         private set => _lastReceivedData = value;
     }
 
-    public string LatestProcessedFingerprintId // Public property for the latest processed ID
+    public string LatestProcessedFingerprintId
     {
         get => _latestProcessedFingerprintId;
         private set => _latestProcessedFingerprintId = value;
     }
 
+    #endregion
 
+    #region MainMethods
+
+    public void Start()
+    {
+        if (!_serialPort.IsOpen)
+            _serialPort.Open();
+    }
+
+    public void Stop()
+    {
+        if (_serialPort.IsOpen)
+            _serialPort.Close();
+    }
+
+    public void SendCommand(string command)
+    {
+        if (_serialPort.IsOpen)
+            _serialPort.WriteLine(command);
+    }
+
+    #endregion
 
     #region PrivateMethods
 
     private async void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
     {
-        try
-        {
-            string data = _serialPort.ReadLine(); // Read data from the Arduino
-            if (!string.IsNullOrWhiteSpace(data))
-            {
-                await ProcessFingerprintDataAsync(data); // Process the fingerprint data
-                LastReceivedData = data; // Update the last received data
-                DataReceived?.Invoke(data); // Notify subscribers of the received data
-            }
-            else
-            {
-                Console.WriteLine("Received empty or invalid data.");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error receiving data: {ex.Message}");
-        }
+        string data = _serialPort.ReadLine();
+
+        if (string.IsNullOrEmpty(data))
+            throw new InvalidOperationException("Fingerprint data cannot be null");
+
+        await ProcessFingerprintDataAsync(data);
+        LastReceivedData = data;
+        DataReceived?.Invoke(data);
     }
 
     private async Task ProcessFingerprintDataAsync(string data)
