@@ -103,5 +103,17 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #endregion
 
+    #region StartAction
+
+
+
+    #endregion
+
+    #region EndAction
+
+
+
+    #endregion
+
     #endregion
 }

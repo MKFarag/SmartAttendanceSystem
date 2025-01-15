@@ -32,6 +32,11 @@ public class FingerprintService
         {
             _serialPortService.Start();
             _logger.LogInformation("Started listening on the serial port.");
+
+            var _mapContext = new MapContext();
+            _mapContext.Set("Fp", true);
+            MapContext.Current = _mapContext;
+
             return Result.Success();
         }
         catch (Exception ex)
@@ -48,6 +53,10 @@ public class FingerprintService
 
         _logger.LogInformation("Stopping fingerprint reader...");
         _serialPortService.Stop();
+
+        var _mapContext = new MapContext();
+        _mapContext.Set("Fp", false);
+        MapContext.Current = _mapContext;
 
         return Result.Success();
     }
