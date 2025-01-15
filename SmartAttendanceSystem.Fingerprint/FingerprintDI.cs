@@ -12,7 +12,7 @@ public static class FingerprintDI
             new SerialPortService("COM3", 9600));
 
         // Register AttendanceRepository
-        services.AddScoped<IAttendanceRepository, AttendanceRepository>();
+        services.AddScoped<IFingerprintService, FingerprintService>();
         services.AddScoped<IFingerprintHandler, FingerprintHandler>();
 
         return services;

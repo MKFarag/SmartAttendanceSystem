@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using SmartAttendanceSystem.Application.Helpers;
+using System.IO.Ports;
 
 namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
@@ -9,9 +10,10 @@ public class SerialPortService : ISerialPortService
     private readonly SerialPort _serialPort;
     private string _lastReceivedData = string.Empty;
     private string _latestProcessedFingerprintId = string.Empty;
+    private readonly MapContext _mapContext;
     public event Action<string> DataReceived = delegate { };
 
-    public SerialPortService(string portName, int baudRate)
+    public SerialPortService(string portName, int baudRate, MapContext mapContext = default!)
     {
         _serialPort = new SerialPort(portName, baudRate)
         {
@@ -24,6 +26,7 @@ public class SerialPortService : ISerialPortService
         };
 
         _serialPort.DataReceived += OnDataReceived;
+        _mapContext = mapContext;
     }
 
     #endregion
@@ -50,12 +53,18 @@ public class SerialPortService : ISerialPortService
     {
         if (!_serialPort.IsOpen)
             _serialPort.Open();
+
+        _mapContext.Set("Fp", true);
+        MapContext.Current = _mapContext;
     }
 
     public void Stop()
     {
         if (_serialPort.IsOpen)
             _serialPort.Close();
+
+        _mapContext.Set("Fp", false);
+        MapContext.Current = _mapContext;
     }
 
     public void SendCommand(string command)

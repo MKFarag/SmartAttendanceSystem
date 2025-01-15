@@ -19,7 +19,10 @@ public static class StudentErrors
     
     public static readonly Error NoCourses =
         new("Student.NoCourses", "No courses added", StatusCodes.Status404NotFound);
-    
+
+    public static readonly Error AlreadyHaveFp =
+        new("Student.AlreadyHaveFp", "This student has a fingerprint Id already", StatusCodes.Status409Conflict);
+
     public static Error CourseNotAdded(int id) =>
         new("Student.CourseNotAdded", $"The course of id {id} has not been added to your courses", StatusCodes.Status404NotFound);
 }

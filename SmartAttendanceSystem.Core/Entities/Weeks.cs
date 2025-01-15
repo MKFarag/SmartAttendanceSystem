@@ -16,12 +16,12 @@ public class Weeks
     public bool? Week12 { get; set; }
 
     public bool? Week(int num) => GetWeek(num);
-    
+
     private bool? GetWeek(int num)
     {
         if (num > 12 || num <= 0)
             return null;
-        
+
         var weeks = new List<bool?>
         {
             Week1, Week2, Week3, Week4, Week5, Week6,

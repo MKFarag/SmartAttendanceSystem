@@ -211,20 +211,19 @@ public class StudentService(
         if (await _context.Attendances.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken) is not { } weekCheck)
             return Result.Failure<IEnumerable<StdAttendanceByWeekResponse>>(StudentErrors.NotAddedCourse);
 
-        if (weekCheck.Weeks is null || weekCheck.Weeks.Week(weekNum) is null)
-            return Result.Success<IEnumerable<StdAttendanceByWeekResponse>>([]);
-
         var mapContext = new MapContext();
         mapContext.Set("weekNum", weekNum);
         MapContext.Current = mapContext;
 
         var attendances = await _context.Attendances
             .AsNoTracking()
-            .Where(x => x.CourseId == courseId)
+            .Where(x => x.CourseId == courseId && x.Weeks != null)
             .ProjectToType<StdAttendanceByWeekResponse>()
             .ToListAsync(cancellationToken);
 
-        return Result.Success<IEnumerable<StdAttendanceByWeekResponse>>(attendances);
+        var filteredAttendances = attendances.Where(x => x.Attend != null);
+
+        return Result.Success(filteredAttendances);
     }
 
     #endregion
@@ -248,46 +247,22 @@ public class StudentService(
 
         studentAttendance.Weeks ??= new();
 
-        var weeksProperties = new List<bool?>(new bool?[12])
-        {
-            studentAttendance.Weeks.Week1,
-            studentAttendance.Weeks.Week2,
-            studentAttendance.Weeks.Week3,
-            studentAttendance.Weeks.Week4,
-            studentAttendance.Weeks.Week5,
-            studentAttendance.Weeks.Week6,
-            studentAttendance.Weeks.Week7,
-            studentAttendance.Weeks.Week8,
-            studentAttendance.Weeks.Week9,
-            studentAttendance.Weeks.Week10,
-            studentAttendance.Weeks.Week11,
-            studentAttendance.Weeks.Week12
-        };
+        var propertyName = $"Week{weekNum}";
+        var propertyInfo = typeof(Weeks).GetProperty(propertyName);
 
-        if (weeksProperties[weekNum - 1] is not null)
+        if (propertyInfo == null)
+            return Result.Failure(GlobalErrors.InvalidInput);
+
+        var currentValue = (bool?)propertyInfo.GetValue(studentAttendance.Weeks);
+
+        if (currentValue is not null)
             return Result.Failure(StudentErrors.AlreadyRegistered);
 
-        studentAttendance.Weeks = new Weeks
-        {
-            Week1 = weeksProperties[0],
-            Week2 = weeksProperties[1],
-            Week3 = weeksProperties[2],
-            Week4 = weeksProperties[3],
-            Week5 = weeksProperties[4],
-            Week6 = weeksProperties[5],
-            Week7 = weeksProperties[6],
-            Week8 = weeksProperties[7],
-            Week9 = weeksProperties[8],
-            Week10 = weeksProperties[9],
-            Week11 = weeksProperties[10],
-            Week12 = weeksProperties[11]
-        };
+        propertyInfo.SetValue(studentAttendance.Weeks, true);
 
         await _context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
-
-    //End Action
 
     #endregion
 

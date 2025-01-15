@@ -4,4 +4,13 @@ public static class FingerprintErrors
 {
     public static readonly Error InvalidData =
         new("Fingerprint.Check", "Invalid data passed from fingerprint", StatusCodes.Status400BadRequest);
+
+    public static readonly Error ServiceUnavailable =
+        new("Fingerprint.ServiceUnavailable", "You must start fingerprint first", StatusCodes.Status503ServiceUnavailable);
+    
+    public static readonly Error StartFailed =
+        new("Fingerprint.StartingFailed", "Failed to start listening on the serial port", StatusCodes.Status503ServiceUnavailable);
+
+    public static readonly Error NoData =
+        new("Fingerprint.NoData", "No data received from the fingerprint sensor yet", StatusCodes.Status404NotFound);
 }

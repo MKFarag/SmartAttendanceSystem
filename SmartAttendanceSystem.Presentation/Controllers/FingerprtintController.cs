@@ -2,37 +2,20 @@
 
 [ApiController]
 [Route("api/[controller]")]
-public class FingerprintController(
-    ISerialPortService serialPortService,
-    IAttendanceRepository attendanceRepository,
-    IStudentService studentService,
-    ILogger<FingerprintController> logger) : ControllerBase
+public class FingerprintController(IFingerprintService fingerprintService) : ControllerBase
 {
-    #region Initial
-
-    private readonly IAttendanceRepository _attendanceRepository = attendanceRepository;
-    private readonly ISerialPortService _serialPortService = serialPortService;
-    private readonly IStudentService _studentService = studentService;
-    private readonly ILogger<FingerprintController> _logger = logger;
-
-    #endregion
+    private readonly IFingerprintService _fingerprintService = fingerprintService;
 
     #region Start
 
     [HttpPost("start")]
     public IActionResult StartListening()
     {
-        try
-        {
-            _serialPortService.Start(); // Open the serial port
-            _logger.LogInformation("Started listening on the serial port.");
-            return Ok("Serial port listening started successfully.");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError("Error starting serial port: {ErrorMessage}", ex.Message);
-            return StatusCode(503, "Failed to start listening on the serial port: " + ex.Message);
-        }
+        var startResult = _fingerprintService.Start();
+
+        return startResult.IsSuccess
+            ? Ok("Serial port listening started successfully")
+            : startResult.ToProblem();
     }
 
     #endregion
@@ -42,9 +25,25 @@ public class FingerprintController(
     [HttpPost("stop")]
     public IActionResult StopListening()
     {
-        _logger.LogInformation("Stopping fingerprint reader...");
-        _serialPortService.Stop();
-        return Ok("Fingerprint reader stopped successfully");
+        var stopResult = _fingerprintService.Stop();
+
+        return stopResult.IsSuccess
+            ? Ok("Fingerprint reader stopped successfully")
+            : stopResult.ToProblem();
+    }
+
+    #endregion
+
+    #region Latest
+
+    [HttpGet("latest-data")]
+    public IActionResult GetLatestFingerprintData(CancellationToken cancellationToken)
+    {
+        var FpDataResult = _fingerprintService.GetLastReceivedData(cancellationToken);
+
+        return FpDataResult.IsSuccess
+            ? Ok(FpDataResult)
+            : FpDataResult.ToProblem();
     }
 
     #endregion
@@ -54,75 +53,55 @@ public class FingerprintController(
     [HttpGet("Students/FpMatch")]
     public async Task<IActionResult> MatchStudent(CancellationToken cancellationToken)
     {
-        var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
+        var matchResult = await _fingerprintService.MatchFingerprint(cancellationToken);
 
-        if (string.IsNullOrEmpty(latestFingerprintId))
-            throw new InvalidOperationException("Fingerprint id cannot be null");
-
-        _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
-
-        var matchResult = await _attendanceRepository.MatchFingerprint(latestFingerprintId, cancellationToken);
-
-        if (matchResult.IsSuccess)
-        {
-            _logger.LogInformation("Matched student: {@Student}", matchResult.Value);
-            return Ok(matchResult.Value);
-        }
-
-        _logger.LogWarning("No match found for Fingerprint ID: {FingerprintId}", latestFingerprintId);
-        return matchResult.ToProblem();
+        return matchResult.IsSuccess
+            ? Ok(matchResult.Value)
+            : matchResult.ToProblem();
     }
     
     [HttpGet("Students/FpMatch-Simple")]
     public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
     {
-        var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
+        var matchResult = await _fingerprintService.SimpleMatchFingerprint(cancellationToken);
 
-        if (string.IsNullOrEmpty(latestFingerprintId))
-            throw new InvalidOperationException("Fingerprint id cannot be null");
-
-        _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
-
-        var matchResult = await _attendanceRepository.SimpleMatchFingerprint(latestFingerprintId, cancellationToken);
-
-        if (matchResult.IsSuccess)
-        {
-            _logger.LogInformation("Matched student: {@Student}", matchResult.Value);
-            return Ok(matchResult.Value);
-        }
-
-        _logger.LogWarning("No match found for Fingerprint ID: {FingerprintId}", latestFingerprintId);
-        return matchResult.ToProblem();
+        return matchResult.IsSuccess
+            ? Ok(matchResult.Value)
+            : matchResult.ToProblem();
     }
 
     #endregion
 
-    #region StudentAttend
+    #region Students
+
+    #region Attend
 
     [HttpPut("Students/Attend/{weekNum}/{courseId}")]
     public async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
-        if (weekNum < 1 || weekNum > 12)
-            return BadRequest(GlobalErrors.InvalidInput.Description);
-
-        var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
-
-        if (string.IsNullOrEmpty(latestFingerprintId))
-            throw new InvalidOperationException("Fingerprint id cannot be null");
-
-        _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
-
-        var matchResult = await _attendanceRepository.SimpleMatchFingerprint(latestFingerprintId, cancellationToken);
-
-        if (matchResult.IsFailure)
-            return matchResult.ToProblem();
-
-        var attendCheck = await _studentService.Attended(matchResult.Value, weekNum, courseId, cancellationToken);
+        var attendCheck = await _fingerprintService.StdAttend(weekNum, courseId, cancellationToken);
 
         return attendCheck.IsSuccess
-            ? Ok($"Student with id #{matchResult.Value} has been registered successfully")
+            ? Ok()
             : attendCheck.ToProblem();
     }
+
+    #endregion
+
+    #region Register
+
+    [Authorize]
+    [HttpPost("Register")]
+    public async Task<IActionResult> FpRegister(CancellationToken cancellationToken)
+    {
+        var FpRegisterResult = await _fingerprintService.RegisterFingerprint(User.GetId()!, cancellationToken);
+
+        return FpRegisterResult.IsSuccess
+            ? Ok("The student has been registered successfully")
+            : FpRegisterResult.ToProblem();
+    }
+
+    #endregion
 
     #endregion
 }

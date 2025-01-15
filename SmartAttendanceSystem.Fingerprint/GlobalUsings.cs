@@ -1,6 +1,7 @@
 ﻿#region Packges | Microsoft
 
 global using Microsoft.Extensions.Logging;
+global using Mapster;
 
 #endregion
 
