@@ -13,7 +13,6 @@ public static class FingerprintDI
 
         // Register AttendanceRepository
         services.AddScoped<IFingerprintService, FingerprintService>();
-        services.AddScoped<IFingerprintHandler, FingerprintHandler>();
 
         return services;
     }

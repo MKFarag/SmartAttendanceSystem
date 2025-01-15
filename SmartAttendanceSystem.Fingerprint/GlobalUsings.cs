@@ -11,8 +11,9 @@ global using Mapster;
 
 global using SmartAttendanceSystem.Application.Abstraction.DTOsServices;
 global using SmartAttendanceSystem.Application.Contracts.Student;
-global using SmartAttendanceSystem.Core.Errors;
-global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Fingerprint.Services;
+global using SmartAttendanceSystem.Core.Abstraction;
+global using SmartAttendanceSystem.Core.Settings;
+global using SmartAttendanceSystem.Core.Errors;
 
 #endregion

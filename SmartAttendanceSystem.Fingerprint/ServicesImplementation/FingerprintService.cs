@@ -15,10 +15,12 @@ public class FingerprintService
     (ISerialPortService serialPortService,
     ILogger<FingerprintService> logger,
     IStudentService studentService,
-    ApplicationDbContext context) : IFingerprintService
+    ApplicationDbContext context,
+    GlobalSettings globalSettings) : IFingerprintService
 {
     private readonly ISerialPortService _serialPortService = serialPortService;
     private readonly IStudentService _studentService = studentService;
+    private readonly GlobalSettings _globalSettings = globalSettings;
     private readonly ILogger<FingerprintService> _logger = logger;
     private readonly ApplicationDbContext _context = context;
 
@@ -30,12 +32,10 @@ public class FingerprintService
     {
         try
         {
-            _serialPortService.Start();
+            //_serialPortService.Start();
             _logger.LogInformation("Started listening on the serial port.");
 
-            var _mapContext = new MapContext();
-            _mapContext.Set("Fp", true);
-            MapContext.Current = _mapContext;
+            _globalSettings.FpService = true;
 
             return Result.Success();
         }
@@ -48,15 +48,13 @@ public class FingerprintService
 
     public Result Stop()
     {
-        if (!MapContext.Current!.GetOrDefault("Fp", false))
+        if (!_globalSettings.FpService)
             return Result.Failure(FingerprintErrors.ServiceUnavailable);
 
         _logger.LogInformation("Stopping fingerprint reader...");
         _serialPortService.Stop();
 
-        var _mapContext = new MapContext();
-        _mapContext.Set("Fp", false);
-        MapContext.Current = _mapContext;
+        _globalSettings.FpService = false;
 
         return Result.Success();
     }
@@ -67,7 +65,7 @@ public class FingerprintService
 
     public Result<string> GetLastReceivedData(CancellationToken cancellationToken = default)
     {
-        if (!MapContext.Current!.GetOrDefault("Fp", false))
+        if (!_globalSettings.FpService)
             return Result.Failure<string>(FingerprintErrors.ServiceUnavailable);
 
         var FpData = _serialPortService.LastReceivedData;
@@ -174,7 +172,7 @@ public class FingerprintService
 
     private Result<int> GetFpId()
     {
-        if (!MapContext.Current!.GetOrDefault("Fp", false))
+        if (!_globalSettings.FpService)
             return Result.Failure<int>(FingerprintErrors.ServiceUnavailable);
 
         var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;

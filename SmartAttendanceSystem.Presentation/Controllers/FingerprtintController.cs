@@ -42,7 +42,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
         var FpDataResult = _fingerprintService.GetLastReceivedData(cancellationToken);
 
         return FpDataResult.IsSuccess
-            ? Ok(FpDataResult)
+            ? Ok(FpDataResult.Value)
             : FpDataResult.ToProblem();
     }
 
