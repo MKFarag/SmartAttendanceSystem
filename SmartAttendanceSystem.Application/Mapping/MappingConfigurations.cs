@@ -49,6 +49,14 @@ public class MappingConfigurations : IRegister
 
         #endregion
 
+        #region FpData
+
+        config.NewConfig<Student, StdAttendAction>()
+            .Map(dest => dest.Name, src => src.User.Name)
+            .Map(dest => dest.DepartmentName, src => src.Department.Name);
+
+        #endregion
+
         #endregion
 
         #region Profile

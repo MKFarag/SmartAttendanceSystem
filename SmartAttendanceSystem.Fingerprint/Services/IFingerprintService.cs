@@ -15,4 +15,8 @@ public interface IFingerprintService
     Task<Result> StdAttend(int weekNum, int courseId, CancellationToken cancellationToken = default);
 
     Task<Result> RegisterFingerprint(string UserId, CancellationToken cancellationToken = default);
+
+    Task<Result> TakeAttendance_Start(CancellationToken cancellationToken = default);
+
+    Task<Result<IEnumerable<StdAttendAction>>> TakeAttendance_End(CancellationToken cancellationToken = default);
 }

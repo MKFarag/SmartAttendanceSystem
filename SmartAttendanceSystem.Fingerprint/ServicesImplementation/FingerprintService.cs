@@ -1,8 +1,10 @@
 ﻿#region Usings
 
+using Hangfire;
 using Microsoft.EntityFrameworkCore;
-using SmartAttendanceSystem.Application.Helpers;
+using SmartAttendanceSystem.Fingerprint.Helper;
 using SmartAttendanceSystem.Infrastructure.Persistence;
+using System.Collections.Generic;
 
 #endregion
 
@@ -16,11 +18,11 @@ public class FingerprintService
     ILogger<FingerprintService> logger,
     IStudentService studentService,
     ApplicationDbContext context,
-    GlobalSettings globalSettings) : IFingerprintService
+    FpTempData fpTempData) : IFingerprintService
 {
     private readonly ISerialPortService _serialPortService = serialPortService;
     private readonly IStudentService _studentService = studentService;
-    private readonly GlobalSettings _globalSettings = globalSettings;
+    private readonly FpTempData _fpTempData = fpTempData;
     private readonly ILogger<FingerprintService> _logger = logger;
     private readonly ApplicationDbContext _context = context;
 
@@ -32,10 +34,10 @@ public class FingerprintService
     {
         try
         {
-            //_serialPortService.Start();
+            _serialPortService.Start();
             _logger.LogInformation("Started listening on the serial port.");
 
-            _globalSettings.FpService = true;
+            _fpTempData.FpStatus = true;
 
             return Result.Success();
         }
@@ -48,13 +50,13 @@ public class FingerprintService
 
     public Result Stop()
     {
-        if (!_globalSettings.FpService)
+        if (!_fpTempData.FpStatus)
             return Result.Failure(FingerprintErrors.ServiceUnavailable);
 
         _logger.LogInformation("Stopping fingerprint reader...");
         _serialPortService.Stop();
 
-        _globalSettings.FpService = false;
+        _fpTempData.FpStatus = false;
 
         return Result.Success();
     }
@@ -65,7 +67,7 @@ public class FingerprintService
 
     public Result<string> GetLastReceivedData(CancellationToken cancellationToken = default)
     {
-        if (!_globalSettings.FpService)
+        if (!_fpTempData.FpStatus)
             return Result.Failure<string>(FingerprintErrors.ServiceUnavailable);
 
         var FpData = _serialPortService.LastReceivedData;
@@ -163,7 +165,51 @@ public class FingerprintService
 
     #endregion
 
-    #region PrivateMethods
+    #region ActionButtons
+
+    //Start
+    public async Task<Result> TakeAttendance_Start(CancellationToken cancellationToken = default)
+    {
+        await Task.Delay(1, cancellationToken);
+
+        var start = Start();
+
+        if (start.IsFailure)
+            return start;
+
+        _fpTempData.ActionButtonStatus = true;
+
+        BackgroundJob.Enqueue(() => ActionButton_Service());
+
+        return Result.Success();
+    }
+
+    //End
+    public async Task<Result<IEnumerable<StdAttendAction>>> TakeAttendance_End(CancellationToken cancellationToken = default)
+    {
+        if (!_fpTempData.ActionButtonStatus)
+            return Result.Failure<IEnumerable<StdAttendAction>>(FingerprintErrors.ServiceUnavailable);
+
+        _fpTempData.ActionButtonStatus = false;
+
+        await Task.Delay(3000, cancellationToken);
+
+        var fIds = _fpTempData.ActionButtonData;
+
+        if (fIds.Count <= 0)
+            return Result.Failure<IEnumerable<StdAttendAction>>(FingerprintErrors.NoData);
+
+        //foreach (var fId in fIds)
+        //{
+            
+        //}
+
+        return Result.Success<IEnumerable<StdAttendAction>>([]);
+    }
+
+    #endregion
+
+    #region PrivateMethods & Background
 
     private static int FingerIdParse(string FingerprintId)
         => int.TryParse(FingerprintId, out int fid)
@@ -172,7 +218,7 @@ public class FingerprintService
 
     private Result<int> GetFpId()
     {
-        if (!_globalSettings.FpService)
+        if (!_fpTempData.FpStatus)
             return Result.Failure<int>(FingerprintErrors.ServiceUnavailable);
 
         var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
@@ -180,11 +226,37 @@ public class FingerprintService
         if (string.IsNullOrEmpty(latestFingerprintId))
             return Result.Failure<int>(FingerprintErrors.NoData); ;
 
-        _logger.LogInformation("Latest stored Fingerprint ID before matching: {LatestFingerprintId}", latestFingerprintId);
-
         var FpId = FingerIdParse(latestFingerprintId);
 
         return Result.Success(FpId);
+    }
+
+    public async Task ActionButton_Service()
+    {
+        List<int> fIds = [];
+
+        while (_fpTempData.ActionButtonStatus)
+        {
+            await Task.Delay(3000);
+
+            var fId = GetFpId();
+
+            if (fId.IsFailure && fId.Error.StatusCode == 503)
+                _fpTempData.ActionButtonStatus = false;
+
+            if (fId.IsFailure || fIds.Contains(fId.Value))
+                continue;
+
+            fIds.Add(fId.Value);
+
+            _logger.LogInformation("Fingerprint with id #{fid} has been added", fId.Value);
+        }
+
+        if (fIds.Count > 0)
+        {
+            _logger.LogInformation("Sending data...");
+            _fpTempData.ActionButtonData = fIds;
+        }
     }
 
     #endregion

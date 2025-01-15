@@ -105,13 +105,29 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region StartAction
 
+    [HttpGet("TakeAttendance/Start")]
+    public async Task<IActionResult> TakeAttendance_Start(CancellationToken cancellationToken)
+    {
+        var actionResult = await _fingerprintService.TakeAttendance_Start(cancellationToken);
 
+        return actionResult.IsSuccess
+            ? Ok("Fingerprint registration started")
+            : actionResult.ToProblem();
+    }
 
     #endregion
 
     #region EndAction
 
+    [HttpGet("TakeAttendance/End")]
+    public async Task<IActionResult> TakeAttendance_End(CancellationToken cancellationToken)
+    {
+        var actionResult = await _fingerprintService.TakeAttendance_End(cancellationToken);
 
+        return actionResult.IsSuccess
+            ? Ok(actionResult.Value)
+            : actionResult.ToProblem();
+    }
 
     #endregion
 

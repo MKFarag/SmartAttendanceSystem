@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using SmartAttendanceSystem.Fingerprint.Helper;
 using SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
 namespace SmartAttendanceSystem.Fingerprint;
@@ -13,6 +14,9 @@ public static class FingerprintDI
 
         // Register AttendanceRepository
         services.AddScoped<IFingerprintService, FingerprintService>();
+
+        // Register Fingerprint TempData
+        services.AddSingleton<FpTempData>();
 
         return services;
     }

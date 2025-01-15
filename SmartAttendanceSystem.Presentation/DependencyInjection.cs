@@ -45,7 +45,6 @@ public static class DependencyInjection
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IEmailSender, EmailService>();
         services.AddScoped<IUserService, UserService>();
-        services.AddSingleton<GlobalSettings>();
 
         services.AddHttpContextAccessor();
 
