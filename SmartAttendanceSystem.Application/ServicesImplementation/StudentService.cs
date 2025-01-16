@@ -1,11 +1,18 @@
 ﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
 
-public class StudentService(
-    ApplicationDbContext context,
-    ICourseService courseService) : IStudentService
+public class StudentService
+
+    #region Initial
+
+    (ApplicationDbContext context,
+    ICourseService courseService,
+    ILogger<StudentService> logger) : IStudentService
 {
     private readonly ApplicationDbContext _context = context;
     private readonly ICourseService _courseService = courseService;
+    private readonly ILogger<StudentService> _logger = logger;
+
+    #endregion
 
     #region Get
 
@@ -271,6 +278,8 @@ public class StudentService(
     //In End Action
     public async Task CheckForAllWeeks(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
+        _logger.LogInformation("The remaining students who did not attend are being registered");
+
         var courseAttendances = await _context.Attendances.Where(x => x.CourseId == courseId).ToListAsync(cancellationToken);
 
         var propertyInfo = typeof(Weeks).GetProperty($"Week{weekNum}");
@@ -288,6 +297,8 @@ public class StudentService(
                 propertyInfo.SetValue(attendance.Weeks, false);
         }
         await _context.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Successfully completed");
     }
 
     #endregion

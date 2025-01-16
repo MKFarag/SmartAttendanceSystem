@@ -119,7 +119,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region EndAction
 
-    [HttpGet("TakeAttendance/End/{weekNum}/{courseId}")]
+    [HttpPut("TakeAttendance/End/{weekNum}/{courseId}")]
     public async Task<IActionResult> TakeAttendance_End([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
         var actionResult = await _fingerprintService.TakeAttendance_End(weekNum, courseId, cancellationToken);

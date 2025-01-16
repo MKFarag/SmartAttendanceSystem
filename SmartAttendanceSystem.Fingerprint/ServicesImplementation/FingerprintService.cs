@@ -4,6 +4,7 @@ using Hangfire;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using SmartAttendanceSystem.Infrastructure.Persistence;
+using System.Security.Cryptography;
 
 #endregion
 
@@ -36,15 +37,11 @@ public class FingerprintService
         try
         {
             _serialPortService.Start();
-            _logger.LogInformation("Started listening on the serial port.");
-
             _fpTempData.FpStatus = true;
-
             return Result.Success();
         }
-        catch (Exception ex)
+        catch
         {
-            _logger.LogError("Error starting serial port: {ErrorMessage}", ex.Message);
             return Result.Failure(FingerprintErrors.StartFailed);
         }
     }
@@ -54,7 +51,7 @@ public class FingerprintService
         if (!_fpTempData.FpStatus)
             return Result.Failure(FingerprintErrors.ServiceUnavailable);
 
-        _logger.LogInformation("Stopping fingerprint reader...");
+        _logger.LogWarning("Stopping fingerprint reader...");
         _serialPortService.Stop();
 
         _fpTempData.FpStatus = false;
@@ -90,14 +87,14 @@ public class FingerprintService
         if (fId.IsFailure)
             return Result.Failure<StudentResponse>(fId.Error);
 
-        _logger.LogInformation("Attempting to match fingerprint ID: {FingerprintId}", fId);
+        _logger.LogInformation("Attempting to match fingerprint ID: {fid}", fId);
 
         var studentResult = await _studentService.GetAsync(x => x.FingerId == fId.Value, cancellationToken: cancellationToken);
 
         if (studentResult.IsFailure)
-            _logger.LogWarning("No student found with Fingerprint ID: {FingerprintId}", fId);
+            _logger.LogWarning("No student found with Fingerprint ID: {fid}", fId);
         else
-            _logger.LogInformation("Successfully matched student: {@Student}", studentResult.Value);
+            _logger.LogInformation("Successfully matched student: #{id} {name}", studentResult.Value.Id, studentResult.Value.Name);
 
         return studentResult;
     }
@@ -109,14 +106,14 @@ public class FingerprintService
         if (fId.IsFailure)
             return fId;
 
-        _logger.LogInformation("Attempting to match fingerprint ID: {FingerprintId}", fId);
+        _logger.LogInformation("Attempting to match fingerprint ID: {fid}", fId);
 
         var StdIdResult = await _studentService.GetId(x => x.FingerId == fId.Value, cancellationToken);
 
         if (StdIdResult.IsFailure)
-            _logger.LogWarning("No student found with Fingerprint ID: {FingerprintId}", fId);
+            _logger.LogWarning("No student found with Fingerprint ID: {fid}", fId);
         else
-            _logger.LogInformation("Successfully matched student with id: {StudentId}", StdIdResult.Value);
+            _logger.LogInformation("Successfully matched student with id #{StudentId}", StdIdResult.Value);
 
         return StdIdResult;
     }
@@ -222,7 +219,7 @@ public class FingerprintService
             
             if (stdResult.IsFailure)
             {
-                _logger.LogError("No data found for student with fingerprint id #{fid}", fId);
+                _logger.LogWarning("No data found for student with fingerprint id #{fid}", fId);
                 continue;
             }
 
@@ -234,6 +231,8 @@ public class FingerprintService
                     " id #{fid} when attend him with message: {error}", fId, attendCheck.Error.Description);
                 continue;
             }
+
+            _logger.LogInformation("Student with fingerprint id #{fid} has been successfully registered", fId);
         }
 
         if (!_fpTempData.FpStatus)
@@ -247,11 +246,6 @@ public class FingerprintService
     #endregion
 
     #region PrivateMethods & Background
-
-    //private static int FingerIdParse(string FingerprintId)
-    //    => int.TryParse(FingerprintId, out int fid)
-    //    ? fid
-    //    : throw new InvalidOperationException(FingerprintErrors.InvalidData.Description);
 
     private Result<int> GetFpId()
     {
@@ -273,6 +267,8 @@ public class FingerprintService
     {
         List<int> fIds = [];
 
+        _logger.LogInformation("Start reading from fingerprint.....");
+
         while (_fpTempData.ActionButtonStatus)
         {
             await Task.Delay(2000);
@@ -290,16 +286,19 @@ public class FingerprintService
 
             fIds.Add(fId.Value);
 
-            _logger.LogInformation("Fingerprint with id #{fid} has been added", fId.Value);
+            _logger.LogInformation("Fingerprint id #{fid} has been added", fId.Value);
         }
 
         if (fIds.Count > 0)
         {
             _logger.LogInformation("Sending data...");
             _fpTempData.ActionButtonData = fIds;
+            _logger.LogInformation("Data sent successfully");
         }
+        else if (fIds.Count == 0)
+            _logger.LogWarning("No data has been read");
 
-        _logger.LogInformation("Data sent successfully");
+        _logger.LogWarning("Reading service has been stopped");
     }
 
     #endregion
