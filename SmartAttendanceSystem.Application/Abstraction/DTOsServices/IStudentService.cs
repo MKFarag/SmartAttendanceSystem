@@ -8,7 +8,7 @@ public interface IStudentService
 
     Task<Result<StudentResponse>> GetAsync(Expression<Func<Student, bool>>? predicate = null, string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
 
-    Task<Result<Student>> GetMainAsync(int id, CancellationToken cancellationToken = default);
+    Task<Result<Student>> GetMainAsync(Expression<Func<Student, bool>>? predicate = null, int? StdId = null, CancellationToken cancellationToken = default);
 
     Task<Result<int>> GetId(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
@@ -25,4 +25,8 @@ public interface IStudentService
     Task<Result<StudentAttendanceResponse>> StudentAttendance(string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default);
 
     Task<Result> Attended(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default);
+
+    Task CheckForAllWeeks(int weekNum, int courseId, CancellationToken cancellationToken = default);
+
+    //Task<Result> NullWeekCheck(int weekNum, int courseId, CancellationToken cancellationToken = default);
 }

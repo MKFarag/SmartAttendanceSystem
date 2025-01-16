@@ -50,7 +50,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Matching
 
-    [HttpGet("Students/FpMatch")]
+    [HttpGet("StdMatch")]
     public async Task<IActionResult> MatchStudent(CancellationToken cancellationToken)
     {
         var matchResult = await _fingerprintService.MatchFingerprint(cancellationToken);
@@ -60,7 +60,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
             : matchResult.ToProblem();
     }
     
-    [HttpGet("Students/FpMatch-Simple")]
+    [HttpGet("StdMatch-Simple")]
     public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
     {
         var matchResult = await _fingerprintService.SimpleMatchFingerprint(cancellationToken);
@@ -76,7 +76,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Attend
 
-    [HttpPut("Students/Attend/{weekNum}/{courseId}")]
+    [HttpPut("StdAttend/{weekNum}/{courseId}")]
     public async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
         var attendCheck = await _fingerprintService.StdAttend(weekNum, courseId, cancellationToken);
@@ -119,13 +119,13 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region EndAction
 
-    [HttpGet("TakeAttendance/End")]
-    public async Task<IActionResult> TakeAttendance_End(CancellationToken cancellationToken)
+    [HttpGet("TakeAttendance/End/{weekNum}/{courseId}")]
+    public async Task<IActionResult> TakeAttendance_End([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
-        var actionResult = await _fingerprintService.TakeAttendance_End(cancellationToken);
+        var actionResult = await _fingerprintService.TakeAttendance_End(weekNum, courseId, cancellationToken);
 
         return actionResult.IsSuccess
-            ? Ok(actionResult.Value)
+            ? Ok("Fingerprint registration ended")
             : actionResult.ToProblem();
     }
 

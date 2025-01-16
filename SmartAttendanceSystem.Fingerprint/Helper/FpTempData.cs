@@ -29,4 +29,14 @@ public class FpTempData
         get => _actionButtonData;
         set => _actionButtonData = value;
     }
+
+    ///////////////////////////////////////////////////////
+
+    private bool _fpValue = false;
+
+    public bool FpValue
+    {
+        get => _fpValue;
+        set => _fpValue = value;
+    }
 }

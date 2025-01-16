@@ -1,10 +1,9 @@
 ﻿#region Usings
 
 using Hangfire;
+using Mapster;
 using Microsoft.EntityFrameworkCore;
-using SmartAttendanceSystem.Fingerprint.Helper;
 using SmartAttendanceSystem.Infrastructure.Persistence;
-using System.Collections.Generic;
 
 #endregion
 
@@ -17,11 +16,13 @@ public class FingerprintService
     (ISerialPortService serialPortService,
     ILogger<FingerprintService> logger,
     IStudentService studentService,
+    ICourseService courseService,
     ApplicationDbContext context,
     FpTempData fpTempData) : IFingerprintService
 {
     private readonly ISerialPortService _serialPortService = serialPortService;
     private readonly IStudentService _studentService = studentService;
+    private readonly ICourseService _courseService = courseService;
     private readonly FpTempData _fpTempData = fpTempData;
     private readonly ILogger<FingerprintService> _logger = logger;
     private readonly ApplicationDbContext _context = context;
@@ -129,6 +130,9 @@ public class FingerprintService
         if (weekNum < 1 || weekNum > 12)
             return Result.Failure(GlobalErrors.InvalidInput);
 
+        if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
+            return Result.Failure(GlobalErrors.IdNotFound("Courses"));
+
         var matchResult = await SimpleMatchFingerprint(cancellationToken);
 
         if (matchResult.IsFailure)
@@ -172,10 +176,13 @@ public class FingerprintService
     {
         await Task.Delay(1, cancellationToken);
 
-        var start = Start();
+        if (!_fpTempData.FpStatus)
+        {
+            var start = Start();
 
-        if (start.IsFailure)
-            return start;
+            if (start.IsFailure)
+                return start;
+        }
 
         _fpTempData.ActionButtonStatus = true;
 
@@ -185,36 +192,66 @@ public class FingerprintService
     }
 
     //End
-    public async Task<Result<IEnumerable<StdAttendAction>>> TakeAttendance_End(CancellationToken cancellationToken = default)
+    public async Task<Result> TakeAttendance_End(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         if (!_fpTempData.ActionButtonStatus)
-            return Result.Failure<IEnumerable<StdAttendAction>>(FingerprintErrors.ServiceUnavailable);
+            return Result.Failure(FingerprintErrors.ServiceUnavailable);
 
         _fpTempData.ActionButtonStatus = false;
 
         await Task.Delay(3000, cancellationToken);
 
+        if (weekNum < 1 || weekNum > 12)
+            return Result.Failure(GlobalErrors.InvalidInput);
+
+        if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
+            return Result.Failure(GlobalErrors.IdNotFound("Courses"));
+
+        _logger.LogInformation("EndAction request is received successfully");
+
         var fIds = _fpTempData.ActionButtonData;
 
         if (fIds.Count <= 0)
-            return Result.Failure<IEnumerable<StdAttendAction>>(FingerprintErrors.NoData);
+            return Result.Failure(FingerprintErrors.NoData);
 
-        //foreach (var fId in fIds)
-        //{
+        _logger.LogInformation("Processing.....");
+
+        foreach (var fId in fIds)
+        {
+            var stdResult = await _studentService.GetId(x => x.FingerId == fId, cancellationToken);
             
-        //}
+            if (stdResult.IsFailure)
+            {
+                _logger.LogError("No data found for student with fingerprint id #{fid}", fId);
+                continue;
+            }
 
-        return Result.Success<IEnumerable<StdAttendAction>>([]);
+            var attendCheck = await _studentService.Attended(stdResult.Value, weekNum, courseId, cancellationToken);
+
+            if (attendCheck.IsFailure)
+            {
+                _logger.LogError("Error for student with fingerprint" +
+                    " id #{fid} when attend him with message: {error}", fId, attendCheck.Error.Description);
+                continue;
+            }
+        }
+
+        if (!_fpTempData.FpStatus)
+            Stop();
+
+        BackgroundJob.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
+
+        return Result.Success();
     }
 
     #endregion
 
     #region PrivateMethods & Background
 
-    private static int FingerIdParse(string FingerprintId)
-        => int.TryParse(FingerprintId, out int fid)
-        ? fid
-        : throw new InvalidOperationException(FingerprintErrors.InvalidData.Description);
+    //private static int FingerIdParse(string FingerprintId)
+    //    => int.TryParse(FingerprintId, out int fid)
+    //    ? fid
+    //    : throw new InvalidOperationException(FingerprintErrors.InvalidData.Description);
 
     private Result<int> GetFpId()
     {
@@ -224,9 +261,10 @@ public class FingerprintService
         var latestFingerprintId = _serialPortService.LatestProcessedFingerprintId;
 
         if (string.IsNullOrEmpty(latestFingerprintId))
-            return Result.Failure<int>(FingerprintErrors.NoData); ;
+            return Result.Failure<int>(FingerprintErrors.NoData);
 
-        var FpId = FingerIdParse(latestFingerprintId);
+        if (!int.TryParse(latestFingerprintId, out int FpId))
+            return Result.Failure<int>(FingerprintErrors.InvalidData);
 
         return Result.Success(FpId);
     }
@@ -237,12 +275,15 @@ public class FingerprintService
 
         while (_fpTempData.ActionButtonStatus)
         {
-            await Task.Delay(3000);
+            await Task.Delay(2000);
 
             var fId = GetFpId();
 
             if (fId.IsFailure && fId.Error.StatusCode == 503)
+            {
                 _fpTempData.ActionButtonStatus = false;
+                _logger.LogCritical("Fingerprint service has a critical error please press End button");
+            }
 
             if (fId.IsFailure || fIds.Contains(fId.Value))
                 continue;
@@ -257,6 +298,8 @@ public class FingerprintService
             _logger.LogInformation("Sending data...");
             _fpTempData.ActionButtonData = fIds;
         }
+
+        _logger.LogInformation("Data sent successfully");
     }
 
     #endregion

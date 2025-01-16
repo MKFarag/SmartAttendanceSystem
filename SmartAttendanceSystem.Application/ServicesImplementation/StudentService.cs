@@ -55,9 +55,18 @@ public class StudentService(
             : Result.Failure<StudentResponse>(StudentErrors.IdNotFount);
     }
 
-    public async Task<Result<Student>> GetMainAsync(int id, CancellationToken cancellationToken = default)
+    public async Task<Result<Student>> GetMainAsync(Expression<Func<Student, bool>>? predicate = null, int? StdId = null, CancellationToken cancellationToken = default)
     {
-        var response = await _context.Students.FindAsync([id], cancellationToken: cancellationToken);
+        Student? response = new();
+
+        if (predicate is null && StdId is not null)
+            response = await _context.Students.FindAsync([StdId], cancellationToken: cancellationToken);
+
+        else if (predicate is not null && StdId is not null)
+            response = await _context.Students.Where(predicate).FirstOrDefaultAsync(x => x.Id == StdId, cancellationToken);
+
+        else if (predicate is not null && StdId is null)
+            response = await _context.Students.Where(predicate).FirstOrDefaultAsync(cancellationToken);
 
         return response is not null
             ? Result.Success(response)
@@ -96,7 +105,7 @@ public class StudentService(
             return Result.Failure<int>(UserErrors.NoPermission);
 
         var StdId = user.StudentInfo!.Id;
-        var student = await GetMainAsync(StdId, cancellationToken);
+        var student = await GetMainAsync(StdId: StdId, cancellationToken: cancellationToken);
 
         if (student.IsFailure)
             Result.Failure(StudentErrors.IdNotFount);
@@ -164,7 +173,7 @@ public class StudentService(
         if (!await _context.Attendances.AnyAsync(x => x.StudentId == StdId.Value, cancellationToken))
             return Result.Failure<StudentAttendanceResponse>(StudentErrors.NoCourses);
 
-        var student = await GetMainAsync(StdId.Value, cancellationToken);
+        var student = await GetMainAsync(StdId: StdId.Value, cancellationToken: cancellationToken);
 
         if (student.IsFailure)
             return Result.Failure<StudentAttendanceResponse>(student.Error);
@@ -233,12 +242,6 @@ public class StudentService(
     //Start Action
     public async Task<Result> Attended(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
-        if (weekNum < 1 || weekNum > 12)
-            return Result.Failure(GlobalErrors.InvalidInput);
-
-        if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
-            return Result.Failure(GlobalErrors.IdNotFound("Courses"));
-
         var studentAttendance = await _context.Attendances
             .FirstOrDefaultAsync(x => x.CourseId == courseId && x.StudentId == stdId, cancellationToken);
 
@@ -255,13 +258,36 @@ public class StudentService(
 
         var currentValue = (bool?)propertyInfo.GetValue(studentAttendance.Weeks);
 
-        if (currentValue is not null)
+        if (currentValue == true)
             return Result.Failure(StudentErrors.AlreadyRegistered);
 
         propertyInfo.SetValue(studentAttendance.Weeks, true);
 
         await _context.SaveChangesAsync(cancellationToken);
+
         return Result.Success();
+    }
+
+    //In End Action
+    public async Task CheckForAllWeeks(int weekNum, int courseId, CancellationToken cancellationToken = default)
+    {
+        var courseAttendances = await _context.Attendances.Where(x => x.CourseId == courseId).ToListAsync(cancellationToken);
+
+        var propertyInfo = typeof(Weeks).GetProperty($"Week{weekNum}");
+
+        if (propertyInfo is null)
+            return;
+
+        foreach (var attendance in courseAttendances)
+        {
+            attendance.Weeks ??= new();
+
+            var currentValue = (bool?)propertyInfo.GetValue(attendance.Weeks);
+
+            if (!currentValue.HasValue)
+                propertyInfo.SetValue(attendance.Weeks, false);
+        }
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     #endregion
