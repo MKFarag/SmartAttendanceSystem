@@ -71,14 +71,18 @@ public class SerialPortService : ISerialPortService
 
     private async void OnDataReceived(object sender, SerialDataReceivedEventArgs e)
     {
-        string data = _serialPort.ReadLine();
+        try
+        {
+            string data = _serialPort.ReadLine();
 
-        if (string.IsNullOrEmpty(data))
-            throw new InvalidOperationException("Fingerprint data cannot be null");
+            if (string.IsNullOrEmpty(data))
+                throw new InvalidOperationException("Fingerprint data cannot be null");
 
-        await ProcessFingerprintDataAsync(data);
-        LastReceivedData = data;
-        DataReceived?.Invoke(data);
+            await ProcessFingerprintDataAsync(data);
+            LastReceivedData = data;
+            DataReceived?.Invoke(data);
+        }
+        catch { }
     }
 
     private async Task ProcessFingerprintDataAsync(string data)

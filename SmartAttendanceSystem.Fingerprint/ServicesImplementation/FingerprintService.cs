@@ -271,7 +271,7 @@ public class FingerprintService
 
         while (_fpTempData.ActionButtonStatus)
         {
-            await Task.Delay(2000);
+            await Task.Delay(1000);
 
             var fId = GetFpId();
 
