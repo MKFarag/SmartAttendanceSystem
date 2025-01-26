@@ -1,11 +1,11 @@
 ﻿# region Usings
 
 using SmartAttendanceSystem.Application.ServicesImplementation;
+using SmartAttendanceSystem.Presentation.OpenApiTransformers;
 using SmartAttendanceSystem.Infrastructure.Authentication;
 using SmartAttendanceSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using SmartAttendanceSystem.Core.Settings;
 using SmartAttendanceSystem.Fingerprint;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Identity;
@@ -15,8 +15,6 @@ using System.Reflection;
 using FluentValidation;
 using MapsterMapper;
 using System.Text;
-using Mapster;
-using SurveyBasket.OpenApiTransformers;
 
 #endregion
 
@@ -32,6 +30,7 @@ public static class DependencyInjection
         services.AddMapsterConfig();
         services.AddFluentValidationConfig();
         services.AddExceptionHandlerConfig();
+        services.AddOptionsLoadConfig(configuration);
         services.AddDbSqlConfig(configuration);
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
@@ -106,19 +105,6 @@ public static class DependencyInjection
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        #region OptionLoad
-
-        services.AddOptions<JwtOptions>()
-            .BindConfiguration(JwtOptions.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
-
-        services.Configure<EmailConfirmationSettings>(configuration.GetSection(nameof(EmailConfirmationSettings)));
-
-        #endregion
-
         services.AddSingleton<IJwtProvider<ApplicationUser>, JwtProvider>();
 
         #region AddingTheIdentity
@@ -191,6 +177,34 @@ public static class DependencyInjection
             {
                 options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
             });
+
+        return services;
+    }
+
+    private static IServiceCollection AddOptionsLoadConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        #region Jwt
+
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        #endregion
+
+        #region Mail
+
+        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
+
+        services.Configure<EmailConfirmationSettings>(configuration.GetSection(nameof(EmailConfirmationSettings)));
+
+        #endregion
+
+        #region Fingerprint
+
+        services.Configure<EnrollmentCommands>(configuration.GetSection(nameof(EnrollmentCommands)));
+
+        #endregion
 
         return services;
     }

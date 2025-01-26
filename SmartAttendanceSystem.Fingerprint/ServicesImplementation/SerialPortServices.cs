@@ -1,5 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Helpers;
-using System.IO.Ports;
+﻿using System.IO.Ports;
 
 namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
@@ -7,12 +6,13 @@ public class SerialPortService : ISerialPortService
 {
     #region Initialize
 
-    private readonly SerialPort _serialPort;
-    private string _lastReceivedData = string.Empty;
     private string _latestProcessedFingerprintId = string.Empty;
+    private readonly ILogger<SerialPortService> _logger;
     public event Action<string> DataReceived = delegate { };
+    private string _lastReceivedData = string.Empty;
+    private readonly SerialPort _serialPort;
 
-    public SerialPortService(string portName, int baudRate)
+    public SerialPortService(string portName, int baudRate, ILogger<SerialPortService> logger)
     {
         _serialPort = new SerialPort(portName, baudRate)
         {
@@ -25,6 +25,7 @@ public class SerialPortService : ISerialPortService
         };
 
         _serialPort.DataReceived += OnDataReceived;
+        _logger = logger;
     }
 
     #endregion
@@ -76,7 +77,7 @@ public class SerialPortService : ISerialPortService
             string data = _serialPort.ReadLine();
 
             if (string.IsNullOrEmpty(data))
-                throw new InvalidOperationException("Fingerprint data cannot be null");
+                return;
 
             await ProcessFingerprintDataAsync(data);
             LastReceivedData = data;
@@ -92,16 +93,36 @@ public class SerialPortService : ISerialPortService
         if (string.IsNullOrEmpty(data))
             return;
 
-        if (data.StartsWith("MATCH:ID:"))
+        if (data.StartsWith("MATCH: ID:"))
         {
-            string fingerprintId = data.Replace("MATCH:ID:", "").Trim();
-            Console.WriteLine($"Extracted Fingerprint ID: {fingerprintId}");
-
+            string fingerprintId = data.Replace("MATCH: ID:", "").Trim();
+            _logger.LogInformation("Extracted Fingerprint ID: {fid}", fingerprintId);
             LatestProcessedFingerprintId = fingerprintId;
-            Console.WriteLine($"Updated _latestProcessedFingerprintId: {fingerprintId}");
+            return;
         }
-        else
-            Console.WriteLine($"Unexpected fingerprint data format: {data}");
+        
+        if (data.StartsWith("INFO"))
+        {
+            data = data.Replace("INFO: ", "");
+            _logger.LogInformation("Fingerprint: {data}", data);
+            return;
+        }
+        
+        if (data.StartsWith("ERROR"))
+        {
+            data = data.Replace("ERROR: ", "");
+            _logger.LogError("Fingerprint: {data}", data);
+            return;
+        }
+        
+        if (data.StartsWith("WARNING"))
+        {
+            data = data.Replace("WARNING: ", "");
+            _logger.LogWarning("Fingerprint: {data}", data);
+            return;
+        }
+        
+        Console.WriteLine($"Unexpected fingerprint data format: {data}");
     }
 
     #endregion

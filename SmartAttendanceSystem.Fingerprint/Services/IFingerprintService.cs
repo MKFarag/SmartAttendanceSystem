@@ -6,7 +6,13 @@ public interface IFingerprintService
 
     Result Stop();
 
-    Result<string> GetLastReceivedData(CancellationToken cancellationToken = default);
+    Result<string> GetLastReceivedData();
+
+    Result SetEnrollmentState(bool allowEnrollment);
+
+    Task<Result<bool>> IsEnrollmentAllowedAsync(CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteAllData(CancellationToken cancellationToken = default);
 
     Task<Result<StudentResponse>> MatchFingerprint(CancellationToken cancellationToken = default);
 

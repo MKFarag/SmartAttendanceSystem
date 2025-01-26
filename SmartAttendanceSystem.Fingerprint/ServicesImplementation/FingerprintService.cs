@@ -1,10 +1,9 @@
 ﻿#region Usings
 
 using Hangfire;
-using Mapster;
 using Microsoft.EntityFrameworkCore;
 using SmartAttendanceSystem.Infrastructure.Persistence;
-using System.Security.Cryptography;
+using System.IO.Ports;
 
 #endregion
 
@@ -14,19 +13,21 @@ public class FingerprintService
 
     #region Initial
 
-    (ISerialPortService serialPortService,
+    (IOptions<EnrollmentCommands> enrollmentOptions,
+    ISerialPortService serialPortService,
     ILogger<FingerprintService> logger,
     IStudentService studentService,
     ICourseService courseService,
     ApplicationDbContext context,
     FpTempData fpTempData) : IFingerprintService
 {
+    private readonly EnrollmentCommands _enrollmentOptions = enrollmentOptions.Value;
     private readonly ISerialPortService _serialPortService = serialPortService;
     private readonly IStudentService _studentService = studentService;
     private readonly ICourseService _courseService = courseService;
-    private readonly FpTempData _fpTempData = fpTempData;
     private readonly ILogger<FingerprintService> _logger = logger;
     private readonly ApplicationDbContext _context = context;
+    private readonly FpTempData _fpTempData = fpTempData;
 
     #endregion
 
@@ -63,7 +64,7 @@ public class FingerprintService
 
     #region GetLastReceivedData
 
-    public Result<string> GetLastReceivedData(CancellationToken cancellationToken = default)
+    public Result<string> GetLastReceivedData()
     {
         if (!_fpTempData.FpStatus)
             return Result.Failure<string>(FingerprintErrors.ServiceUnavailable);
@@ -74,6 +75,76 @@ public class FingerprintService
             return Result.Failure<string>(FingerprintErrors.NoData);
 
         return Result.Success(FpData);
+    }
+
+    #endregion
+
+    #region Enrollment
+
+    #region Set
+
+    public Result SetEnrollmentState(bool allowEnrollment)
+    {
+        if (!_fpTempData.FpStatus)
+            return Result.Failure(FingerprintErrors.ServiceUnavailable);
+
+        string command = allowEnrollment ? _enrollmentOptions.Allow : _enrollmentOptions.Deny;
+        _serialPortService.SendCommand(command);
+
+        return Result.Success();
+    }
+
+    #endregion
+
+    #region Get
+
+    public async Task<Result<bool>> IsEnrollmentAllowedAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_fpTempData.FpStatus)
+            return Result.Failure<bool>(FingerprintErrors.ServiceUnavailable); ;
+
+        _serialPortService.SendCommand(_enrollmentOptions.Check);
+
+        var timeout = TimeSpan.FromSeconds(5);
+        var start = DateTime.Now;
+
+        while (DateTime.Now - start < timeout)
+        {
+            var FpData = GetLastReceivedData();
+
+            if (FpData.IsSuccess)
+                if (!string.IsNullOrEmpty(FpData.Value))
+                {
+                    if (FpData.Value.Trim().Equals(_enrollmentOptions.Allow, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Result.Success(true);
+                    }
+                    else if (FpData.Value.Trim().Equals(_enrollmentOptions.Deny, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return Result.Success(false);
+                    }
+                }
+            await Task.Delay(100, cancellationToken);
+        }
+        return Result.Failure<bool>(FingerprintErrors.NoResponse);
+    }
+
+    #endregion
+
+    #endregion
+
+    #region DeleteAllData
+
+    public async Task<Result> DeleteAllData(CancellationToken cancellationToken = default)
+    {
+        if (!_fpTempData.FpStatus)
+            return Result.Failure(FingerprintErrors.ServiceUnavailable);
+
+        await Task.Delay(50, cancellationToken);
+
+        _serialPortService.SendCommand(_enrollmentOptions.Delete);
+
+        return Result.Success();
     }
 
     #endregion

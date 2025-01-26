@@ -39,11 +39,57 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HttpGet("latest-data")]
     public IActionResult GetLatestFingerprintData(CancellationToken cancellationToken)
     {
-        var FpDataResult = _fingerprintService.GetLastReceivedData(cancellationToken);
+        var FpDataResult = _fingerprintService.GetLastReceivedData();
 
         return FpDataResult.IsSuccess
             ? Ok(FpDataResult.Value)
             : FpDataResult.ToProblem();
+    }
+
+    #endregion
+
+    #region Enrollment
+
+    #region Set
+
+    [HttpPost("Enrollment")]
+    public IActionResult SetEnrollment([FromBody] EnrollmentRequest request)
+    {
+        var result = _fingerprintService.SetEnrollmentState(request.enrollment);
+
+        return result.IsSuccess
+            ? Ok($"Enrollment state set to '{request.enrollment}'")
+            : result.ToProblem();
+    }
+
+    #endregion
+
+    #region Get
+
+    [HttpGet("Enrollment")]
+    public async Task<IActionResult> GetEnrollment(CancellationToken cancellationToken)
+    {
+        var result = await _fingerprintService.IsEnrollmentAllowedAsync(cancellationToken);
+
+        return result.IsSuccess
+            ? Ok($"Enrollment state set to '{result.Value}'")
+            : result.ToProblem();
+    }
+
+    #endregion
+
+    #endregion
+
+    #region DeleteAllData
+
+    [HttpDelete("Delete-data")]
+    public async Task<IActionResult> DeleteAllFingerIds(CancellationToken cancellationToken)
+    {
+        var result = await _fingerprintService.DeleteAllData(cancellationToken);
+
+        return result.IsSuccess
+            ? Ok("All fingerprint data has been successfully deleted")
+            : result.ToProblem();
     }
 
     #endregion

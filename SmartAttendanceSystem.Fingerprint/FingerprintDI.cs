@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SmartAttendanceSystem.Fingerprint.Helper;
 using SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
 namespace SmartAttendanceSystem.Fingerprint;
@@ -10,7 +9,7 @@ public static class FingerprintDI
     {
         // Register SerialPortService as a singleton
         services.AddSingleton<ISerialPortService>(provider =>
-            new SerialPortService("COM3", 9600));
+            new SerialPortService("COM3", 9600, provider.GetRequiredService<ILogger<SerialPortService>>()));      
 
         // Register AttendanceRepository
         services.AddScoped<IFingerprintService, FingerprintService>();
