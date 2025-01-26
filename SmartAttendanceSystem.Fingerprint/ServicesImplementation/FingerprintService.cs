@@ -81,6 +81,40 @@ public class FingerprintService
 
     #region Enrollment
 
+    #region Start
+
+    public async Task<Result> StartEnrollment()
+    {
+        if (!_fpTempData.FpStatus)
+            return Result.Failure(FingerprintErrors.ServiceUnavailable);
+
+        _logger.LogInformation("The enrollment has been successfully started");
+
+        _serialPortService.DeleteLastValue();
+
+        _serialPortService.SendCommand(_enrollmentOptions.Start);
+
+        while (true)
+        {
+            await Task.Delay(1000);
+
+            var idCheck = GetFpId();
+
+            if (idCheck.IsSuccess)
+                break;
+
+            var enrollmentCheck = await IsEnrollmentAllowedAsync();
+
+            if (enrollmentCheck.IsSuccess && !enrollmentCheck.Value && idCheck.IsFailure)
+                break;
+        }
+
+        _logger.LogWarning("Enrollment is over");
+        return Result.Success();
+    }
+
+    #endregion
+
     #region Set
 
     public Result SetEnrollmentState(bool allowEnrollment)

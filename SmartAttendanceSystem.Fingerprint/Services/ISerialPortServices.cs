@@ -7,5 +7,6 @@ public interface ISerialPortService
     void Start();
     void Stop();
     void SendCommand(string command);
+    void DeleteLastValue();
     string LatestProcessedFingerprintId { get; }
 }

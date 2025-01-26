@@ -37,7 +37,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Latest
 
     [HttpGet("latest-data")]
-    public IActionResult GetLatestFingerprintData(CancellationToken cancellationToken)
+    public IActionResult GetLatestFingerprintData()
     {
         var FpDataResult = _fingerprintService.GetLastReceivedData();
 
@@ -137,13 +137,23 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Register
 
     [Authorize]
-    [HttpPost("Register")]
-    public async Task<IActionResult> FpRegister(CancellationToken cancellationToken)
+    [HttpPut("Register/Student")]
+    public async Task<IActionResult> RegisterToStd(CancellationToken cancellationToken)
     {
         var FpRegisterResult = await _fingerprintService.RegisterFingerprint(User.GetId()!, cancellationToken);
 
         return FpRegisterResult.IsSuccess
             ? Ok("The student has been registered successfully")
+            : FpRegisterResult.ToProblem();
+    }
+    
+    [HttpGet("Register/New")]
+    public async Task<IActionResult> NewFpRegister()
+    {
+        var FpRegisterResult = await _fingerprintService.StartEnrollment();
+
+        return FpRegisterResult.IsSuccess
+            ? Ok("The registration is over")
             : FpRegisterResult.ToProblem();
     }
 

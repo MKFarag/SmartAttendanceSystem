@@ -10,6 +10,8 @@ public interface IFingerprintService
 
     Result SetEnrollmentState(bool allowEnrollment);
 
+    Task<Result> StartEnrollment();
+
     Task<Result<bool>> IsEnrollmentAllowedAsync(CancellationToken cancellationToken = default);
 
     Task<Result> DeleteAllData(CancellationToken cancellationToken = default);

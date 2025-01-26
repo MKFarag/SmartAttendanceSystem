@@ -16,4 +16,7 @@ public static class FingerprintErrors
     
     public static readonly Error NoResponse =
         new ("Fingerprint.NoResponse", "No response received from the fingerprint sensor for enrollment status", StatusCodes.Status408RequestTimeout);
+
+    public static readonly Error NewFpRegister =
+        new("Fingerprint.Register", "Fingerprint failed to complete enrollment", StatusCodes.Status422UnprocessableEntity);
 }

@@ -1,4 +1,5 @@
 ﻿using System.IO.Ports;
+using System.Text.RegularExpressions;
 
 namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
 
@@ -66,6 +67,15 @@ public class SerialPortService : ISerialPortService
             _serialPort.WriteLine(command);
     }
 
+    public void DeleteLastValue()
+    {
+        if (_serialPort.IsOpen)
+        {
+            LastReceivedData = string.Empty;
+            LatestProcessedFingerprintId = string.Empty;
+        }
+    }
+
     #endregion
 
     #region PrivateMethods
@@ -100,7 +110,24 @@ public class SerialPortService : ISerialPortService
             LatestProcessedFingerprintId = fingerprintId;
             return;
         }
-        
+
+        if (data.StartsWith("R-INFO"))
+        {
+            data = data.Replace("R-INFO: ", "");
+
+            string pattern = @"#(\d+)";
+            Match match = Regex.Match(data, pattern);
+
+            if (match.Success)
+            {
+                string fingerprintId = match.Groups[1].Value;
+                LatestProcessedFingerprintId = fingerprintId;
+                _logger.LogInformation("Fingerprint: {data}", data);
+            }
+
+            return;
+        }
+
         if (data.StartsWith("INFO"))
         {
             data = data.Replace("INFO: ", "");
@@ -122,7 +149,7 @@ public class SerialPortService : ISerialPortService
             return;
         }
         
-        Console.WriteLine($"Unexpected fingerprint data format: {data}");
+        //Console.WriteLine($"Unexpected fingerprint data format: {data}");
     }
 
     #endregion
