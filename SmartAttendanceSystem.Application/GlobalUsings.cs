@@ -6,6 +6,7 @@ global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.Options;
 global using Microsoft.Extensions.Logging;
 global using System.Security.Cryptography;
+global using Microsoft.AspNetCore.Http;
 global using System.Linq.Expressions;
 global using FluentValidation;
 global using System.Text;

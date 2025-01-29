@@ -9,11 +9,11 @@ public class AccountController(IUserService userService, IPermissionService perm
     private readonly IPermissionService _permissionService = permissionService;
 
     [HttpGet("")]
-    public async Task<IActionResult> Info(CancellationToken cancellationToken)
+    public async Task<IActionResult> Info()
     {
         var userId = User.GetId();
 
-        var IsStudent = await _permissionService.StudentCheck(userId, cancellationToken);
+        var IsStudent = await _permissionService.StudentCheck(userId);
 
         if (IsStudent)
         {
@@ -34,5 +34,23 @@ public class AccountController(IUserService userService, IPermissionService perm
         }
 
         return BadRequest();
+    }
+
+    [HttpPut("info")]
+    public async Task<IActionResult> Info([FromBody] UpdateProfileRequest request)
+    {
+        await _userService.UpdateProfileAsync(User.GetId()!, request);
+
+        return NoContent();
+    }
+    
+    [HttpPut("Change-Password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
+    {
+        var result = await _userService.ChangePasswordAsync(User.GetId()!, request);
+
+        return result.IsSuccess
+            ? NoContent() 
+            : result.ToProblem();
     }
 }

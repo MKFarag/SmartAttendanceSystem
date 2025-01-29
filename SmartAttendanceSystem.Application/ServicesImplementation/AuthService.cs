@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace SmartAttendanceSystem.Application.ServicesImplementation;
 
@@ -210,6 +211,53 @@ public class AuthService(
 
     #endregion
 
+    #region Forget Password
+
+    public async Task<Result> SendResetPasswordCodeAsync(string email)
+    {
+        if (await _userManager.FindByEmailAsync(email) is not { } user)
+            return Result.Success();
+
+        //Check Confirmation
+
+        var code = await _userManager.GeneratePasswordResetTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        _logger.LogInformation("Reset code: {code}", code);
+
+        await SendResetPasswordEmail(user, code);
+
+        return Result.Success();
+
+    }
+
+    public async Task<Result> ResetPasswordAsync(ResetPasswordRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email);
+
+        if (user is null || !user.EmailConfirmed)
+            return Result.Failure(UserErrors.InvalidCode);
+        IdentityResult result;
+
+        try
+        {
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+            result = await _userManager.ResetPasswordAsync(user, code, request.NewPassword);
+        }
+        catch (FormatException)
+        {
+            result = IdentityResult.Failed(_userManager.ErrorDescriber.InvalidToken());
+        }
+
+        if (result.Succeeded)
+            return Result.Success();
+
+        var error = result.Errors.First();
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status401Unauthorized));
+    }
+
+    #endregion
+
     #region PrivatesMethods
 
     private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
@@ -230,6 +278,30 @@ public class AuthService(
 
                 //FrontEnd should tell me where the user will go with what queries
                 { EmailConfirmationSettings.PAction_url, $"{origin}/auth/emailConfirmation?userId={user.Id}$code={code}" }
+            }
+        );
+
+        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+
+        await Task.CompletedTask;
+    }
+    
+    private async Task SendResetPasswordEmail(ApplicationUser user, string code)
+    {
+        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+        var emailBody = EmailBodyBuilder.GenerateEmailBody("ResetPassword",
+            new Dictionary<string, string>
+            {  
+                { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
+                { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
+                { EmailConfirmationSettings.PAddress, _emailOptions.Address },
+                { EmailConfirmationSettings.PCity, _emailOptions.City },
+                { EmailConfirmationSettings.PCountry, _emailOptions.Country },
+                { EmailConfirmationSettings.PUserName,  user.Name},
+
+                //FrontEnd should tell me where the user will go with what queries
+                { EmailConfirmationSettings.PAction_url, $"{origin}/auth/forgetPassword?email={user.Email}$code={code}" }
             }
         );
 
