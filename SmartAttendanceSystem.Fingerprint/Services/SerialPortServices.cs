@@ -1,5 +1,4 @@
-﻿using SmartAttendanceSystem.Fingerprint.Interfaces;
-using System.IO.Ports;
+﻿using System.IO.Ports;
 using System.Text.RegularExpressions;
 
 namespace SmartAttendanceSystem.Fingerprint.Services;

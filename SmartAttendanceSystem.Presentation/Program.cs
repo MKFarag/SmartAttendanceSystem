@@ -1,10 +1,10 @@
 #region Usings
 
-using Hangfire.Dashboard;
+using SmartAttendanceSystem.Presentation;
 using HangfireBasicAuthenticationFilter;
+using Hangfire.Dashboard;
 using Scalar.AspNetCore;
 using Serilog;
-using SmartAttendanceSystem.Presentation;
 
 #endregion
 

@@ -1,7 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Interfaces;
-using System.Threading;
-
-namespace SmartAttendanceSystem.Infrastructure.Repositories;
+﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class StudentService
 

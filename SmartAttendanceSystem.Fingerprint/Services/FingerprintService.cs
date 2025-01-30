@@ -1,11 +1,4 @@
-﻿#region Usings
-
-using Microsoft.EntityFrameworkCore;
-using SmartAttendanceSystem.Fingerprint.Interfaces;
-
-#endregion
-
-namespace SmartAttendanceSystem.Fingerprint.Services;
+﻿namespace SmartAttendanceSystem.Fingerprint.Services;
 
 public class FingerprintService
 
@@ -333,7 +326,7 @@ public class FingerprintService
             _logger.LogInformation("Student with fingerprint id #{fid} has been successfully registered", fId);
         }
 
-        if (!_fpTempData.FpStatus)
+        if (_fpTempData.FpStatus)
             Stop();
 
         _jobScheduler.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
