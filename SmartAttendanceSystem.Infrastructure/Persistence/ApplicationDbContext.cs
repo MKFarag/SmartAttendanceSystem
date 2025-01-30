@@ -2,7 +2,8 @@
 
 namespace SmartAttendanceSystem.Infrastructure.Persistence;
 
-public class ApplicationDbContext(DbContextOptions options) : IdentityDbContext<ApplicationUser>(options)
+public class ApplicationDbContext(DbContextOptions options) 
+    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
 {
     #region DbSet
 
