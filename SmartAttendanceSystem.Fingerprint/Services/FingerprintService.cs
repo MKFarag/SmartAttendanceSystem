@@ -1,13 +1,11 @@
 ﻿#region Usings
 
-using Hangfire;
 using Microsoft.EntityFrameworkCore;
-using SmartAttendanceSystem.Infrastructure.Persistence;
-using System.IO.Ports;
+using SmartAttendanceSystem.Fingerprint.Interfaces;
 
 #endregion
 
-namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
+namespace SmartAttendanceSystem.Fingerprint.Services;
 
 public class FingerprintService
 
@@ -18,7 +16,7 @@ public class FingerprintService
     ILogger<FingerprintService> logger,
     IStudentService studentService,
     ICourseService courseService,
-    ApplicationDbContext context,
+    IJobScheduler jobScheduler,
     FpTempData fpTempData) : IFingerprintService
 {
     private readonly EnrollmentCommands _enrollmentOptions = enrollmentOptions.Value;
@@ -26,7 +24,7 @@ public class FingerprintService
     private readonly IStudentService _studentService = studentService;
     private readonly ICourseService _courseService = courseService;
     private readonly ILogger<FingerprintService> _logger = logger;
-    private readonly ApplicationDbContext _context = context;
+    private readonly IJobScheduler _jobScheduler = jobScheduler;
     private readonly FpTempData _fpTempData = fpTempData;
 
     #endregion
@@ -251,20 +249,15 @@ public class FingerprintService
 
     public async Task<Result> RegisterFingerprint(string UserId, CancellationToken cancellationToken = default)
     {
-        if (await _context.Students.FirstOrDefaultAsync(x => x.UserId == UserId, cancellationToken) is not { } User)
-            return Result.Failure(GlobalErrors.IdNotFound("User"));
-
         var fId = GetFpId();
 
         if (fId.IsFailure)
             return fId;
 
-        if (await _studentService.AnyAsync(x => x.FingerId == fId.Value, cancellationToken))
-            return Result.Failure(StudentErrors.AlreadyHaveFp);
-        
-        User.FingerId = fId.Value;
+        var registerResult = await _studentService.FpRegister(UserId, fId.Value, cancellationToken);
 
-        await _context.SaveChangesAsync(cancellationToken);
+        if (registerResult.IsFailure)
+            return registerResult;
 
         return Result.Success();
     }
@@ -288,7 +281,7 @@ public class FingerprintService
 
         _fpTempData.ActionButtonStatus = true;
 
-        BackgroundJob.Enqueue(() => ActionButton_Service());
+        _jobScheduler.Enqueue(() => ActionButton_Service());
 
         return Result.Success();
     }
@@ -321,7 +314,7 @@ public class FingerprintService
         foreach (var fId in fIds)
         {
             var stdResult = await _studentService.GetId(x => x.FingerId == fId, cancellationToken);
-            
+
             if (stdResult.IsFailure)
             {
                 _logger.LogWarning("No data found for student with fingerprint id #{fid}", fId);
@@ -343,7 +336,7 @@ public class FingerprintService
         if (!_fpTempData.FpStatus)
             Stop();
 
-        BackgroundJob.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
+        _jobScheduler.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
 
         return Result.Success();
     }

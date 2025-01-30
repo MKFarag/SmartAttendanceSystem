@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\SmartAttendanceSystem.Application\SmartAttendanceSystem.Application.csproj" />
-    <ProjectReference Include="..\SmartAttendanceSystem.Core\SmartAttendanceSystem.Core.csproj" />
   </ItemGroup>
 
 </Project>

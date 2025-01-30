@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Fingerprint.Services;
+﻿namespace SmartAttendanceSystem.Fingerprint.Interfaces;
 
 public interface ISerialPortService
 {

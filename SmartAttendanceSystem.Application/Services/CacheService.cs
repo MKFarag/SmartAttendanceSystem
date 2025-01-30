@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
 
-namespace SmartAttendanceSystem.Application.ServicesImplementation;
+namespace SmartAttendanceSystem.Application.Services;
 
 public class CacheService(IDistributedCache distributedCache, ILogger<CacheService> logger) : ICacheService
 {

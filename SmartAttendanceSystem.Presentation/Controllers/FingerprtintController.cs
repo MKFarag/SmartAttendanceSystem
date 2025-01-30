@@ -1,4 +1,6 @@
-﻿namespace SmartAttendanceSystem.presentation.Controllers;
+﻿using SmartAttendanceSystem.Fingerprint.Interfaces;
+
+namespace SmartAttendanceSystem.presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

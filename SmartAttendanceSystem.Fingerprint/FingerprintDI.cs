@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SmartAttendanceSystem.Fingerprint.ServicesImplementation;
+using SmartAttendanceSystem.Fingerprint.Interfaces;
 
 namespace SmartAttendanceSystem.Fingerprint;
 

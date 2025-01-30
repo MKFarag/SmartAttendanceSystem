@@ -4,9 +4,7 @@ public class StudentCheckAttribute : ValidationAttribute
 {
     public override bool IsValid(object? value)
     {
-        var user = value as ApplicationUser;
-
-        if (user is null)
+        if (value is not ApplicationUser user)
             return false;
 
         if (user.IsStudent && user.StudentInfo == null)

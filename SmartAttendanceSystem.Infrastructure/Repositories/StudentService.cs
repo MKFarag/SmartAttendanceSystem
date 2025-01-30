@@ -1,4 +1,7 @@
-﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
+﻿using SmartAttendanceSystem.Application.Interfaces;
+using System.Threading;
+
+namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class StudentService
 
@@ -104,7 +107,7 @@ public class StudentService
 
     #region StdCourses
 
-    public async Task<Result> AddStdCourse(StdCourseRequest request, string UserId,CancellationToken cancellationToken = default)
+    public async Task<Result> AddStdCourse(StdCourseRequest request, string UserId, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users.FindAsync([UserId], cancellationToken);
 
@@ -299,6 +302,22 @@ public class StudentService
         await _context.SaveChangesAsync(cancellationToken);
 
         _logger.LogInformation("Successfully completed");
+    }
+
+    public async Task<Result> FpRegister(string UserId, int fId, CancellationToken cancellationToken = default)
+    {
+        var User = await GetMainAsync(x => x.UserId == UserId, cancellationToken: cancellationToken);
+
+        if (User.IsFailure)
+            return Result.Failure(GlobalErrors.IdNotFound("User"));
+
+        if (await AnyAsync(x => x.FingerId == fId, cancellationToken))
+            return Result.Failure(StudentErrors.AlreadyHaveFp);
+
+        User.Value.FingerId = fId;
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
     }
 
     #endregion

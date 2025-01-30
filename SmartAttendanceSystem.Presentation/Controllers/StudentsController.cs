@@ -1,4 +1,7 @@
-﻿namespace SmartAttendanceSystem.Presentation.Controllers;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Threading;
+
+namespace SmartAttendanceSystem.Presentation.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]

@@ -1,10 +1,12 @@
 ﻿# region Usings
 
-using SmartAttendanceSystem.Application.ServicesImplementation;
 using SmartAttendanceSystem.Presentation.OpenApiTransformers;
 using SmartAttendanceSystem.Infrastructure.Authentication;
+using SmartAttendanceSystem.Infrastructure.Repositories;
 using SmartAttendanceSystem.Infrastructure.Persistence;
+using SmartAttendanceSystem.Infrastructure.Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SmartAttendanceSystem.Application.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SmartAttendanceSystem.Fingerprint;
 using Microsoft.IdentityModel.Tokens;
@@ -37,7 +39,7 @@ public static class DependencyInjection
         services.AddHangfireConfig(configuration);
         services.AddFingerprint();
 
-        services.AddScoped<IAuthService<AuthResponse, RegisterRequest>, AuthService>();
+        services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IStudentService, StudentService>();
@@ -105,7 +107,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<IJwtProvider<ApplicationUser>, JwtProvider>();
+        services.AddSingleton<IJwtProvider, JwtProvider>();
 
         #region AddingTheIdentity
 
@@ -158,6 +160,8 @@ public static class DependencyInjection
 
     private static IServiceCollection AddHangfireConfig(this IServiceCollection services, IConfiguration configuration)
     {
+        services.AddScoped<IJobScheduler, JobScheduler>();
+
         services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
             .UseSimpleAssemblyNameTypeSerializer()

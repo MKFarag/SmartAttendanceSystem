@@ -5,7 +5,7 @@ using System.Text;
 
 namespace SmartAttendanceSystem.Infrastructure.Authentication;
 
-public class JwtProvider(IOptions<JwtOptions> jwtOptions) : IJwtProvider<ApplicationUser>
+public class JwtProvider(IOptions<JwtOptions> jwtOptions) : IJwtProvider
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 

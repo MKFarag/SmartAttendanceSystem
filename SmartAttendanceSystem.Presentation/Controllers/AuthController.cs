@@ -2,9 +2,9 @@
 
 [Route("[controller]")]
 [ApiController]
-public class AuthController(IAuthService<AuthResponse, RegisterRequest> authService) : ControllerBase
+public class AuthController(IAuthService authService) : ControllerBase
 {
-    private readonly IAuthService<AuthResponse, RegisterRequest> _authService = authService;
+    private readonly IAuthService _authService = authService;
 
     [HttpPost("")]
     public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
@@ -75,14 +75,14 @@ public class AuthController(IAuthService<AuthResponse, RegisterRequest> authServ
             ? Ok()
             : response.ToProblem();
     }
-    
-    //[HttpPost("reset-password")]
-    //public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
-    //{
-    //    var response = await _authService.ResetPasswordAsync(request);
 
-    //    return response.IsSuccess
-    //        ? Ok()
-    //        : response.ToProblem();
-    //}
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        var response = await _authService.ResetPasswordAsync(request);
+
+        return response.IsSuccess
+            ? Ok()
+            : response.ToProblem();
+    }
 }

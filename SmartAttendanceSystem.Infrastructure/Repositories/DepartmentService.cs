@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
+﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class DepartmentService(ApplicationDbContext context) :
     GenericRepository<Department, DepartmentResponse, DepartmentRequest>(context),

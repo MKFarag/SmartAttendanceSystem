@@ -1,32 +1,31 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.WebUtilities;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
+﻿using Microsoft.AspNetCore.WebUtilities;
 
-namespace SmartAttendanceSystem.Application.ServicesImplementation;
+namespace SmartAttendanceSystem.Application.Services;
 
-public class AuthService(
-    IOptions<EmailConfirmationSettings> emailOptions,
+public class AuthService
+
+    #region InitializeTheFields
+
+    (IOptions<EmailConfirmationSettings> emailOptions,
     SignInManager<ApplicationUser> signInManager,
-    IJwtProvider<ApplicationUser> jwtProvider,
     UserManager<ApplicationUser> userManager,
     IHttpContextAccessor httpContextAccessor,
     IDepartmentService departmentService,
     ILogger<AuthService> logger,
+    IJobScheduler jobScheduler,
+    IJwtProvider jwtProvider,
     IEmailSender emailSender
-    ) 
-    : IAuthService<AuthResponse, RegisterRequest>
+    ) : IAuthService
 {
-    #region InitializeTheFields
-
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
-    private readonly IJwtProvider<ApplicationUser> _jwtProvider = jwtProvider;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IDepartmentService _deptService = departmentService;
+    private readonly IJobScheduler _jobScheduler = jobScheduler;
+    private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
-
     private readonly int _refreshTokenExpiryDays = 14;
 
     #endregion
@@ -59,7 +58,7 @@ public class AuthService(
 
             return Result.Success(response);
         }
-        
+
         return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredentials);
     }
 
@@ -268,7 +267,7 @@ public class AuthService(
 
         var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
             new Dictionary<string, string>
-            {  
+            {
                 { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
                 { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
                 { EmailConfirmationSettings.PAddress, _emailOptions.Address },
@@ -281,18 +280,18 @@ public class AuthService(
             }
         );
 
-        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+        _jobScheduler.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
 
         await Task.CompletedTask;
     }
-    
+
     private async Task SendResetPasswordEmail(ApplicationUser user, string code)
     {
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
 
         var emailBody = EmailBodyBuilder.GenerateEmailBody("ResetPassword",
             new Dictionary<string, string>
-            {  
+            {
                 { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
                 { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
                 { EmailConfirmationSettings.PAddress, _emailOptions.Address },
@@ -305,7 +304,7 @@ public class AuthService(
             }
         );
 
-        BackgroundJob.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+        _jobScheduler.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
 
         await Task.CompletedTask;
     }

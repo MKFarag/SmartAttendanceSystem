@@ -28,5 +28,7 @@ public interface IStudentService
 
     Task CheckForAllWeeks(int weekNum, int courseId, CancellationToken cancellationToken = default);
 
-    //Task<Result> NullWeekCheck(int weekNum, int courseId, CancellationToken cancellationToken = default);
+    Task<Result> FpRegister(string UserId, int fId, CancellationToken cancellationToken = default);
+
+    //TODO: NULL week check --> if attend start from week 2 so check week 1 is not null
 }

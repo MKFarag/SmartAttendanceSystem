@@ -10,7 +10,6 @@ global using Microsoft.AspNetCore.Http;
 global using System.Linq.Expressions;
 global using FluentValidation;
 global using System.Text;
-global using Hangfire;
 global using Mapster;
 
 #endregion
@@ -23,15 +22,12 @@ global using SmartAttendanceSystem.Application.Contracts.Authentication;
 global using SmartAttendanceSystem.Application.Contracts.Department;
 global using SmartAttendanceSystem.Application.Contracts.Student;
 global using SmartAttendanceSystem.Application.Contracts.Course;
-global using SmartAttendanceSystem.Infrastructure.Repositories;
 global using SmartAttendanceSystem.Application.Contracts.Users;
 global using SmartAttendanceSystem.Core.Abstraction.Constants;
-global using SmartAttendanceSystem.Infrastructure.Persistence;
 global using SmartAttendanceSystem.Application.Interfaces;
 global using SmartAttendanceSystem.Application.Helpers;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Entities;
-global using SmartAttendanceSystem.Core.Services;
 global using SmartAttendanceSystem.Core.Settings;
 global using SmartAttendanceSystem.Core.Errors;
 

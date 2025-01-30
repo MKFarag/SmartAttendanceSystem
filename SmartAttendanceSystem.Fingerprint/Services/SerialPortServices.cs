@@ -1,7 +1,8 @@
-﻿using System.IO.Ports;
+﻿using SmartAttendanceSystem.Fingerprint.Interfaces;
+using System.IO.Ports;
 using System.Text.RegularExpressions;
 
-namespace SmartAttendanceSystem.Fingerprint.ServicesImplementation;
+namespace SmartAttendanceSystem.Fingerprint.Services;
 
 public class SerialPortService : ISerialPortService
 {
@@ -134,21 +135,21 @@ public class SerialPortService : ISerialPortService
             _logger.LogInformation("Fingerprint: {data}", data);
             return;
         }
-        
+
         if (data.StartsWith("ERROR"))
         {
             data = data.Replace("ERROR: ", "");
             _logger.LogError("Fingerprint: {data}", data);
             return;
         }
-        
+
         if (data.StartsWith("WARNING"))
         {
             data = data.Replace("WARNING: ", "");
             _logger.LogWarning("Fingerprint: {data}", data);
             return;
         }
-        
+
         //Console.WriteLine($"Unexpected fingerprint data format: {data}");
     }
 

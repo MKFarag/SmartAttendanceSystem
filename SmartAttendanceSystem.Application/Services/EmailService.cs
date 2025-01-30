@@ -2,7 +2,7 @@
 using MailKit.Security;
 using MimeKit;
 
-namespace SmartAttendanceSystem.Application.ServicesImplementation;
+namespace SmartAttendanceSystem.Application.Services;
 
 public class EmailService(IOptions<MailSettings> mailSettings, ILogger<EmailService> logger) : IEmailSender
 {

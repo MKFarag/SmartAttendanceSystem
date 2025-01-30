@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Application.ServicesImplementation;
+﻿namespace SmartAttendanceSystem.Application.Services;
 
 public class UserService(UserManager<ApplicationUser> userManager, IStudentService studentService) : IUserService
 {

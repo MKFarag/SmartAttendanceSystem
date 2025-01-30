@@ -23,11 +23,9 @@ global using SmartAttendanceSystem.Application.Contracts.Users;
 global using SmartAttendanceSystem.Presentation.Abstraction;
 global using SmartAttendanceSystem.Presentation.Extensions;
 global using SmartAttendanceSystem.Application.Interfaces;
-global using SmartAttendanceSystem.Fingerprint.Services;
 global using SmartAttendanceSystem.Application.Helpers;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Settings;
-global using SmartAttendanceSystem.Core.Services;
 global using SmartAttendanceSystem.Core.Entities;
 global using SmartAttendanceSystem.Core.Errors;
 
