@@ -1,4 +1,4 @@
-﻿namespace SmartAttendanceSystem.Application.Abstraction.DTOsServices;
+﻿namespace SmartAttendanceSystem.Application.Interfaces;
 
 public interface IUserService
 {

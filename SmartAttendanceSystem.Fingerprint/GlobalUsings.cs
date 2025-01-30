@@ -9,8 +9,8 @@ global using Microsoft.Extensions.Options;
 
 #region MyMethods
 
-global using SmartAttendanceSystem.Application.Abstraction.DTOsServices;
 global using SmartAttendanceSystem.Application.Contracts.Student;
+global using SmartAttendanceSystem.Application.Interfaces;
 global using SmartAttendanceSystem.Fingerprint.Services;
 global using SmartAttendanceSystem.Fingerprint.Helper;
 global using SmartAttendanceSystem.Core.Abstraction;

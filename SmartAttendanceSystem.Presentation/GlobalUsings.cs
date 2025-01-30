@@ -14,7 +14,6 @@ global using Mapster;
 
 #region MyMethods
 
-global using SmartAttendanceSystem.Application.Abstraction.DTOsServices;
 global using SmartAttendanceSystem.Application.Contracts.Authentication;
 global using SmartAttendanceSystem.Application.Contracts.Fingerprint;
 global using SmartAttendanceSystem.Application.Contracts.Department;
@@ -23,6 +22,7 @@ global using SmartAttendanceSystem.Application.Contracts.Course;
 global using SmartAttendanceSystem.Application.Contracts.Users;
 global using SmartAttendanceSystem.Presentation.Abstraction;
 global using SmartAttendanceSystem.Presentation.Extensions;
+global using SmartAttendanceSystem.Application.Interfaces;
 global using SmartAttendanceSystem.Fingerprint.Services;
 global using SmartAttendanceSystem.Application.Helpers;
 global using SmartAttendanceSystem.Core.Abstraction;
