@@ -149,10 +149,7 @@ public class AuthService
 
             //TODO: Fingerprint Register
 
-
-
         }
-
         #endregion
 
         var result = await _userManager.CreateAsync(user, request.Password);
@@ -196,7 +193,11 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
+            if (user.IsStudent)
+                await _userManager.AddToRoleAsync(user, DefaultRoles.Student);
+            else
+                await _userManager.AddToRoleAsync(user, DefaultRoles.Instructor);
+
             return Result.Success();
         }
 

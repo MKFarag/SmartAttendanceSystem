@@ -9,5 +9,5 @@ public static class DefaultUser
     public const string AdminSecurityStamp = "F15E8DE749FC4ABB817E6F6B54EA4ADB";
     public const string AdminConcurrencyStamp = "0194b8e5-7a29-7829-925e-f718a0ca8ba2";
 
-    private const string AdminPassword = "P@ss-159";
+    //AdminPassword -> P@ss-159
 }

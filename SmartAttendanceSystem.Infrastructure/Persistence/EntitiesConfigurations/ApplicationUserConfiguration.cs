@@ -25,7 +25,8 @@ public class ApplicationUserConfiguration : IEntityTypeConfiguration<Application
             ConcurrencyStamp = DefaultUser.AdminConcurrencyStamp,
             SecurityStamp = DefaultUser.AdminSecurityStamp,
             PasswordHash = DefaultUser.AdminPasswordHash,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            IsStudent = false
         });
     }
 }

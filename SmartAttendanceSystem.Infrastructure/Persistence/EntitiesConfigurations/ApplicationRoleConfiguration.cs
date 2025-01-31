@@ -14,11 +14,18 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
             },
             new ApplicationRole
             {
-                Id = DefaultRoles.MemberRoleId,
-                Name = DefaultRoles.Member,
-                NormalizedName = DefaultRoles.Member.ToUpper(),
-                ConcurrencyStamp = DefaultRoles.MemberRoleConcurrencyStamp,
+                Id = DefaultRoles.StudentRoleId,
+                Name = DefaultRoles.Student,
+                NormalizedName = DefaultRoles.Student.ToUpper(),
+                ConcurrencyStamp = DefaultRoles.StudentRoleConcurrencyStamp,
                 IsDefault = true
+            },
+            new ApplicationRole
+            {
+                Id = DefaultRoles.InstructorRoleId,
+                Name = DefaultRoles.Instructor,
+                NormalizedName = DefaultRoles.Instructor.ToUpper(),
+                ConcurrencyStamp = DefaultRoles.InstructorRoleConcurrencyStamp
             }
         ]);
     }
