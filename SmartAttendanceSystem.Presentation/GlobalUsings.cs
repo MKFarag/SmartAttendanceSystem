@@ -13,6 +13,7 @@ global using Mapster;
 
 #region MyMethods
 
+global using SmartAttendanceSystem.Infrastructure.Authentication.Filters;
 global using SmartAttendanceSystem.Application.Contracts.Authentication;
 global using SmartAttendanceSystem.Application.Contracts.Fingerprint;
 global using SmartAttendanceSystem.Application.Contracts.Department;

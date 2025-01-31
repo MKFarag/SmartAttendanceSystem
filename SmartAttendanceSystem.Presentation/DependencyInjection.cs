@@ -110,6 +110,13 @@ public static class DependencyInjection
     {
         services.AddSingleton<IJwtProvider, JwtProvider>();
 
+        #region Roles
+
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
+
+        #endregion
+
         #region AddingTheIdentity
 
         services.AddIdentity<ApplicationUser, ApplicationRole>()
