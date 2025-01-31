@@ -4,7 +4,7 @@ namespace SmartAttendanceSystem.Application.Services;
 
 public class AuthService
 
-    #region InitializeTheFields
+    #region Initialize Fields
 
     (IOptions<EmailConfirmationSettings> emailOptions,
     SignInManager<ApplicationUser> signInManager,
@@ -13,9 +13,9 @@ public class AuthService
     IDepartmentService departmentService,
     ILogger<AuthService> logger,
     IJobScheduler jobScheduler,
+    IDbContextHelper context,
     IJwtProvider jwtProvider,
-    IEmailSender emailSender
-    ) : IAuthService
+    IEmailSender emailSender) : IAuthService
 {
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
@@ -26,6 +26,7 @@ public class AuthService
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
+    private readonly IDbContextHelper _context = context;
     private readonly int _refreshTokenExpiryDays = 14;
 
     #endregion
@@ -41,7 +42,9 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            var (token, expiresIn) = _jwtProvider.GenerateToken(user);
+            var (userRoles, userPermissions) = await _context.GetUserRolesAndPermissionsAsync(user, cancellationToken);
+
+            var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
 
             var refreshToken = GenerateRefreshToken();
             var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
@@ -62,6 +65,8 @@ public class AuthService
         return Result.Failure<AuthResponse>(result.IsNotAllowed ? UserErrors.EmailNotConfirmed : UserErrors.InvalidCredentials);
     }
 
+    #region RefreshToken
+
     public async Task<Result<AuthResponse>> GetRefreshTokenAsync(string token, string refreshToken, CancellationToken cancellationToken = default)
     {
         if (_jwtProvider.ValidateToken(token) is not { } userId)
@@ -75,7 +80,9 @@ public class AuthService
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
-        var (NewToken, expiresIn) = _jwtProvider.GenerateToken(user);
+        var (userRoles, userPermissions) = await _context.GetUserRolesAndPermissionsAsync(user, cancellationToken);
+
+        var (NewToken, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
         var newRefreshToken = GenerateRefreshToken();
         var refreshTokenExpiration = DateTime.UtcNow.AddDays(_refreshTokenExpiryDays);
 
@@ -109,6 +116,8 @@ public class AuthService
 
         return Result.Success();
     }
+
+    #endregion
 
     #endregion
 
@@ -164,6 +173,8 @@ public class AuthService
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
+    #region Email Confirmation
+
     public async Task<Result> ConfirmEmailAsync(string userId, string code)
     {
         if (await _userManager.FindByIdAsync(userId) is not { } user)
@@ -184,7 +195,10 @@ public class AuthService
         var result = await _userManager.ConfirmEmailAsync(user, code);
 
         if (result.Succeeded)
+        {
+            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
             return Result.Success();
+        }
 
         var error = result.Errors.First();
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
@@ -207,6 +221,8 @@ public class AuthService
 
         return Result.Success();
     }
+
+    #endregion
 
     #endregion
 

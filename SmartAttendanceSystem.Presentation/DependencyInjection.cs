@@ -4,8 +4,8 @@ using SmartAttendanceSystem.Presentation.OpenApiTransformers;
 using SmartAttendanceSystem.Infrastructure.Authentication;
 using SmartAttendanceSystem.Infrastructure.Repositories;
 using SmartAttendanceSystem.Infrastructure.Persistence;
-using SmartAttendanceSystem.Infrastructure.Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SmartAttendanceSystem.Infrastructure.Helpers;
 using SmartAttendanceSystem.Application.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SmartAttendanceSystem.Fingerprint;
@@ -39,6 +39,7 @@ public static class DependencyInjection
         services.AddHangfireConfig(configuration);
         services.AddFingerprint();
 
+        services.AddScoped<IDbContextHelper, DbContextHelper>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IPermissionService, PermissionService>();

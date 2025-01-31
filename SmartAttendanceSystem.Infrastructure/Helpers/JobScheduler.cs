@@ -1,6 +1,6 @@
 ﻿using Hangfire;
 
-namespace SmartAttendanceSystem.Infrastructure.Hangfire;
+namespace SmartAttendanceSystem.Infrastructure.Helpers;
 
 public class JobScheduler : IJobScheduler
 {

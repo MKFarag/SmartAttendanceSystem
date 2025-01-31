@@ -1,7 +1,12 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿#region Usings
+
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Text;
+
+#endregion
 
 namespace SmartAttendanceSystem.Infrastructure.Authentication;
 
@@ -9,13 +14,15 @@ public class JwtProvider(IOptions<JwtOptions> jwtOptions) : IJwtProvider
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public (string token, int expiresIn) GenerateToken(ApplicationUser user)
+    public (string token, int expiresIn) GenerateToken(ApplicationUser user, IEnumerable<string> roles, IEnumerable<string> permissions)
     {
         Claim[] claims = [
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.GivenName, user.Name),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray),
+            new(nameof(permissions), JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray)
         ];
 
         var symmetricSecurityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Key));
