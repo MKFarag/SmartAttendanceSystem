@@ -8,11 +8,15 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
     private readonly IDepartmentService _deptService = deptService;
     private readonly IPermissionService _permissionService = permissionService;
 
+    #region GetDepartments
+
     [HttpGet("")]
+    [HasPermission(Permissions.GetDepartments)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>
-    Ok(await _deptService.GetAllAsync(cancellationToken: cancellationToken));
+        Ok(await _deptService.GetAllAsync(cancellationToken: cancellationToken));
 
     [HttpGet("{Id}")]
+    [HasPermission(Permissions.GetDepartments)]
     public async Task<IActionResult> Get([FromRoute] int Id, CancellationToken cancellationToken)
     {
         var courseResult = await _deptService.GetAsync(Id, cancellationToken);
@@ -22,7 +26,12 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
             : courseResult.ToProblem();
     }
 
+    #endregion
+
+    #region ModifyDepartments
+
     [HttpPost("")]
+    [HasPermission(Permissions.ModifyDepartments)]
     public async Task<IActionResult> Add([FromBody] DepartmentRequest request, CancellationToken cancellationToken)
     {
         if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
@@ -36,6 +45,7 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
     }
 
     [HttpDelete("{Id}")]
+    [HasPermission(Permissions.ModifyDepartments)]
     public async Task<IActionResult> Delete([FromRoute] int? Id, CancellationToken cancellationToken)
     {
         if (Id is null || Id == 0)
@@ -52,6 +62,7 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
     }
 
     [HttpPut("{Id}")]
+    [HasPermission(Permissions.ModifyDepartments)]
     public async Task<IActionResult> Update([FromRoute] int? Id, [FromBody] DepartmentRequest request, CancellationToken cancellationToken)
     {
         if (Id is null || Id == 0)
@@ -66,5 +77,7 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
             ? NoContent()
             : courseResult.ToProblem();
     }
+
+    #endregion
 
 }

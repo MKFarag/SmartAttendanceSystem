@@ -1,9 +1,8 @@
-﻿using SmartAttendanceSystem.Fingerprint.Interfaces;
-
-namespace SmartAttendanceSystem.presentation.Controllers;
+﻿namespace SmartAttendanceSystem.presentation.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class FingerprintController(IFingerprintService fingerprintService) : ControllerBase
 {
     private readonly IFingerprintService _fingerprintService = fingerprintService;
@@ -11,6 +10,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Start
 
     [HttpPost("start")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public IActionResult StartListening()
     {
         var startResult = _fingerprintService.Start();
@@ -25,6 +25,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Stop
 
     [HttpPost("stop")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public IActionResult StopListening()
     {
         var stopResult = _fingerprintService.Stop();
@@ -39,6 +40,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Latest
 
     [HttpGet("latest-data")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public IActionResult GetLatestFingerprintData()
     {
         var FpDataResult = _fingerprintService.GetLastReceivedData();
@@ -55,6 +57,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Set
 
     [HttpPost("Enrollment")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public IActionResult SetEnrollment([FromBody] EnrollmentRequest request)
     {
         var result = _fingerprintService.SetEnrollmentState(request.enrollment);
@@ -69,6 +72,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region Get
 
     [HttpGet("Enrollment")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> GetEnrollment(CancellationToken cancellationToken)
     {
         var result = await _fingerprintService.IsEnrollmentAllowedAsync(cancellationToken);
@@ -85,6 +89,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #region DeleteAllData
 
     [HttpDelete("Delete-data")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> DeleteAllFingerIds(CancellationToken cancellationToken)
     {
         var result = await _fingerprintService.DeleteAllData(cancellationToken);
@@ -98,7 +103,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Matching
 
-    [HttpGet("StdMatch")]
+    [HttpGet("Match")]
+    [HasPermission(Permissions.MatchFingerprint)]
     public async Task<IActionResult> MatchStudent(CancellationToken cancellationToken)
     {
         var matchResult = await _fingerprintService.MatchFingerprint(cancellationToken);
@@ -108,7 +114,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
             : matchResult.ToProblem();
     }
     
-    [HttpGet("StdMatch-Simple")]
+    [HttpGet("Match-Simple")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
     {
         var matchResult = await _fingerprintService.SimpleMatchFingerprint(cancellationToken);
@@ -124,7 +131,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Attend
 
-    [HttpPut("StdAttend/{weekNum}/{courseId}")]
+    [HttpPut("Attend/{weekNum}/{courseId}")]
+    [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
         var attendCheck = await _fingerprintService.StdAttend(weekNum, courseId, cancellationToken);
@@ -138,8 +146,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Register
 
-    [Authorize]
-    [HttpPut("Register/Student")]
+    [HttpPut("Register")]
+    [HasPermission(Permissions.FingerprintStudentRegister)]
     public async Task<IActionResult> RegisterToStd(CancellationToken cancellationToken)
     {
         var FpRegisterResult = await _fingerprintService.RegisterFingerprint(User.GetId()!, cancellationToken);
@@ -150,7 +158,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     }
     
     [HttpGet("Register/New")]
-    public async Task<IActionResult> NewFpRegister()
+    [HasPermission(Permissions.AddFingerprint)]
+    public async Task<IActionResult> NewFingerprint()
     {
         var FpRegisterResult = await _fingerprintService.StartEnrollment();
 
@@ -163,7 +172,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region StartAction
 
-    [HttpGet("TakeAttendance/Start")]
+    [HttpGet("Attendance/Start")]
+    [HasPermission(Permissions.ActionFingerprint)]
     public async Task<IActionResult> TakeAttendance_Start(CancellationToken cancellationToken)
     {
         var actionResult = await _fingerprintService.TakeAttendance_Start(cancellationToken);
@@ -177,7 +187,8 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region EndAction
 
-    [HttpPut("TakeAttendance/End/{weekNum}/{courseId}")]
+    [HttpPut("Attendance/End/{weekNum}/{courseId}")]
+    [HasPermission(Permissions.ActionFingerprint)]
     public async Task<IActionResult> TakeAttendance_End([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
         var actionResult = await _fingerprintService.TakeAttendance_End(weekNum, courseId, cancellationToken);

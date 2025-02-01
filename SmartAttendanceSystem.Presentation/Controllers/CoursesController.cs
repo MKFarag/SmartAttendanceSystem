@@ -8,11 +8,15 @@ public class CoursesController(ICourseService courseService, IPermissionService 
     private readonly ICourseService _courseService = courseService;
     private readonly IPermissionService _permissionService = permissionService;
 
+    #region GetCourses
+
     [HttpGet("")]
+    [HasPermission(Permissions.GetCourses)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>
         Ok(await _courseService.GetAllAsync(cancellationToken: cancellationToken));
 
     [HttpGet("{Id}")]
+    [HasPermission(Permissions.GetCourses)]
     public async Task<IActionResult> Get([FromRoute] int Id, CancellationToken cancellationToken)
     {
         var courseResult = await _courseService.GetAsync(Id, cancellationToken);
@@ -22,7 +26,12 @@ public class CoursesController(ICourseService courseService, IPermissionService 
             : courseResult.ToProblem();
     }
 
+    #endregion
+
+    #region ModifyCourses
+
     [HttpPost("")]
+    [HasPermission(Permissions.ModifyCourses)]
     public async Task<IActionResult> Add([FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
         if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
@@ -36,6 +45,7 @@ public class CoursesController(ICourseService courseService, IPermissionService 
     }
 
     [HttpDelete("{Id}")]
+    [HasPermission(Permissions.ModifyCourses)]
     public async Task<IActionResult> Delete([FromRoute] int? Id, CancellationToken cancellationToken)
     {
         if (Id is null || Id == 0)
@@ -52,6 +62,7 @@ public class CoursesController(ICourseService courseService, IPermissionService 
     }
     
     [HttpPut("{Id}")]
+    [HasPermission(Permissions.ModifyCourses)]
     public async Task<IActionResult> Update([FromRoute] int? Id, [FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
         if (Id is null || Id == 0)
@@ -66,4 +77,7 @@ public class CoursesController(ICourseService courseService, IPermissionService 
             ? NoContent()
             : courseResult.ToProblem();
     }
+
+    #endregion
+
 }
