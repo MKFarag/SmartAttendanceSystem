@@ -23,6 +23,7 @@ global using SmartAttendanceSystem.Application.Contracts.Department;
 global using SmartAttendanceSystem.Application.Contracts.Student;
 global using SmartAttendanceSystem.Application.Contracts.Course;
 global using SmartAttendanceSystem.Application.Contracts.Users;
+global using SmartAttendanceSystem.Application.Contracts.Roles;
 global using SmartAttendanceSystem.Core.Abstraction.Constants;
 global using SmartAttendanceSystem.Application.Interfaces;
 global using SmartAttendanceSystem.Application.Helpers;

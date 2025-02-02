@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using SmartAttendanceSystem.Application.Interfaces;
 
 namespace SmartAttendanceSystem.Application.Services;
 
@@ -13,7 +14,7 @@ public class AuthService
     IDepartmentService departmentService,
     ILogger<AuthService> logger,
     IJobManager jobManager,
-    IDbContextManager context,
+    IPermissionService permissionService,
     IJwtProvider jwtProvider,
     IEmailSender emailSender) : IAuthService
 {
@@ -26,7 +27,7 @@ public class AuthService
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
-    private readonly IDbContextManager _context = context;
+    private readonly IPermissionService _permissionService = permissionService;
     private readonly int _refreshTokenExpiryDays = 14;
 
     #endregion
@@ -42,7 +43,7 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            var (userRoles, userPermissions) = await _context.GetUserRolesAndPermissionsAsync(user, cancellationToken);
+            var (userRoles, userPermissions) = await _permissionService.GetUserRolesAndPermissionsAsync(user, cancellationToken);
 
             var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
 
@@ -80,7 +81,7 @@ public class AuthService
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
-        var (userRoles, userPermissions) = await _context.GetUserRolesAndPermissionsAsync(user, cancellationToken);
+        var (userRoles, userPermissions) = await _permissionService.GetUserRolesAndPermissionsAsync(user, cancellationToken);
 
         var (NewToken, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
         var newRefreshToken = GenerateRefreshToken();
