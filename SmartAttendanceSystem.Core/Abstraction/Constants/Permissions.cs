@@ -21,6 +21,10 @@ public static class Permissions
     public const string ActionFingerprint = "fingerprint:action";
     public const string FingerprintStudentRegister = "fingerprint:register";
 
+    public const string GetRoles = "Role:read";
+    public const string AddRoles = "Role:add";
+    public const string UpdateRoles = "Role:update";
+
     public static IList<string?> GetAllPermissions() =>
         typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string).ToList();
 }
