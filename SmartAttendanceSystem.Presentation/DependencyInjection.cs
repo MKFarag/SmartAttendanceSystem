@@ -39,7 +39,7 @@ public static class DependencyInjection
         services.AddHangfireConfig(configuration);
         services.AddFingerprint();
 
-        services.AddScoped<IDbContextHelper, DbContextHelper>();
+        services.AddScoped<IDbContextManager, DbContextManager>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IPermissionService, PermissionService>();
@@ -168,7 +168,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddHangfireConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IJobScheduler, JobScheduler>();
+        services.AddScoped<IJobManager, JobManager>();
 
         services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)

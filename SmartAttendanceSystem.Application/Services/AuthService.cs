@@ -12,8 +12,8 @@ public class AuthService
     IHttpContextAccessor httpContextAccessor,
     IDepartmentService departmentService,
     ILogger<AuthService> logger,
-    IJobScheduler jobScheduler,
-    IDbContextHelper context,
+    IJobManager jobManager,
+    IDbContextManager context,
     IJwtProvider jwtProvider,
     IEmailSender emailSender) : IAuthService
 {
@@ -22,11 +22,11 @@ public class AuthService
     private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IDepartmentService _deptService = departmentService;
-    private readonly IJobScheduler _jobScheduler = jobScheduler;
+    private readonly IJobManager _jobManager = jobManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
-    private readonly IDbContextHelper _context = context;
+    private readonly IDbContextManager _context = context;
     private readonly int _refreshTokenExpiryDays = 14;
 
     #endregion
@@ -196,7 +196,7 @@ public class AuthService
             if (user.IsStudent)
                 await _userManager.AddToRoleAsync(user, DefaultRoles.Student);
             else
-                await _userManager.AddToRoleAsync(user, DefaultRoles.Instructor);
+                await _userManager.AddToRoleAsync(user, DefaultRoles.NotActiveInstructor);
 
             return Result.Success();
         }
@@ -297,7 +297,7 @@ public class AuthService
             }
         );
 
-        _jobScheduler.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
 
         await Task.CompletedTask;
     }
@@ -321,7 +321,7 @@ public class AuthService
             }
         );
 
-        _jobScheduler.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
 
         await Task.CompletedTask;
     }

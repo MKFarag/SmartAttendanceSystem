@@ -1,11 +1,11 @@
 ﻿namespace SmartAttendanceSystem.Infrastructure.Helpers;
 
-public class DbContextHelper
+public class DbContextManager
 
     #region Initialize Fields
 
     (UserManager<ApplicationUser> userManager,
-    ApplicationDbContext context) : IDbContextHelper
+    ApplicationDbContext context) : IDbContextManager
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly ApplicationDbContext _context = context;

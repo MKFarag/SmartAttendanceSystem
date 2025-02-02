@@ -22,6 +22,14 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
             },
             new ApplicationRole
             {
+                Id = DefaultRoles.NotActiveInstructorRoleId,
+                Name = DefaultRoles.NotActiveInstructor,
+                NormalizedName = DefaultRoles.NotActiveInstructor.ToUpper(),
+                ConcurrencyStamp = DefaultRoles.NotActiveInstructorRoleConcurrencyStamp,
+                IsDefault = true
+            },
+            new ApplicationRole
+            {
                 Id = DefaultRoles.InstructorRoleId,
                 Name = DefaultRoles.Instructor,
                 NormalizedName = DefaultRoles.Instructor.ToUpper(),

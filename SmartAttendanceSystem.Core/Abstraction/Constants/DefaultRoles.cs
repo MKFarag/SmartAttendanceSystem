@@ -13,4 +13,8 @@ public static class DefaultRoles
     public const string Instructor = nameof(Instructor);
     public const string InstructorRoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756";
     public const string InstructorRoleConcurrencyStamp = "0194bd47-1793-75b0-a10b-9de81d580d84";
+    
+    public const string NotActiveInstructor = nameof(NotActiveInstructor);
+    public const string NotActiveInstructorRoleId = "0194c663-9838-7852-8811-03b88a11fa8b";
+    public const string NotActiveInstructorRoleConcurrencyStamp = "0194c663-9839-7070-aa74-9095f1be5595";
 }

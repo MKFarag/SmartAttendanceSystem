@@ -9,7 +9,7 @@ public class FingerprintService
     ILogger<FingerprintService> logger,
     IStudentService studentService,
     ICourseService courseService,
-    IJobScheduler jobScheduler,
+    IJobManager jobManager,
     FpTempData fpTempData) : IFingerprintService
 {
     private readonly EnrollmentCommands _enrollmentOptions = enrollmentOptions.Value;
@@ -17,7 +17,7 @@ public class FingerprintService
     private readonly IStudentService _studentService = studentService;
     private readonly ICourseService _courseService = courseService;
     private readonly ILogger<FingerprintService> _logger = logger;
-    private readonly IJobScheduler _jobScheduler = jobScheduler;
+    private readonly IJobManager _jobManager = jobManager;
     private readonly FpTempData _fpTempData = fpTempData;
 
     #endregion
@@ -274,7 +274,7 @@ public class FingerprintService
 
         _fpTempData.ActionButtonStatus = true;
 
-        _jobScheduler.Enqueue(() => ActionButton_Service());
+        _jobManager.Enqueue(() => ActionButton_Service());
 
         return Result.Success();
     }
@@ -329,7 +329,7 @@ public class FingerprintService
         if (_fpTempData.FpStatus)
             Stop();
 
-        _jobScheduler.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
+        _jobManager.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
 
         return Result.Success();
     }

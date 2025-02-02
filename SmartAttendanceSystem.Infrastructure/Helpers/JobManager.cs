@@ -2,7 +2,7 @@
 
 namespace SmartAttendanceSystem.Infrastructure.Helpers;
 
-public class JobScheduler : IJobScheduler
+public class JobManager : IJobManager
 {
     public string Enqueue(Expression<Action> methodCall)
         => BackgroundJob.Enqueue(methodCall);

@@ -1,5 +1,4 @@
-﻿
-namespace SmartAttendanceSystem.Infrastructure.Persistence.EntitiesConfigurations;
+﻿namespace SmartAttendanceSystem.Infrastructure.Persistence.EntitiesConfigurations;
 
 public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 {

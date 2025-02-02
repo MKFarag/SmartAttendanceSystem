@@ -1,6 +1,6 @@
 ﻿namespace SmartAttendanceSystem.Application.Interfaces;
 
-public interface IJobScheduler
+public interface IJobManager
 {
     string Enqueue(Expression<Action> methodCall);
     string Enqueue(Expression<Func<Task>> methodCall);
