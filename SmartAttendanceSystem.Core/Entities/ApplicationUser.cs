@@ -4,6 +4,7 @@ public class ApplicationUser : IdentityUser
 {
     public string Name { get; set; } = string.Empty;
     public bool IsStudent { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
 
     //public int SSID { get; set; }
