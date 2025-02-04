@@ -3,10 +3,9 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CoursesController(ICourseService courseService, IPermissionService permissionService) : ControllerBase
+public class CoursesController(ICourseService courseService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
-    private readonly IPermissionService _permissionService = permissionService;
 
     #region GetCourses
 
@@ -34,9 +33,6 @@ public class CoursesController(ICourseService courseService, IPermissionService 
     [HasPermission(Permissions.ModifyCourses)]
     public async Task<IActionResult> Add([FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
-        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
-            return Result.Failure(UserErrors.NoPermission).ToProblem();
-
         var courseResult = await _courseService.AddAsync(request, cancellationToken);
 
         return courseResult.IsSuccess
@@ -46,15 +42,12 @@ public class CoursesController(ICourseService courseService, IPermissionService 
 
     [HttpDelete("{Id}")]
     [HasPermission(Permissions.ModifyCourses)]
-    public async Task<IActionResult> Delete([FromRoute] int? Id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete([FromRoute] int Id, CancellationToken cancellationToken)
     {
-        if (Id is null || Id == 0)
+        if (Id == 0)
             return BadRequest();
 
-        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
-            return Result.Failure(UserErrors.NoPermission).ToProblem();
-
-        var courseResult = await _courseService.DeleteAsync(Id.Value, cancellationToken);
+        var courseResult = await _courseService.DeleteAsync(Id, cancellationToken);
 
         return courseResult.IsSuccess
             ? NoContent()
@@ -63,15 +56,12 @@ public class CoursesController(ICourseService courseService, IPermissionService 
     
     [HttpPut("{Id}")]
     [HasPermission(Permissions.ModifyCourses)]
-    public async Task<IActionResult> Update([FromRoute] int? Id, [FromBody] CourseRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
-        if (Id is null || Id == 0)
+        if (Id == 0)
             return BadRequest();
 
-        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
-            return Result.Failure(UserErrors.NoPermission).ToProblem();
-
-        var courseResult = await _courseService.UpdateAsync(Id.Value, request, cancellationToken);
+        var courseResult = await _courseService.UpdateAsync(Id, request, cancellationToken);
 
         return courseResult.IsSuccess
             ? NoContent()
@@ -79,5 +69,4 @@ public class CoursesController(ICourseService courseService, IPermissionService 
     }
 
     #endregion
-
 }

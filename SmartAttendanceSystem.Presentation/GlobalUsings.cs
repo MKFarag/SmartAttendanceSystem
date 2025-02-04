@@ -15,7 +15,6 @@ global using Mapster;
 
 global using SmartAttendanceSystem.Infrastructure.Authentication.Filters;
 global using SmartAttendanceSystem.Application.Contracts.Authentication;
-global using SmartAttendanceSystem.Application.Contracts.Fingerprint;
 global using SmartAttendanceSystem.Application.Contracts.Department;
 global using SmartAttendanceSystem.Application.Contracts.Student;
 global using SmartAttendanceSystem.Application.Contracts.Course;

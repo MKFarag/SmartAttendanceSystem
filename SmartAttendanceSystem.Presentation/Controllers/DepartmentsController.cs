@@ -3,10 +3,9 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class DepartmentsController(IDepartmentService deptService, IPermissionService permissionService) : ControllerBase
+public class DepartmentsController(IDepartmentService deptService) : ControllerBase
 {
     private readonly IDepartmentService _deptService = deptService;
-    private readonly IPermissionService _permissionService = permissionService;
 
     #region GetDepartments
 
@@ -34,9 +33,6 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
     [HasPermission(Permissions.ModifyDepartments)]
     public async Task<IActionResult> Add([FromBody] DepartmentRequest request, CancellationToken cancellationToken)
     {
-        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
-            return Result.Failure(UserErrors.NoPermission).ToProblem();
-
         var courseResult = await _deptService.AddAsync(request, cancellationToken);
 
         return courseResult.IsSuccess
@@ -46,15 +42,12 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
 
     [HttpDelete("{Id}")]
     [HasPermission(Permissions.ModifyDepartments)]
-    public async Task<IActionResult> Delete([FromRoute] int? Id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete([FromRoute] int Id, CancellationToken cancellationToken)
     {
-        if (Id is null || Id == 0)
+        if (Id == 0)
             return BadRequest();
 
-        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
-            return Result.Failure(UserErrors.NoPermission).ToProblem();
-
-        var courseResult = await _deptService.DeleteAsync(Id.Value, cancellationToken);
+        var courseResult = await _deptService.DeleteAsync(Id, cancellationToken);
 
         return courseResult.IsSuccess
             ? NoContent()
@@ -63,15 +56,12 @@ public class DepartmentsController(IDepartmentService deptService, IPermissionSe
 
     [HttpPut("{Id}")]
     [HasPermission(Permissions.ModifyDepartments)]
-    public async Task<IActionResult> Update([FromRoute] int? Id, [FromBody] DepartmentRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] DepartmentRequest request, CancellationToken cancellationToken)
     {
-        if (Id is null || Id == 0)
+        if (Id == 0)
             return BadRequest();
 
-        if (await _permissionService.StudentCheck(User.GetId(), cancellationToken))
-            return Result.Failure(UserErrors.NoPermission).ToProblem();
-
-        var courseResult = await _deptService.UpdateAsync(Id.Value, request, cancellationToken);
+        var courseResult = await _deptService.UpdateAsync(Id, request, cancellationToken);
 
         return courseResult.IsSuccess
             ? NoContent()

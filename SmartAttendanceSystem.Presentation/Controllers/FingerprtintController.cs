@@ -9,7 +9,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Start
 
-    [HttpPost("start")]
+    [HttpPost("Start")]
     [HasPermission(Permissions.AdminFingerprint)]
     public IActionResult StartListening()
     {
@@ -24,7 +24,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Stop
 
-    [HttpPost("stop")]
+    [HttpPost("Stop")]
     [HasPermission(Permissions.AdminFingerprint)]
     public IActionResult StopListening()
     {
@@ -58,12 +58,12 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     [HttpPost("Enrollment")]
     [HasPermission(Permissions.AdminFingerprint)]
-    public IActionResult SetEnrollment([FromBody] EnrollmentRequest request)
+    public IActionResult SetEnrollment([FromQuery] bool enrollment)
     {
-        var result = _fingerprintService.SetEnrollmentState(request.enrollment);
+        var result = _fingerprintService.SetEnrollmentState(enrollment);
 
         return result.IsSuccess
-            ? Ok($"Enrollment state set to '{request.enrollment}'")
+            ? Ok($"Enrollment state set to '{enrollment}'")
             : result.ToProblem();
     }
 
@@ -114,7 +114,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
             : matchResult.ToProblem();
     }
     
-    [HttpGet("Match-Simple")]
+    [HttpGet("sMatch")]
     [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
     {
@@ -131,7 +131,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region Attend
 
-    [HttpPut("Attend/{weekNum}/{courseId}")]
+    [HttpPut("Attend/{courseId}/{weekNum}")]
     [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
@@ -187,7 +187,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region EndAction
 
-    [HttpPut("Attendance/End/{weekNum}/{courseId}")]
+    [HttpPut("Attendance/End/{courseId}/{weekNum}")]
     [HasPermission(Permissions.ActionFingerprint)]
     public async Task<IActionResult> TakeAttendance_End([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {

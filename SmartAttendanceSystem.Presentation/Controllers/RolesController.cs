@@ -59,7 +59,7 @@ public class RolesController(IRoleService roleService) : ControllerBase
 
     #region Toggle Status
 
-    [HttpPut("{id}/toggle-status")]
+    [HttpPut("{id}/Toggle-status")]
     [HasPermission(Permissions.UpdateRoles)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id)
     {

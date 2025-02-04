@@ -16,7 +16,7 @@ public class StudentsController
 
     #endregion
 
-    #region Get Student Data
+    #region Get
 
     [HttpGet("")]
     [HasPermission(Permissions.GetStudents)]
@@ -50,7 +50,7 @@ public class StudentsController
         return Ok(Students);
     }
     
-    [HttpGet("Lvl-Dept/{Lvl}/{DeptId}")]
+    [HttpGet("Dept/{DeptId}/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> GetAll_Special([FromRoute] int DeptId, [FromRoute] int Lvl, CancellationToken cancellationToken)
     {
@@ -79,11 +79,11 @@ public class StudentsController
 
     #endregion
 
-    #region StudentCourses
+    #region Courses
 
     #region Add
 
-    [HttpPost("AddCourses")]
+    [HttpPost("Courses")]
     [HasPermission(Permissions.StudentCourses)]
     public async Task<IActionResult> AddCourses([FromBody] StdCourseRequest request, CancellationToken cancellationToken)
     {
@@ -98,7 +98,7 @@ public class StudentsController
 
     #region Remove
 
-    [HttpDelete("RemoveCourses")]
+    [HttpDelete("Courses")]
     [HasPermission(Permissions.StudentCourses)]
     public async Task<IActionResult> RemoveCourses([FromBody] StdCourseRequest request, CancellationToken cancellationToken)
     {
@@ -135,7 +135,7 @@ public class StudentsController
 
     #region ByWeek
 
-    [HttpGet("WeekAttendance/{courseId}/{weekNum}")]
+    [HttpGet("Attendance/{courseId}/{weekNum}")]
     [HasPermission(Permissions.GetAttendance)]
     public async Task<IActionResult> GetAttendance_ByWeek([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
