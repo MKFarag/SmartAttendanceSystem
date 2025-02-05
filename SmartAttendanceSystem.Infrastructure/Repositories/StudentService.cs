@@ -31,67 +31,32 @@ public class StudentService
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Result<StudentResponse>> GetAsync(Expression<Func<Student, bool>>? predicate = null, string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default)
+    public async Task<Student?> GetMainAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _context.Students.Where(predicate).FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<Result<StudentAttendanceResponse>> GetAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        Student? response;
+        var student = await GetMainAsync(predicate, cancellationToken);
 
-        if (predicate is not null && (UserId is not null || StdId is not null))
-            throw new InvalidOperationException("GetAsync cannot use predicate with Id.");
+        if (student is null)
+            return Result.Failure<StudentAttendanceResponse>(StudentErrors.NotFount);
 
-        if (predicate is null)
-        {
-            var checkerResult = await CheckStudentId(UserId, StdId, cancellationToken);
+        if (student.Attendances is null)
+            return Result.Success(student.Adapt<StudentAttendanceResponse>() with { CourseAttendances = [] });
 
-            if (checkerResult.IsFailure)
-                return Result.Failure<StudentResponse>(checkerResult.Error);
+        return Result.Success(student.Adapt<StudentAttendanceResponse>());
 
-            StdId = checkerResult.Value;
-
-            response = await _context.Students.AsNoTracking().FirstOrDefaultAsync(x => x.Id == StdId, cancellationToken);
-        }
-        else
-        {
-            predicate ??= x => true;
-
-            response = await _context.Students.Where(predicate).AsNoTracking().FirstOrDefaultAsync(cancellationToken);
-
-        }
-
-        return response is not null
-            ? Result.Success(response.Adapt<StudentResponse>())
-            : Result.Failure<StudentResponse>(StudentErrors.IdNotFount);
+        //The with expression allows you to create a copy of an immutable object while modifying specific properties
+        //var response = student.Adapt<StudentAttendanceResponse>() with
+        //{
+        //    CourseAttendances = []
+        //};
+        //foreach (var item in student.Attendances!)
+        //    response.CourseAttendances.Add(new CourseWithAttendance(item.Course.Adapt<CourseResponse>(), item.Total));
     }
 
-    public async Task<Result<Student>> GetMainAsync(Expression<Func<Student, bool>>? predicate = null, int? StdId = null, CancellationToken cancellationToken = default)
-    {
-        Student? response = new();
-
-        if (predicate is null && StdId is not null)
-            response = await _context.Students.FindAsync([StdId], cancellationToken: cancellationToken);
-
-        else if (predicate is not null && StdId is not null)
-            response = await _context.Students.Where(predicate).FirstOrDefaultAsync(x => x.Id == StdId, cancellationToken);
-
-        else if (predicate is not null && StdId is null)
-            response = await _context.Students.Where(predicate).FirstOrDefaultAsync(cancellationToken);
-
-        return response is not null
-            ? Result.Success(response)
-            : Result.Failure<Student>(StudentErrors.IdNotFount);
-    }
-
-    public async Task<Result<int>> GetId(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        var StdId = await _context.Students.Where(predicate)
-            .AsNoTracking().Select(x => x.Id).ToListAsync(cancellationToken);
-
-        if (StdId.Count > 1)
-            throw new InvalidOperationException("Student_GetId.Invalid predicate: This predicate return more than one student");
-
-        return StdId.Count == 0
-            ? Result.Failure<int>(StudentErrors.NotFount)
-            : Result.Success(StdId.FirstOrDefault());
-    }
+    public async Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _context.Students.Where(predicate).AsNoTracking().Select(x => x.Id).FirstOrDefaultAsync(cancellationToken);
 
     #endregion
 
@@ -102,54 +67,56 @@ public class StudentService
 
     #endregion
 
-    #region StdCourses
+    #region Courses
 
-    public async Task<Result> AddStdCourse(StdCourseRequest request, string UserId, CancellationToken cancellationToken = default)
+    public async Task<Result> AddCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users.FindAsync([UserId], cancellationToken);
+        #region Checks
 
-        if (!user!.IsStudent)
-            return Result.Failure<int>(UserErrors.NoPermission);
+        var StdId = await CoursesCheck(coursesId, UserId, cancellationToken);
 
-        var StdId = user.StudentInfo!.Id;
-        var student = await GetMainAsync(StdId: StdId, cancellationToken: cancellationToken);
+        if (StdId.IsFailure)
+            return StdId;
 
-        if (student.IsFailure)
-            Result.Failure(StudentErrors.IdNotFount);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        student.Value.Attendances = [];
+        //Check Duplicated Course
 
-        foreach (var id in request.CoursesId)
-        {
-            if (!await _courseService.AnyAsync(x => x.Id == id, cancellationToken))
-                return Result.Failure(StudentErrors.CourseNotFound);
+        var StudentCourseIDs = new HashSet<int>(await _context.Attendances
+            .AsNoTracking()
+            .Where(x => x.StudentId == StdId.Value)
+            .Select(x => x.CourseId)
+            .ToListAsync(cancellationToken));
 
-            if (await _context.Attendances.AnyAsync(a => a.StudentId == StdId && a.CourseId == id, cancellationToken))
-                return Result.Failure(GlobalErrors.DuplicatedData($"course with id: {id}"));
+        if (StudentCourseIDs.Count > 0)
+            if (StudentCourseIDs.Any(x => coursesId.Contains(x)))
+                return Result.Failure<int>(GlobalErrors.DuplicatedData("course"));
 
-            student.Value.Attendances.Add(new Attendance { StudentId = StdId, CourseId = id });
-        }
+        #endregion
+
+        var student = await GetMainAsync(x => x.Id == StdId.Value, cancellationToken);
+
+        student!.Attendances = [];
+
+        foreach (var id in coursesId)
+            student.Attendances.Add(new Attendance { StudentId = StdId.Value, CourseId = id });
 
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }
 
-    public async Task<Result> DeleteStdCourse(StdCourseRequest request, string UserId, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
     {
-        var user = await _context.Users.FindAsync([UserId], cancellationToken);
+        var StdId = await CoursesCheck(coursesId, UserId, cancellationToken);
 
-        if (!user!.IsStudent)
-            return Result.Failure<int>(UserErrors.NoPermission);
+        if (StdId.IsFailure)
+            return StdId;
 
-        var StdId = user.StudentInfo!.Id;
-
-        foreach (var id in request.CoursesId)
+        foreach (var id in coursesId)
         {
-            if (!await _courseService.AnyAsync(x => x.Id == id, cancellationToken))
-                return Result.Failure(StudentErrors.CourseNotFound);
-
-            if (await _context.Attendances.FirstOrDefaultAsync(x => x.StudentId == StdId && x.CourseId == id, cancellationToken) is not { } deletedCourse)
+            if (await _context.Attendances.FirstOrDefaultAsync(x => x.StudentId == StdId.Value && x.CourseId == id,
+                cancellationToken) is not { } deletedCourse)
                 return Result.Failure(StudentErrors.CourseNotAdded(id));
 
             _context.Attendances.Remove(deletedCourse);
@@ -165,67 +132,34 @@ public class StudentService
     #region Get Attendance
 
     /// <summary>
-    /// Use it to see all data about one student like popup window
-    /// OR In student profile
+    /// See the total attendance for all student by course
     /// </summary>
-    public async Task<Result<StudentAttendanceResponse>> StudentAttendance(string? UserId = null, int? StdId = null, CancellationToken cancellationToken = default)
-    {
-        var checkerResult = await CheckStudentId(UserId, StdId, cancellationToken: cancellationToken);
-
-        if (checkerResult.IsFailure)
-            return Result.Failure<StudentAttendanceResponse>(checkerResult.Error);
-
-        StdId = checkerResult.Value;
-
-        if (!await _context.Attendances.AnyAsync(x => x.StudentId == StdId.Value, cancellationToken))
-            return Result.Failure<StudentAttendanceResponse>(StudentErrors.NoCourses);
-
-        var student = await GetMainAsync(StdId: StdId.Value, cancellationToken: cancellationToken);
-
-        if (student.IsFailure)
-            return Result.Failure<StudentAttendanceResponse>(student.Error);
-
-        //The with expression allows you to create a copy of an immutable object while modifying specific properties
-        var response = student.Value.Adapt<StudentAttendanceResponse>() with
-        {
-            CourseAttendances = []
-        };
-
-        foreach (var item in student.Value.Attendances!)
-            response.CourseAttendances.Add(new CourseWithAttendance(item.Course.Adapt<CourseResponse>(), item.Total));
-
-        return Result.Success(response);
-    }
-
-    /// <summary>
-    /// Use it to see the total attendance for all student by course
-    /// </summary>
-    public async Task<Result<IEnumerable<StdAttendanceByCourseResponse>>> GetAttendance_ByCourse(int courseId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? StdId = null, CancellationToken cancellationToken = default)
     {
         if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
-            return Result.Failure<IEnumerable<StdAttendanceByCourseResponse>>(GlobalErrors.IdNotFound("Courses"));
+            return Result.Failure<IEnumerable<CourseAttendanceResponse>>(GlobalErrors.IdNotFound("Courses"));
 
         var attendances = await _context.Attendances
             .AsNoTracking()
-            .Where(x => x.CourseId == courseId)
-            .ProjectToType<StdAttendanceByCourseResponse>()
+            .Where(x => x.CourseId == courseId && (!StdId.HasValue || x.StudentId == StdId))
+            .ProjectToType<CourseAttendanceResponse>()
             .ToListAsync(cancellationToken);
 
         return attendances.Count > 0
-            ? Result.Success<IEnumerable<StdAttendanceByCourseResponse>>(attendances)
-            : Result.Failure<IEnumerable<StdAttendanceByCourseResponse>>(StudentErrors.NotAddedCourse);
+            ? Result.Success<IEnumerable<CourseAttendanceResponse>>(attendances)
+            : Result.Failure<IEnumerable<CourseAttendanceResponse>>(StudentErrors.NotAddedCourse);
     }
 
     /// <summary>
-    /// Use it to see the attendance for all student by week and course
+    /// See the attendance for all student by week and course
     /// </summary>
-    public async Task<Result<IEnumerable<StdAttendanceByWeekResponse>>> GetAttendance_WeekCourse(int weekNum, int courseId, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? StdId = null, CancellationToken cancellationToken = default)
     {
         if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
-            return Result.Failure<IEnumerable<StdAttendanceByWeekResponse>>(GlobalErrors.IdNotFound("Courses"));
+            return Result.Failure<IEnumerable<WeekAttendanceResponse>>(GlobalErrors.IdNotFound("Courses"));
 
-        if (await _context.Attendances.FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken) is not { } weekCheck)
-            return Result.Failure<IEnumerable<StdAttendanceByWeekResponse>>(StudentErrors.NotAddedCourse);
+        if (await _context.Attendances.AsNoTracking().FirstOrDefaultAsync(x => x.CourseId == courseId, cancellationToken) is not { } weekCheck)
+            return Result.Failure<IEnumerable<WeekAttendanceResponse>>(StudentErrors.NotAddedCourse);
 
         var mapContext = new MapContext();
         mapContext.Set("weekNum", weekNum);
@@ -233,8 +167,8 @@ public class StudentService
 
         var attendances = await _context.Attendances
             .AsNoTracking()
-            .Where(x => x.CourseId == courseId && x.Weeks != null)
-            .ProjectToType<StdAttendanceByWeekResponse>()
+            .Where(x => x.CourseId == courseId && x.Weeks != null && (!StdId.HasValue || x.StudentId == StdId))
+            .ProjectToType<WeekAttendanceResponse>()
             .ToListAsync(cancellationToken);
 
         var filteredAttendances = attendances.Where(x => x.Attend != null);
@@ -247,7 +181,7 @@ public class StudentService
     #region Fingerprint ServicesPart
 
     //Start Action
-    public async Task<Result> Attended(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default)
+    public async Task<Result> AttendedAsync(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         var studentAttendance = await _context.Attendances
             .FirstOrDefaultAsync(x => x.CourseId == courseId && x.StudentId == stdId, cancellationToken);
@@ -276,7 +210,7 @@ public class StudentService
     }
 
     //In End Action
-    public async Task CheckForAllWeeks(int weekNum, int courseId, CancellationToken cancellationToken = default)
+    public async Task CheckForAllWeeksAsync(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("The remaining students who did not attend are being registered");
 
@@ -301,17 +235,17 @@ public class StudentService
         _logger.LogInformation("Successfully completed");
     }
 
-    public async Task<Result> FpRegister(string UserId, int fId, CancellationToken cancellationToken = default)
+    public async Task<Result> RegisterFingerIDAsync(string UserId, int fId, CancellationToken cancellationToken = default)
     {
-        var User = await GetMainAsync(x => x.UserId == UserId, cancellationToken: cancellationToken);
+        var User = await GetMainAsync(x => x.UserId == UserId, cancellationToken);
 
-        if (User.IsFailure)
+        if (User is null)
             return Result.Failure(GlobalErrors.IdNotFound("User"));
 
         if (await AnyAsync(x => x.FingerId == fId, cancellationToken))
             return Result.Failure(StudentErrors.AlreadyHaveFp);
 
-        User.Value.FingerId = fId;
+        User.FingerId = fId;
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
@@ -321,31 +255,29 @@ public class StudentService
 
     #region PrivateMethods
 
-    private async Task<Result<int>> CheckStudentId(string? userId = null, int? stdId = null, CancellationToken cancellationToken = default)
+    private async Task<Result<int>> CoursesCheck(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
     {
-        if (userId is not null && stdId.HasValue)
-            throw new InvalidOperationException("You pass UserId and StdId is the same time in AddStdCourse method");
+        //Check Request
 
-        if (userId is not null)
-        {
-            if (await _context.Users.FirstOrDefaultAsync(x => x.Id == userId, cancellationToken) is not { } user)
-                return Result.Failure<int>(StudentErrors.IdNotFount);
+        var DbCoursesIDs = new HashSet<int>(await _courseService.GetIDsAsync(cancellationToken));
 
-            if (!user.IsStudent)
-                return Result.Failure<int>(UserErrors.NoPermission);
+        if (!coursesId.All(x => DbCoursesIDs.Contains(x)))
+            return Result.Failure<int>(StudentErrors.CourseNotFound);
 
-            stdId = user.StudentInfo!.Id;
-        }
-        else if (stdId.HasValue)
-        {
-            if (!await AnyAsync(x => x.Id == stdId, cancellationToken))
-                return Result.Failure<int>(StudentErrors.IdNotFount);
-        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        if (!stdId.HasValue)
-            throw new InvalidOperationException("In this step 'StdId' variable must be not null");
+        //Check Student Permission
 
-        return Result.Success(stdId.Value);
+        var StdId = await _context.Users
+            .Where(x => x.Id == UserId && x.IsStudent)
+            .AsNoTracking()
+            .Select(x => x.StudentInfo!.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (StdId == 0)
+            return Result.Failure<int>(UserErrors.NoPermission);
+
+        return Result.Success(StdId);
     }
 
     #endregion

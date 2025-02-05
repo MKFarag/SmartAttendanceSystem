@@ -9,9 +9,6 @@ public class MappingConfigurations : IRegister
         config.NewConfig<RegisterRequest, ApplicationUser>()
             .Map(dest => dest.UserName, src => src.Email);
 
-        config.NewConfig<ApplicationUser, InstructorProfileResponse>()
-            .Map(dest => dest.Type, src => "Instructor");
-
         #endregion
 
         #region Student
@@ -19,17 +16,21 @@ public class MappingConfigurations : IRegister
         config.NewConfig<Student, StudentResponse>()
             .Map(dest => dest.Name, src => src.User.Name)
             .Map(dest => dest.Email, src => src.User.Email)
-            .Map(dest => dest.Courses, src => src.Attendances!.Select(x => x.Course));
+            .Map(dest => dest.Department, src => src.Department.Name)
+            .Map(dest => dest.Courses, src => src.Attendances!.Select(x => x.Course.Name));
 
         #region Attendance
 
         config.NewConfig<Student, StudentAttendanceResponse>()
             .Map(dest => dest.Name, src => src.User.Name)
-            .Map(dest => dest.Email, src => src.User.Email);
+            .Map(dest => dest.Email, src => src.User.Email)
+            .Map(dest => dest.CourseAttendances.Select(x => x.Course), src => src.Attendances!.Select(x => x.Course))
+            .Map(dest => dest.CourseAttendances.Select(x => x.Total), src => src.Attendances!.Select(x => x.Total));
+            
 
         #region ByCourse
 
-        config.NewConfig<Attendance, StdAttendanceByCourseResponse>()
+        config.NewConfig<Attendance, CourseAttendanceResponse>()
             .Map(dest => dest.Id, src => src.Student.Id)
             .Map(dest => dest.Name, src => src.Student.User.Name)
             .Map(dest => dest.Level, src => src.Student.Level)
@@ -40,7 +41,7 @@ public class MappingConfigurations : IRegister
 
         #region ByWeek
 
-        config.NewConfig<Attendance, StdAttendanceByWeekResponse>()
+        config.NewConfig<Attendance, WeekAttendanceResponse>()
             .Map(dest => dest.Id, src => src.Student.Id)
             .Map(dest => dest.Name, src => src.Student.User.Name)
             .Map(dest => dest.Level, src => src.Student.Level)
@@ -68,8 +69,7 @@ public class MappingConfigurations : IRegister
 
         config.NewConfig<StudentAttendanceResponse, StudentProfileResponse>()
             .Map(dest => dest.StudentId, src => src.Id)
-            .Map(dest => dest.Courses, src => src.CourseAttendances)
-            .Map(dest => dest.Type, src => "Student");
+            .Map(dest => dest.Courses, src => src.CourseAttendances);
 
         #endregion
 

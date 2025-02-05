@@ -3,7 +3,7 @@
 namespace SmartAttendanceSystem.Infrastructure.Persistence;
 
 public class ApplicationDbContext(DbContextOptions options) 
-    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
+    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options), IDbContextManager
 {
     #region DbSet
 
@@ -11,6 +11,11 @@ public class ApplicationDbContext(DbContextOptions options)
     public DbSet<Course> Courses { get; set; } = default!;
     public DbSet<Department> Departments { get; set; } = default!;
     public DbSet<Student> Students { get; set; } = default!;
+
+    //For DbContextManager
+    DbSet<ApplicationRole> IDbContextManager.Roles => base.Roles;
+    DbSet<ApplicationUser> IDbContextManager.Users => base.Users;
+    DbSet<IdentityUserRole<string>> IDbContextManager.UserRoles => base.UserRoles;
 
     #endregion
 

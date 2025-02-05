@@ -2,9 +2,6 @@
 
 public static class StudentErrors
 {
-    public static readonly Error IdNotFount =
-        new("Student.IdNotFount", "No student found by this id", StatusCodes.Status404NotFound);
-    
     public static readonly Error NotFount =
         new("Student.NotFount", "No student found", StatusCodes.Status404NotFound);
 

@@ -176,12 +176,12 @@ public class FingerprintService
 
     #region Matching
 
-    public async Task<Result<StudentResponse>> MatchFingerprint(CancellationToken cancellationToken = default)
+    public async Task<Result<StudentAttendanceResponse>> MatchFingerprint(CancellationToken cancellationToken = default)
     {
         var fId = GetFpId();
 
         if (fId.IsFailure)
-            return Result.Failure<StudentResponse>(fId.Error);
+            return Result.Failure<StudentAttendanceResponse>(fId.Error);
 
         _logger.LogInformation("Attempting to match fingerprint ID: {fid}", fId);
 
@@ -204,14 +204,17 @@ public class FingerprintService
 
         _logger.LogInformation("Attempting to match fingerprint ID: {fid}", fId);
 
-        var StdIdResult = await _studentService.GetId(x => x.FingerId == fId.Value, cancellationToken);
+        var StdIdResult = await _studentService.GetIDAsync(x => x.FingerId == fId.Value, cancellationToken);
 
-        if (StdIdResult.IsFailure)
+        if (StdIdResult == 0)
+        {
             _logger.LogWarning("No student found with Fingerprint ID: {fid}", fId);
+            return Result.Failure<int>(StudentErrors.NotFount);
+        }
         else
-            _logger.LogInformation("Successfully matched student with id #{StudentId}", StdIdResult.Value);
+            _logger.LogInformation("Successfully matched student with id #{StudentId}", StdIdResult);
 
-        return StdIdResult;
+        return Result.Success(StdIdResult);
     }
 
     #endregion
@@ -231,7 +234,7 @@ public class FingerprintService
         if (matchResult.IsFailure)
             return matchResult;
 
-        var attendCheck = await _studentService.Attended(matchResult.Value, weekNum, courseId, cancellationToken);
+        var attendCheck = await _studentService.AttendedAsync(matchResult.Value, weekNum, courseId, cancellationToken);
 
         return attendCheck;
     }
@@ -247,7 +250,7 @@ public class FingerprintService
         if (fId.IsFailure)
             return fId;
 
-        var registerResult = await _studentService.FpRegister(UserId, fId.Value, cancellationToken);
+        var registerResult = await _studentService.RegisterFingerIDAsync(UserId, fId.Value, cancellationToken);
 
         if (registerResult.IsFailure)
             return registerResult;
@@ -306,15 +309,15 @@ public class FingerprintService
 
         foreach (var fId in fIds)
         {
-            var stdResult = await _studentService.GetId(x => x.FingerId == fId, cancellationToken);
+            var stdResult = await _studentService.GetIDAsync(x => x.FingerId == fId, cancellationToken);
 
-            if (stdResult.IsFailure)
+            if (stdResult == 0)
             {
                 _logger.LogWarning("No data found for student with fingerprint id #{fid}", fId);
                 continue;
             }
 
-            var attendCheck = await _studentService.Attended(stdResult.Value, weekNum, courseId, cancellationToken);
+            var attendCheck = await _studentService.AttendedAsync(stdResult, weekNum, courseId, cancellationToken);
 
             if (attendCheck.IsFailure)
             {
@@ -329,7 +332,7 @@ public class FingerprintService
         if (_fpTempData.FpStatus)
             Stop();
 
-        _jobManager.Enqueue(() => _studentService.CheckForAllWeeks(weekNum, courseId, cancellationToken));
+        _jobManager.Enqueue(() => _studentService.CheckForAllWeeksAsync(weekNum, courseId, cancellationToken));
 
         return Result.Success();
     }

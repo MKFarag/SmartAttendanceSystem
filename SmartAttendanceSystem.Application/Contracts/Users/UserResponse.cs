@@ -1,7 +1,9 @@
 ﻿namespace SmartAttendanceSystem.Application.Contracts.Users;
 
-public record InstructorProfileResponse(
+public record UserResponse(
+    string Id,
     string Name,
     string Email,
-    string Role
+    bool IsDisabled,
+    IEnumerable<string> Roles
 );

@@ -1,4 +1,5 @@
-﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
+﻿
+namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class CourseService(ApplicationDbContext context) : GenericRepository<Course, CourseResponse, CourseRequest>(context),
     ICourseService
@@ -30,4 +31,10 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
 
         return Result.Success();
     }
+
+    public async Task<IEnumerable<int>> GetIDsAsync(CancellationToken cancellationToken = default)
+        => await _context.Courses
+        .AsNoTracking()
+        .Select(x => x.Id)
+        .ToListAsync(cancellationToken);
 }

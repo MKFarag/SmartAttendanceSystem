@@ -1,5 +1,5 @@
 ﻿namespace SmartAttendanceSystem.Application.Contracts.Student;
 
-public record StdCourseRequest(
-    List<int> CoursesId
+public record StudentCoursesRequest(
+    IEnumerable<int> CoursesId
 );

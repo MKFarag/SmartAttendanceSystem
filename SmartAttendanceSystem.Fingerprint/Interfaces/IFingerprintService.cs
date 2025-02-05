@@ -16,7 +16,7 @@ public interface IFingerprintService
 
     Task<Result> DeleteAllData(CancellationToken cancellationToken = default);
 
-    Task<Result<StudentResponse>> MatchFingerprint(CancellationToken cancellationToken = default);
+    Task<Result<StudentAttendanceResponse>> MatchFingerprint(CancellationToken cancellationToken = default);
 
     Task<Result<int>> SimpleMatchFingerprint(CancellationToken cancellationToken = default);
 

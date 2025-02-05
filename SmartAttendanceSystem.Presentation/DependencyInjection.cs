@@ -39,7 +39,6 @@ public static class DependencyInjection
         services.AddHangfireConfig(configuration);
         services.AddFingerprint();
 
-        services.AddScoped<IDbContextManager, DbContextManager>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IPermissionService, PermissionService>();
@@ -78,7 +77,7 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("The ConnectionString is not found");
 
-        services.AddDbContext<ApplicationDbContext>(options =>
+        services.AddDbContext<IDbContextManager, ApplicationDbContext>(options =>
             options.UseLazyLoadingProxies().UseSqlServer(connectionString)
         );
 

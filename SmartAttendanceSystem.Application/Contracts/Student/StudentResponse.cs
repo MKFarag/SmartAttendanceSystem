@@ -5,6 +5,6 @@ public record StudentResponse(
     string Name,
     string Email,
     int Level,
-    DepartmentResponse Department,
-    IEnumerable<CourseResponse>? Courses
+    string Department,
+    IEnumerable<string>? Courses
 );

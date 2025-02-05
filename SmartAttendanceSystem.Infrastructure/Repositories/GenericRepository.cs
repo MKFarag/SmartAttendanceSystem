@@ -118,11 +118,7 @@ public class GenericRepository<Main, Response, Request> : IGenericRepository<Mai
     /// <param name="cancellationToken">Send it to allow this feature</param>
     /// <returns>Boolean</returns>
     public async Task<bool> AnyAsync(Expression<Func<Main, bool>> predicate, CancellationToken cancellationToken = default)
-    {
-        predicate ??= x => true;
-
-        return await _dbSet.AnyAsync(predicate, cancellationToken);
-    }
+        => await _dbSet.AsNoTracking().AnyAsync(predicate, cancellationToken);
 
     #endregion
 

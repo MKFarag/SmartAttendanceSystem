@@ -25,7 +25,7 @@ public class StudentsController
 
     [HttpGet("Dept/{DeptId}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetAll_Dept([FromRoute] int DeptId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Department_GetAll([FromRoute] int DeptId, CancellationToken cancellationToken)
     {
         if (DeptId <= 0)
             return BadRequest();
@@ -40,7 +40,7 @@ public class StudentsController
     
     [HttpGet("Level/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetAll_Level([FromRoute] int Lvl, CancellationToken cancellationToken)
+    public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, CancellationToken cancellationToken)
     {
         if (Lvl <= 0 || Lvl > 4)
             return BadRequest();
@@ -52,7 +52,7 @@ public class StudentsController
     
     [HttpGet("Dept/{DeptId}/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetAll_Special([FromRoute] int DeptId, [FromRoute] int Lvl, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromRoute] int DeptId, [FromRoute] int Lvl, CancellationToken cancellationToken)
     {
         if (DeptId <= 0 || Lvl <= 0 || Lvl > 4)
             return BadRequest();
@@ -60,17 +60,16 @@ public class StudentsController
         if (!await _deptService.AnyAsync(x => x.Id == DeptId, cancellationToken))
             return NotFound(GlobalErrors.IdNotFound("Department"));
 
-        var Students = await _studentService.GetAllAsync(predicate: x => x.DepartmentId == DeptId && x.Level == Lvl,
-            cancellationToken: cancellationToken);
+        var Students = await _studentService.GetAllAsync(x => x.DepartmentId == DeptId && x.Level == Lvl, cancellationToken);
 
         return Ok(Students);
     }
 
     [HttpGet("{Id}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetStudent([FromRoute] int Id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromRoute] int Id, CancellationToken cancellationToken)
     {
-        var stdResult = await _studentService.GetAsync(StdId: Id, cancellationToken: cancellationToken);
+        var stdResult = await _studentService.GetAsync(x => x.Id == Id, cancellationToken: cancellationToken);
 
         return stdResult.IsSuccess
             ? Ok(stdResult.Value)
@@ -85,9 +84,9 @@ public class StudentsController
 
     [HttpPost("Courses")]
     [HasPermission(Permissions.StudentCourses)]
-    public async Task<IActionResult> AddCourses([FromBody] StdCourseRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> AddCourses([FromBody] StudentCoursesRequest request, CancellationToken cancellationToken)
     {
-        var response = await _studentService.AddStdCourse(request, User.GetId()!, cancellationToken: cancellationToken);
+        var response = await _studentService.AddCourseAsync(request.CoursesId, User.GetId()!, cancellationToken);
 
         return response.IsSuccess
             ? Created()
@@ -100,12 +99,12 @@ public class StudentsController
 
     [HttpDelete("Courses")]
     [HasPermission(Permissions.StudentCourses)]
-    public async Task<IActionResult> RemoveCourses([FromBody] StdCourseRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RemoveCourses([FromBody] StudentCoursesRequest request, CancellationToken cancellationToken)
     {
-        var response = await _studentService.DeleteStdCourse(request, User.GetId()!, cancellationToken: cancellationToken);
+        var response = await _studentService.DeleteCourseAsync(request.CoursesId, User.GetId()!, cancellationToken);
 
         return response.IsSuccess
-            ? Ok()
+            ? NoContent()
             : response.ToProblem();
     }
 
@@ -119,12 +118,12 @@ public class StudentsController
 
     [HttpGet("Attendance/{courseId}")]
     [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetAttendance_ByCourse([FromRoute] int courseId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAttendance([FromRoute] int courseId, CancellationToken cancellationToken)
     {
         if (courseId <= 0)
             return BadRequest();
 
-        var courseAttendance = await _studentService.GetAttendance_ByCourse(courseId, cancellationToken);
+        var courseAttendance = await _studentService.GetCourseAttendanceAsync(courseId, cancellationToken: cancellationToken);
 
         return courseAttendance.IsSuccess
             ? Ok(courseAttendance.Value)
@@ -137,12 +136,12 @@ public class StudentsController
 
     [HttpGet("Attendance/{courseId}/{weekNum}")]
     [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetAttendance_ByWeek([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAttendance([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
         if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
             return BadRequest();
 
-        var weekAttendance = await _studentService.GetAttendance_WeekCourse(weekNum, courseId, cancellationToken);
+        var weekAttendance = await _studentService.GetWeekAttendanceAsync(weekNum, courseId, cancellationToken: cancellationToken);
 
         return weekAttendance.IsSuccess
             ? Ok(weekAttendance.Value)
@@ -151,18 +150,43 @@ public class StudentsController
 
     #endregion
 
-    #region OneStudent
+    #region One student
 
-    [HttpGet("{stdId}/Attendance")]
+    #region ByCourse
+
+    [HttpGet("{stdId}/Attendance/{courseId}")]
     [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetAttendance([FromRoute] int stdId ,CancellationToken cancellationToken)
+    public async Task<IActionResult> GetOneAttendance([FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
     {
-        var studentAttendance = await _studentService.StudentAttendance(StdId: stdId, cancellationToken: cancellationToken);
+        if (courseId <= 0)
+            return BadRequest();
 
-        return studentAttendance.IsSuccess
-            ? Ok(studentAttendance.Value)
-            : studentAttendance.ToProblem();
+        var courseAttendance = await _studentService.GetCourseAttendanceAsync(courseId, stdId, cancellationToken);
+
+        return courseAttendance.IsSuccess
+            ? Ok(courseAttendance.Value)
+            : courseAttendance.ToProblem();
     }
+
+    #endregion
+
+    #region ByWeek
+
+    [HttpGet("{stdId}/Attendance/{courseId}/{weekNum}")]
+    [HasPermission(Permissions.GetAttendance)]
+    public async Task<IActionResult> GetOneAttendance([FromRoute] int weekNum, [FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
+    {
+        if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
+            return BadRequest();
+
+        var weekAttendance = await _studentService.GetWeekAttendanceAsync(weekNum, courseId, stdId, cancellationToken);
+
+        return weekAttendance.IsSuccess
+            ? Ok(weekAttendance.Value)
+            : weekAttendance.ToProblem();
+    }
+
+    #endregion
 
     #endregion
 
