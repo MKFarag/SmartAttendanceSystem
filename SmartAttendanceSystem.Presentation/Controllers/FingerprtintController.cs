@@ -107,7 +107,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.MatchFingerprint)]
     public async Task<IActionResult> MatchStudent(CancellationToken cancellationToken)
     {
-        var matchResult = await _fingerprintService.MatchFingerprint(cancellationToken);
+        var matchResult = await _fingerprintService.Match(cancellationToken);
 
         return matchResult.IsSuccess
             ? Ok(matchResult.Value)
@@ -118,7 +118,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
     {
-        var matchResult = await _fingerprintService.SimpleMatchFingerprint(cancellationToken);
+        var matchResult = await _fingerprintService.SimpleMatch(cancellationToken);
 
         return matchResult.IsSuccess
             ? Ok(matchResult.Value)
@@ -135,7 +135,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
-        var attendCheck = await _fingerprintService.StdAttend(weekNum, courseId, cancellationToken);
+        var attendCheck = await _fingerprintService.Attend(weekNum, courseId, cancellationToken);
 
         return attendCheck.IsSuccess
             ? Ok()
@@ -150,7 +150,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.FingerprintStudentRegister)]
     public async Task<IActionResult> RegisterToStd(CancellationToken cancellationToken)
     {
-        var FpRegisterResult = await _fingerprintService.RegisterFingerprint(User.GetId()!, cancellationToken);
+        var FpRegisterResult = await _fingerprintService.Register(User.GetId()!, cancellationToken);
 
         return FpRegisterResult.IsSuccess
             ? Ok("The student has been registered successfully")
@@ -176,7 +176,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.ActionFingerprint)]
     public async Task<IActionResult> TakeAttendance_Start(CancellationToken cancellationToken)
     {
-        var actionResult = await _fingerprintService.TakeAttendance_Start(cancellationToken);
+        var actionResult = await _fingerprintService.StartAttendance(cancellationToken);
 
         return actionResult.IsSuccess
             ? Ok("Fingerprint registration started")
@@ -191,7 +191,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.ActionFingerprint)]
     public async Task<IActionResult> TakeAttendance_End([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
-        var actionResult = await _fingerprintService.TakeAttendance_End(weekNum, courseId, cancellationToken);
+        var actionResult = await _fingerprintService.EndAttendance(weekNum, courseId, cancellationToken);
 
         return actionResult.IsSuccess
             ? Ok("Fingerprint registration ended")

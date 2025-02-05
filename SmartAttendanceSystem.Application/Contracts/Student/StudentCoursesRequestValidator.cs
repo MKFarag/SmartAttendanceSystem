@@ -1,8 +1,8 @@
 ﻿namespace SmartAttendanceSystem.Application.Contracts.Student;
 
-public class StdCourseRequestValidator : AbstractValidator<StudentCoursesRequest>
+public class StudentCoursesRequestValidator : AbstractValidator<StudentCoursesRequest>
 {
-    public StdCourseRequestValidator()
+    public StudentCoursesRequestValidator()
     {
         RuleFor(x => x.CoursesId)
             .NotEmpty()

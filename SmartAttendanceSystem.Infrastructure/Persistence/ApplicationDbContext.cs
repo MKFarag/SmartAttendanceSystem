@@ -13,8 +13,6 @@ public class ApplicationDbContext(DbContextOptions options)
     public DbSet<Student> Students { get; set; } = default!;
 
     //For DbContextManager
-    DbSet<ApplicationRole> IDbContextManager.Roles => base.Roles;
-    DbSet<ApplicationUser> IDbContextManager.Users => base.Users;
     DbSet<IdentityUserRole<string>> IDbContextManager.UserRoles => base.UserRoles;
 
     #endregion

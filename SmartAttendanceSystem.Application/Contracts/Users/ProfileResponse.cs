@@ -1,7 +1,7 @@
 ﻿namespace SmartAttendanceSystem.Application.Contracts.Users;
 
-public record InstructorProfileResponse(
+public record ProfileResponse(
     string Name,
     string Email,
-    string Role
+    IList<string> Roles
 );

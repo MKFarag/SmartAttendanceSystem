@@ -5,7 +5,7 @@ public record StudentProfileResponse(
     string Name,
     string Email,
     int Level,
-    IList<string>? Role,
+    IList<string>? Roles,
     DepartmentResponse Department,
-    IList<CourseWithAttendance> Courses
+    IList<CourseWithAttendance> CourseAttendances
 );

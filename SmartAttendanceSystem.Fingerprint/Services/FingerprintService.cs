@@ -176,7 +176,7 @@ public class FingerprintService
 
     #region Matching
 
-    public async Task<Result<StudentAttendanceResponse>> MatchFingerprint(CancellationToken cancellationToken = default)
+    public async Task<Result<StudentAttendanceResponse>> Match(CancellationToken cancellationToken = default)
     {
         var fId = GetFpId();
 
@@ -195,7 +195,7 @@ public class FingerprintService
         return studentResult;
     }
 
-    public async Task<Result<int>> SimpleMatchFingerprint(CancellationToken cancellationToken = default)
+    public async Task<Result<int>> SimpleMatch(CancellationToken cancellationToken = default)
     {
         var fId = GetFpId();
 
@@ -221,7 +221,7 @@ public class FingerprintService
 
     #region Attend
 
-    public async Task<Result> StdAttend(int weekNum, int courseId, CancellationToken cancellationToken = default)
+    public async Task<Result> Attend(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         if (weekNum < 1 || weekNum > 12)
             return Result.Failure(GlobalErrors.InvalidInput);
@@ -229,7 +229,7 @@ public class FingerprintService
         if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
             return Result.Failure(GlobalErrors.IdNotFound("Courses"));
 
-        var matchResult = await SimpleMatchFingerprint(cancellationToken);
+        var matchResult = await SimpleMatch(cancellationToken);
 
         if (matchResult.IsFailure)
             return matchResult;
@@ -243,7 +243,7 @@ public class FingerprintService
 
     #region Register
 
-    public async Task<Result> RegisterFingerprint(string UserId, CancellationToken cancellationToken = default)
+    public async Task<Result> Register(string UserId, CancellationToken cancellationToken = default)
     {
         var fId = GetFpId();
 
@@ -263,7 +263,7 @@ public class FingerprintService
     #region ActionButtons
 
     //Start
-    public async Task<Result> TakeAttendance_Start(CancellationToken cancellationToken = default)
+    public async Task<Result> StartAttendance(CancellationToken cancellationToken = default)
     {
         await Task.Delay(1, cancellationToken);
 
@@ -283,7 +283,7 @@ public class FingerprintService
     }
 
     //End
-    public async Task<Result> TakeAttendance_End(int weekNum, int courseId, CancellationToken cancellationToken = default)
+    public async Task<Result> EndAttendance(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         if (!_fpTempData.ActionButtonStatus)
             return Result.Failure(FingerprintErrors.ServiceUnavailable);

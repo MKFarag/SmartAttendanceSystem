@@ -148,8 +148,6 @@ public class SerialPortService : ISerialPortService
             _logger.LogWarning("Fingerprint: {data}", data);
             return;
         }
-
-        //Console.WriteLine($"Unexpected fingerprint data format: {data}");
     }
 
     #endregion

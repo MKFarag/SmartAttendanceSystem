@@ -4,6 +4,6 @@ public record CourseAttendanceResponse(
     int Id,
     string Name,
     int Level,
-    string DepartmentName,
+    string Department,
     string Total
 );

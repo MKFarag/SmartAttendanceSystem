@@ -24,22 +24,25 @@ public class UserService
 
     public async Task<object> GetProfileAsync(string userId)
     {
-        object result;
+        var user = await _userManager.FindByIdAsync(userId);
+        var roles = await _userManager.GetRolesAsync(user!);
 
-        if (await _permissionService.StudentCheck(userId))
-            return new { };
-        //result = await GetStudentProfileAsync(userId);
+        if (user!.IsStudent)
+        {
+            if (user.StudentInfo!.Attendances is null)
+                return (user, roles).Adapt<StudentProfileResponse>() with { CourseAttendances = [] };
+
+            return (user, roles).Adapt<StudentProfileResponse>();
+        }
         else
-            result = await GetInstructorProfileAsync(userId);
-
-        return result;
+            return (user, roles).Adapt<ProfileResponse>();
     }
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await (from u in _context.Users
+        => await (from u in _userManager.Users
                   join ur in _context.UserRoles
                   on u.Id equals ur.UserId
-                  join r in _context.Roles
+                  join r in _roleManager.Roles
                   on ur.RoleId equals r.Id into roles
                   where !roles.Any(x => x.Name == DefaultRoles.NotActiveInstructor)
                   select new
@@ -90,38 +93,6 @@ public class UserService
 
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
-
-    #endregion
-
-
-    #region Private methods
-
-    //private async Task<StudentProfileResponse> GetStudentProfileAsync(string userId)
-    //{
-    //    return default!;
-    //    //var user = await _userManager.FindByIdAsync(userId);
-    //    //var roles = await _userManager.GetRolesAsync(user!);
-    //    //var stdAttendance = await _studentService.GetAsync(x => x.UserId == userId);
-    //    //IList<int> coursesId = [0];
-
-    //    //if (stdAttendance.Value.Courses is not null)
-    //    //    coursesId = stdAttendance.Value.Courses.Select(x => x.Id).ToList();
-        
-    //    //var response = new StudentProfileResponse(
-    //    //    StudentId: stdAttendance.Value.Id,
-    //    //    Name: stdAttendance.Value.Name,
-    //    //    Email: stdAttendance.Value.Email,
-    //    //    Level: stdAttendance.Value.Level,
-    //    //    Role: roles,
-    //    //    Department: stdAttendance.Value.Department,
-    //    //    Courses: await _studentService.GetCoursesWithAttendance(coursesId, stdAttendance.Value.Id)
-    //    //);
-
-    //    //return response;
-    //}
-
-    private async Task<InstructorProfileResponse> GetInstructorProfileAsync(string userId)
-        => await _userManager.Users.Where(x => x.Id == userId).ProjectToType<InstructorProfileResponse>().FirstAsync();
 
     #endregion
 }
