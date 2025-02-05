@@ -51,24 +51,6 @@ public class MappingConfigurations : IRegister
 
         #endregion
 
-        #region Profile
-
-        config.NewConfig<(ApplicationUser user, IList<string> roles), StudentProfileResponse>()
-            .Map(dest => dest.Name, src => src.user.Name)
-            .Map(dest => dest.Email, src => src.user.Email)
-            .Map(dest => dest.Level, src => src.user.StudentInfo!.Level)
-            .Map(dest => dest.StudentId, src => src.user.StudentInfo!.Id)
-            .Map(dest => dest.Department, src => src.user.StudentInfo!.Department)
-            .Map(dest => dest.CourseAttendances, src => src.user.StudentInfo!.Attendances)
-            .Map(dest => dest.Roles, src => src.roles);
-
-        config.NewConfig<(ApplicationUser user, IList<string> roles), ProfileResponse>()
-            .Map(dest => dest.Name, src => src.user.Name)
-            .Map(dest => dest.Email, src => src.user.Email)
-            .Map(dest => dest.Roles, src => src.roles);
-
-        #endregion
-
         #endregion
     }
 }

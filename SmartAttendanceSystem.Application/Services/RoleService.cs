@@ -5,9 +5,9 @@ public class RoleService
     #region Initial
 
     (RoleManager<ApplicationRole> roleManager,
-    IPermissionService permissionService) : IRoleService
+    IRoleClaimManager roleClaimManager) : IRoleService
 {
-    private readonly IPermissionService _permissionService = permissionService;
+    private readonly IRoleClaimManager _roleClaimManager = roleClaimManager;
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
 
     #endregion
@@ -65,7 +65,7 @@ public class RoleService
                     ClaimType = Permissions.Type
                 });
 
-            await _permissionService.AddRangeAsync(permissions);
+            await _roleClaimManager.AddRangeAsync(permissions);
 
             var response = new RoleDetailResponse(role.Id, role.Name, role.IsDefault, request.Permissions);
 
@@ -99,7 +99,7 @@ public class RoleService
 
         if (updateResult.Succeeded)
         {
-            var currentPermissions = await _permissionService.GetCurrentAsync(role.Id, Permissions.Type);
+            var currentPermissions = await _roleClaimManager.GetClaimsAsync(role.Id, Permissions.Type);
 
             if (currentPermissions.IsFailure)
                 return currentPermissions;
@@ -114,8 +114,8 @@ public class RoleService
 
             var removedPermissions = currentPermissions.Value.Except(request.Permissions);
 
-            await _permissionService.RemoveAsync(removedPermissions, role.Id);
-            await _permissionService.AddRangeAsync(newPermissions);
+            await _roleClaimManager.RemoveAsync(removedPermissions, role.Id);
+            await _roleClaimManager.AddRangeAsync(newPermissions);
 
             return Result.Success();
         }

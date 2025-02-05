@@ -1,34 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SmartAttendanceSystem.Core.Abstraction.Constants;
-using System.Collections.Generic;
+﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
-namespace SmartAttendanceSystem.Infrastructure.Repositories;
-
-public class PermissionService
+public class RoleClaimManager
 
     #region Initial
 
     (UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
-    ApplicationDbContext context) : IPermissionService
+    ApplicationDbContext context) : IRoleClaimManager
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
     private readonly ApplicationDbContext _context = context;
-
-    #endregion
-
-    #region StudentCheck
-
-    public async Task<bool> StudentCheck(string? UserId, CancellationToken cancellationToken = default) =>
-        UserId is not null && await _context.Users.AnyAsync(x => x.Id == UserId && x.IsStudent, cancellationToken);
-
-    #endregion
-
-    #region InstructorCheck
-
-    public async Task<bool> InstructorCheck(string? UserId, CancellationToken cancellationToken = default) =>
-        UserId is not null && await _context.Users.AnyAsync(x => x.Id == UserId && !x.IsStudent, cancellationToken);
 
     #endregion
 
@@ -37,7 +19,7 @@ public class PermissionService
     #region Roles & Permissions
 
     public async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)>
-    GetUserRolesAndPermissionsAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    GetRolesAndClaimsAsync(ApplicationUser user, CancellationToken cancellationToken = default)
     {
         var userRoles = await _userManager.GetRolesAsync(user);
 
@@ -54,9 +36,9 @@ public class PermissionService
 
     #endregion
 
-    #region Current Role Permissions
+    #region Current Claims
 
-    public async Task<Result<IEnumerable<string>>> GetCurrentAsync(string roleId, string claimType)
+    public async Task<Result<IEnumerable<string>>> GetClaimsAsync(string roleId, string claimType)
     {
         if (!await _roleManager.Roles.AnyAsync(x => x.Id == roleId))
             return Result.Failure<IEnumerable<string>>(RoleErrors.NotFound);
@@ -67,6 +49,27 @@ public class PermissionService
             .ToListAsync();
 
         return Result.Success<IEnumerable<string>>(permissions!);
+    }
+
+    #endregion
+
+    #region User Roles
+
+    public async Task<IList<string>> GetRolesAsync(string userId, bool AsNoTracking = true, CancellationToken cancellationToken = default)
+    {
+        var query = from u in _userManager.Users
+                    where u.Id == userId
+                    join ur in _context.UserRoles
+                    on u.Id equals ur.UserId
+                    join r in _roleManager.Roles
+                    on ur.RoleId equals r.Id
+                    where r.Name != DefaultRoles.NotActiveInstructor
+                    select r.Name;
+
+        if (AsNoTracking)
+            query = query.AsNoTracking();
+
+        return await query.ToListAsync(cancellationToken);
     }
 
     #endregion

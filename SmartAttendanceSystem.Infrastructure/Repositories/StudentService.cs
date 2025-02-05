@@ -176,6 +176,41 @@ public class StudentService
         return Result.Success(filteredAttendances);
     }
 
+    /// <summary>
+    /// See the courses with attendance for one student by his id or userId
+    /// </summary>
+    public async Task<IList<CourseWithAttendance>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default)
+    {
+        if (StdId != 0 && UserId is not null)
+            throw new InvalidOperationException("StudentService.GetCourseWithAttendances cannot have StdId and userId in the same time");
+
+        if (UserId is not null)
+            StdId = await GetIDAsync(x => x.UserId == UserId, cancellationToken);
+
+        if (StdId == 0)
+            return [];
+
+        var response = await (from c in _context.Attendances
+                              join s in _context.Students
+                              on c.StudentId equals s.Id
+                              where c.StudentId == StdId
+                              select new CourseWithAttendance
+                              (
+                                   new CourseResponse
+                                   (
+                                   c.Course.Id,
+                                   c.Course.Name,
+                                   c.Course.Code
+                                   ),
+                                   c.Total
+                              )
+                              )
+                              .AsNoTracking()
+                              .ToListAsync(cancellationToken);
+
+        return response;
+    }
+
     #endregion
 
     #region Fingerprint ServicesPart

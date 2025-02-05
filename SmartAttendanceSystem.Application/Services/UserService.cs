@@ -1,18 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-
-namespace SmartAttendanceSystem.Application.Services;
+﻿namespace SmartAttendanceSystem.Application.Services;
 
 public class UserService
 
-    #region Initial
+#region Initial
 
-    (UserManager<ApplicationUser> userManager, 
+    (UserManager<ApplicationUser> userManager,
     RoleManager<ApplicationRole> roleManager,
-    IPermissionService permissionService,
+    IRoleClaimManager roleClaimManager,
     IStudentService studentService,
     IDbContextManager context) : IUserService
 {
-    private readonly IPermissionService _permissionService = permissionService;
+    private readonly IRoleClaimManager _roleClaimManager = roleClaimManager;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
     private readonly IStudentService _studentService = studentService;
@@ -20,49 +18,52 @@ public class UserService
 
     #endregion
 
+    #region User
+
     #region Get
 
-    public async Task<object> GetProfileAsync(string userId)
+    public async Task<object> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var user = await _userManager.FindByIdAsync(userId);
-        var roles = await _userManager.GetRolesAsync(user!);
+        var roles = await _roleClaimManager.GetRolesAsync(userId, true, cancellationToken);
 
-        if (user!.IsStudent)
+        if (roles.Contains(DefaultRoles.Student))
         {
-            if (user.StudentInfo!.Attendances is null)
-                return (user, roles).Adapt<StudentProfileResponse>() with { CourseAttendances = [] };
+            var user = await _userManager.Users
+                .Where(x => x.Id == userId)
+                .Select(x => new
+                {
+                    x.StudentInfo!.Id,
+                    x.Name,
+                    x.Email,
+                    x.StudentInfo.Level,
+                    x.StudentInfo.Department
+                }
+                )
+                .AsNoTracking()
+                .FirstAsync(cancellationToken);
 
-            return (user, roles).Adapt<StudentProfileResponse>();
+            var courses = await _studentService.GetCoursesWithAttendancesDTOsAsync(user.Id, cancellationToken: cancellationToken);
+
+            StudentProfileResponse response = new
+                (
+                    user.Id,
+                    user.Name,
+                    user.Email!,
+                    user.Level,
+                    roles,
+                    (user.Department).Adapt<DepartmentResponse>(),
+                    courses
+                );
+
+            return response;
         }
         else
-            return (user, roles).Adapt<ProfileResponse>();
+            return await _userManager.Users
+                .Where(x => x.Id == userId)
+                .Select(x => new ProfileResponse(x.Name, x.Email!, roles))
+                .AsNoTracking()
+                .FirstAsync(cancellationToken);
     }
-
-    public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
-        => await (from u in _userManager.Users
-                  join ur in _context.UserRoles
-                  on u.Id equals ur.UserId
-                  join r in _roleManager.Roles
-                  on ur.RoleId equals r.Id into roles
-                  where !roles.Any(x => x.Name == DefaultRoles.NotActiveInstructor)
-                  select new
-                  {
-                      u.Id,
-                      u.Name,
-                      u.Email,
-                      u.IsDisabled,
-                      Roles = roles.Select(x => x.Name!).ToList()
-                  })
-                  .GroupBy(u => new {u.Id, u.Name, u.Email, u.IsDisabled})
-                  .Select(u => new UserResponse
-                  (
-                      u.Key.Id,
-                      u.Key.Name,
-                      u.Key.Email,
-                      u.Key.IsDisabled,
-                      u.SelectMany(x => x.Roles)
-                  ))
-                  .ToListAsync(cancellationToken);
 
     #endregion
 
@@ -93,6 +94,43 @@ public class UserService
 
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
+
+    #endregion
+
+    #endregion
+
+    #region Admin
+
+    #region GetAll
+
+    public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
+    => await (from u in _userManager.Users
+              join ur in _context.UserRoles
+              on u.Id equals ur.UserId
+              join r in _roleManager.Roles
+              on ur.RoleId equals r.Id into roles
+              where !roles.Any(x => x.Name == DefaultRoles.NotActiveInstructor)
+              select new
+              {
+                  u.Id,
+                  u.Name,
+                  u.Email,
+                  u.IsDisabled,
+                  Roles = roles.Select(x => x.Name!).ToList()
+              })
+              .GroupBy(u => new { u.Id, u.Name, u.Email, u.IsDisabled })
+              .Select(u => new UserResponse
+              (
+                  u.Key.Id,
+                  u.Key.Name,
+                  u.Key.Email,
+                  u.Key.IsDisabled,
+                  u.SelectMany(x => x.Roles)
+              ))
+              .ToListAsync(cancellationToken);
+
+
+    #endregion
 
     #endregion
 }
