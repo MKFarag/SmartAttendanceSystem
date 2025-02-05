@@ -24,8 +24,7 @@ public class MappingConfigurations : IRegister
         config.NewConfig<Student, StudentAttendanceResponse>()
             .Map(dest => dest.Name, src => src.User.Name)
             .Map(dest => dest.Email, src => src.User.Email)
-            .Map(dest => dest.CourseAttendances.Select(x => x.Course), src => src.Attendances!.Select(x => x.Course))
-            .Map(dest => dest.CourseAttendances.Select(x => x.Total), src => src.Attendances!.Select(x => x.Total));
+            .Map(dest => dest.CourseAttendances, src => src.Attendances);
             
 
         #region ByCourse
