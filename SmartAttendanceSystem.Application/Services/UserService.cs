@@ -27,7 +27,8 @@ public class UserService
         object result;
 
         if (await _permissionService.StudentCheck(userId))
-            result = await GetStudentProfileAsync(userId);
+            return new { };
+        //result = await GetStudentProfileAsync(userId);
         else
             result = await GetInstructorProfileAsync(userId);
 
@@ -95,29 +96,29 @@ public class UserService
 
     #region Private methods
 
-    private async Task<StudentProfileResponse> GetStudentProfileAsync(string userId)
-    {
-        return default!;
-        //var user = await _userManager.FindByIdAsync(userId);
-        //var roles = await _userManager.GetRolesAsync(user!);
-        //var stdAttendance = await _studentService.GetAsync(x => x.UserId == userId);
-        //IList<int> coursesId = [0];
+    //private async Task<StudentProfileResponse> GetStudentProfileAsync(string userId)
+    //{
+    //    return default!;
+    //    //var user = await _userManager.FindByIdAsync(userId);
+    //    //var roles = await _userManager.GetRolesAsync(user!);
+    //    //var stdAttendance = await _studentService.GetAsync(x => x.UserId == userId);
+    //    //IList<int> coursesId = [0];
 
-        //if (stdAttendance.Value.Courses is not null)
-        //    coursesId = stdAttendance.Value.Courses.Select(x => x.Id).ToList();
+    //    //if (stdAttendance.Value.Courses is not null)
+    //    //    coursesId = stdAttendance.Value.Courses.Select(x => x.Id).ToList();
         
-        //var response = new StudentProfileResponse(
-        //    StudentId: stdAttendance.Value.Id,
-        //    Name: stdAttendance.Value.Name,
-        //    Email: stdAttendance.Value.Email,
-        //    Level: stdAttendance.Value.Level,
-        //    Role: roles,
-        //    Department: stdAttendance.Value.Department,
-        //    Courses: await _studentService.GetCoursesWithAttendance(coursesId, stdAttendance.Value.Id)
-        //);
+    //    //var response = new StudentProfileResponse(
+    //    //    StudentId: stdAttendance.Value.Id,
+    //    //    Name: stdAttendance.Value.Name,
+    //    //    Email: stdAttendance.Value.Email,
+    //    //    Level: stdAttendance.Value.Level,
+    //    //    Role: roles,
+    //    //    Department: stdAttendance.Value.Department,
+    //    //    Courses: await _studentService.GetCoursesWithAttendance(coursesId, stdAttendance.Value.Id)
+    //    //);
 
-        //return response;
-    }
+    //    //return response;
+    //}
 
     private async Task<InstructorProfileResponse> GetInstructorProfileAsync(string userId)
         => await _userManager.Users.Where(x => x.Id == userId).ProjectToType<InstructorProfileResponse>().FirstAsync();
