@@ -1,5 +1,4 @@
-﻿
-namespace SmartAttendanceSystem.Infrastructure.Repositories;
+﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class CourseService(ApplicationDbContext context) : GenericRepository<Course, CourseResponse, CourseRequest>(context),
     ICourseService

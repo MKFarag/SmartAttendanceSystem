@@ -20,7 +20,7 @@ public interface IStudentService
     //ATTENDANCE
     Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? StdId = null, CancellationToken cancellationToken = default);
     Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? StdId = null, CancellationToken cancellationToken = default);
-    Task<IList<CourseWithAttendance>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default);
+    Task<IList<CourseWithAttendanceResponse>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default);
 
     //FINGERPRINT
     Task<Result> AttendedAsync(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default);

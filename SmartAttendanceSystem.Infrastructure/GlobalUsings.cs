@@ -17,9 +17,6 @@ global using Mapster;
 
 #region MyMethods
 
-global using SmartAttendanceSystem.Application.Contracts.Department;
-global using SmartAttendanceSystem.Application.Contracts.Student;
-global using SmartAttendanceSystem.Application.Contracts.Course;
 global using SmartAttendanceSystem.Infrastructure.Persistence;
 global using SmartAttendanceSystem.Core.Abstraction.Constants;
 global using SmartAttendanceSystem.Application.Interfaces;
@@ -27,5 +24,17 @@ global using SmartAttendanceSystem.Application.Helpers;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Entities;
 global using SmartAttendanceSystem.Core.Errors;
+
+#endregion
+
+//////////////////////////////////////////////////////////////////////////////////
+
+#region DTOs
+
+global using SmartAttendanceSystem.Application.Contracts.Department.Responses;
+global using SmartAttendanceSystem.Application.Contracts.Department.Requests;
+global using SmartAttendanceSystem.Application.Contracts.Student.Responses;
+global using SmartAttendanceSystem.Application.Contracts.Course.Responses;
+global using SmartAttendanceSystem.Application.Contracts.Course.Requests;
 
 #endregion

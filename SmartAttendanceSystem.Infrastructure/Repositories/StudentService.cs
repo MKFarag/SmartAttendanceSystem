@@ -179,7 +179,7 @@ public class StudentService
     /// <summary>
     /// See the courses with attendance for one student by his id or userId
     /// </summary>
-    public async Task<IList<CourseWithAttendance>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default)
+    public async Task<IList<CourseWithAttendanceResponse>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default)
     {
         if (StdId != 0 && UserId is not null)
             throw new InvalidOperationException("StudentService.GetCourseWithAttendances cannot have StdId and userId in the same time");
@@ -194,7 +194,7 @@ public class StudentService
                               join s in _context.Students
                               on c.StudentId equals s.Id
                               where c.StudentId == StdId
-                              select new CourseWithAttendance
+                              select new CourseWithAttendanceResponse
                               (
                                    new CourseResponse
                                    (
