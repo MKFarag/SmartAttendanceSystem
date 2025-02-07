@@ -18,8 +18,7 @@ public class TestController(IStudentService service) : ControllerBase
     }
 
     [HttpGet("test")]
-    public async Task<IActionResult> CourseTest(CancellationToken cancellationToken)
-    {
-        return Ok(await _service.GetCoursesWithAttendancesDTOsAsync(2,null,cancellationToken));
-    }
+    [Authorize]
+    public IActionResult Test()
+        => Ok(User.GetRoles());
 }

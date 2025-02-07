@@ -1,7 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Contracts.Course.Responses;
-using SmartAttendanceSystem.Application.Contracts.Department.Responses;
-
-namespace SmartAttendanceSystem.Application.Contracts.Student.Responses;
+﻿namespace SmartAttendanceSystem.Application.Contracts.Student.Responses;
 
 public record StudentAttendanceResponse(
     int Id,

@@ -1,6 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Contracts.Roles.Requests;
-
-namespace SmartAttendanceSystem.Application.Contracts.Roles.Validators;
+﻿namespace SmartAttendanceSystem.Application.Contracts.Roles.Validators;
 
 public class RoleRequestValidator : AbstractValidator<RoleRequest>
 {

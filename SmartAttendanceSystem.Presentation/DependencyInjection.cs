@@ -41,7 +41,7 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
-        services.AddScoped<IRoleClaimManager, RoleClaimManager>();
+        services.AddScoped<IClaimService, ClaimService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IEmailSender, EmailService>();

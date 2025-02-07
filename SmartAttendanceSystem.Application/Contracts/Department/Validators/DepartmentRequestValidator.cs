@@ -1,6 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Contracts.Department.Requests;
-
-namespace SmartAttendanceSystem.Application.Contracts.Department.Validators;
+﻿namespace SmartAttendanceSystem.Application.Contracts.Department.Validators;
 
 public class DepartmentRequestValidator : AbstractValidator<DepartmentRequest>
 {

@@ -3,5 +3,5 @@
 public interface IDbContextManager
 {
     DbSet<IdentityUserRole<string>> UserRoles { get; }
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken);
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -9,6 +9,15 @@ public class MappingConfigurations : IRegister
         config.NewConfig<RegisterRequest, ApplicationUser>()
             .Map(dest => dest.UserName, src => src.Email);
 
+        config.NewConfig<CreateUserRequest, ApplicationUser>()
+            .Map(dest => dest.UserName, src => src.Email)
+            .Map(dest => dest.EmailConfirmed, src => true)
+            .Map(dest => dest.IsStudent, src => false);
+
+        config.NewConfig<(ApplicationUser user, IList<string> roles), UserResponse>()
+            .Map(dest => dest, src => src.user)
+            .Map(dest => dest.Roles, src => src.roles);
+
         #endregion
 
         #region Student

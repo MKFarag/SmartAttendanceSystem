@@ -2,6 +2,9 @@
 
 public static class UserErrors
 {
+    public static readonly Error NotFount =
+        new("User.NotFount", "No user found", StatusCodes.Status404NotFound);
+
     public static readonly Error InvalidCredentials =
         new("User.InvalidCredentials", "Invalid email/password", StatusCodes.Status401Unauthorized);
 
@@ -34,4 +37,7 @@ public static class UserErrors
     
     public static readonly Error NoPermission=
         new("User.NoPermission", "You do not have permission to perform this action", StatusCodes.Status403Forbidden);
+
+    public static readonly Error InvalidRoles =
+        new("User.InvalidRoles", "Invalid roles", StatusCodes.Status400BadRequest);
 }

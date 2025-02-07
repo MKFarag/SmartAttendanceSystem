@@ -1,26 +1,33 @@
 ﻿namespace SmartAttendanceSystem.Application.Services;
 
-public class RoleService
-
-    #region Initial
-
-    (RoleManager<ApplicationRole> roleManager,
-    IRoleClaimManager roleClaimManager) : IRoleService
+public class RoleService(RoleManager<ApplicationRole> roleManager, IClaimService claimService) : IRoleService
 {
-    private readonly IRoleClaimManager _roleClaimManager = roleClaimManager;
+    private readonly IClaimService _claimsService = claimService;
     private readonly RoleManager<ApplicationRole> _roleManager = roleManager;
+
+    #region DbSet
+
+    public IQueryable<ApplicationRole> Roles => _roleManager.Roles;
+    public IQueryable<IdentityRoleClaim<string>> RoleClaims => _claimsService.RoleClaims;
 
     #endregion
 
     #region Get
 
     public async Task<IEnumerable<RoleResponse>> GetAllAsync(bool includeDisabled = false, CancellationToken cancellationToken = default) =>
-        await _roleManager.Roles
+        await Roles
             .Where(x => !x.IsDefault && (!x.IsDeleted || includeDisabled))
             .AsNoTracking()
             .ProjectToType<RoleResponse>()
             .ToListAsync(cancellationToken);
     
+    public async Task<IEnumerable<string>> GetAllNamesAsync(bool includeDisabled = false, CancellationToken cancellationToken = default)
+        => await Roles
+            .Where(x => !x.IsDefault && (!x.IsDeleted || includeDisabled))
+            .AsNoTracking()
+            .Select(x => x.Name!)
+            .ToListAsync(cancellationToken);
+
     public async Task<Result<RoleDetailResponse>> GetAsync(string id)
     {
         if (await _roleManager.FindByIdAsync(id) is not { } role)
@@ -65,7 +72,7 @@ public class RoleService
                     ClaimType = Permissions.Type
                 });
 
-            await _roleClaimManager.AddRangeAsync(permissions);
+            await _claimsService.AddRangeAsync(permissions);
 
             var response = new RoleDetailResponse(role.Id, role.Name, role.IsDefault, request.Permissions);
 
@@ -99,12 +106,12 @@ public class RoleService
 
         if (updateResult.Succeeded)
         {
-            var currentPermissions = await _roleClaimManager.GetClaimsAsync(role.Id, Permissions.Type);
+            var currentPermissions = await RoleClaims
+                .Where(x => x.RoleId == id && x.ClaimType == Permissions.Type)
+                .Select(x => x.ClaimValue)
+                .ToListAsync();
 
-            if (currentPermissions.IsFailure)
-                return currentPermissions;
-
-            var newPermissions = request.Permissions.Except(currentPermissions.Value)
+            var newPermissions = request.Permissions.Except(currentPermissions)
                 .Select(x => new IdentityRoleClaim<string>
                 {
                     RoleId = role.Id,
@@ -112,10 +119,10 @@ public class RoleService
                     ClaimValue = x
                 });
 
-            var removedPermissions = currentPermissions.Value.Except(request.Permissions);
+            var removedPermissions = currentPermissions.Except(request.Permissions);
 
-            await _roleClaimManager.RemoveAsync(removedPermissions, role.Id);
-            await _roleClaimManager.AddRangeAsync(newPermissions);
+            await _claimsService.RemoveAsync(removedPermissions, role.Id);
+            await _claimsService.AddRangeAsync(newPermissions);
 
             return Result.Success();
         }

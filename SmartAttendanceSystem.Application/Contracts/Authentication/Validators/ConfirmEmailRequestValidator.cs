@@ -1,6 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Contracts.Authentication.Requests;
-
-namespace SmartAttendanceSystem.Application.Contracts.Authentication.Validators;
+﻿namespace SmartAttendanceSystem.Application.Contracts.Authentication.Validators;
 
 public class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailRequest>
 {

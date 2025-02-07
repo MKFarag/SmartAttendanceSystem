@@ -1,6 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Contracts.Users.Requests;
-
-namespace SmartAttendanceSystem.Application.Contracts.Users.Validators;
+﻿namespace SmartAttendanceSystem.Application.Contracts.Users.Validators;
 
 public class UpdateProfileRequestValidator : AbstractValidator<UpdateProfileRequest>
 {

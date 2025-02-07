@@ -10,23 +10,24 @@ public class AuthService
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
     IHttpContextAccessor httpContextAccessor,
-    IDepartmentService departmentService,
     ILogger<AuthService> logger,
-    IJobManager jobManager,
-    IRoleClaimManager roleClaimManager,
+    IUserService userService,
     IJwtProvider jwtProvider,
-    IEmailSender emailSender) : IAuthService
+    IEmailSender emailSender,
+    IJobManager jobManager,
+    IDepartmentService departmentService) : IAuthService
 {
+    private readonly IDepartmentService _deptService = departmentService;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IDepartmentService _deptService = departmentService;
-    private readonly IJobManager _jobManager = jobManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
+    private readonly IUserService _userService = userService;
     private readonly IEmailSender _emailSender = emailSender;
     private readonly ILogger<AuthService> _logger = logger;
-    private readonly IRoleClaimManager _roleClaimManager = roleClaimManager;
+    private readonly IJobManager _jobManager = jobManager;
+
     private readonly int _refreshTokenExpiryDays = 14;
 
     #endregion
@@ -45,7 +46,7 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            var (userRoles, userPermissions) = await _roleClaimManager.GetRolesAndClaimsAsync(user, cancellationToken);
+            var (userRoles, userPermissions) = await _userService.GetRolesAndClaimsAsync(user, cancellationToken);
 
             var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
 
@@ -95,7 +96,7 @@ public class AuthService
 
         userRefreshToken.RevokedOn = DateTime.UtcNow;
 
-        var (userRoles, userPermissions) = await _roleClaimManager.GetRolesAndClaimsAsync(user, cancellationToken);
+        var (userRoles, userPermissions) = await _userService.GetRolesAndClaimsAsync(user, cancellationToken);
 
         var (NewToken, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
         var newRefreshToken = GenerateRefreshToken();

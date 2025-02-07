@@ -1,6 +1,4 @@
-﻿using SmartAttendanceSystem.Application.Contracts.Course.Requests;
-
-namespace SmartAttendanceSystem.Application.Contracts.Course.Validators;
+﻿namespace SmartAttendanceSystem.Application.Contracts.Course.Validators;
 
 public class CourseRequestValidator : AbstractValidator<CourseRequest>
 {
