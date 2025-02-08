@@ -44,5 +44,6 @@ global using SmartAttendanceSystem.Application.Contracts.Users.Responses;
 global using SmartAttendanceSystem.Application.Contracts.Users.Requests;
 global using SmartAttendanceSystem.Application.Contracts.Roles.Responses;
 global using SmartAttendanceSystem.Application.Contracts.Roles.Requests;
+global using SmartAttendanceSystem.Application.Contracts.Common;
 
 #endregion

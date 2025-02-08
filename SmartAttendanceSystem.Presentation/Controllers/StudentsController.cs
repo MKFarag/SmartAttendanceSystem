@@ -20,12 +20,12 @@ public class StudentsController
 
     [HttpGet("")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>
-        Ok(await _studentService.GetAllAsync(cancellationToken: cancellationToken));
+    public async Task<IActionResult> GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
+        Ok(await _studentService.GetAllAsync(filters, cancellationToken: cancellationToken));
 
     [HttpGet("Dept/{DeptId}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> Department_GetAll([FromRoute] int DeptId, CancellationToken cancellationToken)
+    public async Task<IActionResult> Department_GetAll([FromRoute] int DeptId, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
     {
         if (DeptId <= 0)
             return BadRequest();
@@ -33,26 +33,26 @@ public class StudentsController
         if (!await _deptService.AnyAsync(x => x.Id == DeptId, cancellationToken))
             return Result.Failure(GlobalErrors.IdNotFound("Department")).ToProblem();
 
-        var Students = await _studentService.GetAllAsync(predicate: x => x.DepartmentId == DeptId, cancellationToken: cancellationToken);
+        var Students = await _studentService.GetAllAsync(filters, x => x.DepartmentId == DeptId, cancellationToken);
 
         return Ok(Students);
     }
     
     [HttpGet("Level/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, CancellationToken cancellationToken)
+    public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
     {
         if (Lvl <= 0 || Lvl > 4)
             return BadRequest();
 
-        var Students = await _studentService.GetAllAsync(predicate: x => x.Level == Lvl, cancellationToken: cancellationToken);
+        var Students = await _studentService.GetAllAsync(filters, x => x.Level == Lvl, cancellationToken);
 
         return Ok(Students);
     }
     
     [HttpGet("Dept/{DeptId}/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetAll([FromRoute] int DeptId, [FromRoute] int Lvl, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAll([FromRoute] int DeptId, [FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
     {
         if (DeptId <= 0 || Lvl <= 0 || Lvl > 4)
             return BadRequest();
@@ -60,7 +60,7 @@ public class StudentsController
         if (!await _deptService.AnyAsync(x => x.Id == DeptId, cancellationToken))
             return NotFound(GlobalErrors.IdNotFound("Department"));
 
-        var Students = await _studentService.GetAllAsync(x => x.DepartmentId == DeptId && x.Level == Lvl, cancellationToken);
+        var Students = await _studentService.GetAllAsync(filters, x => x.DepartmentId == DeptId && x.Level == Lvl, cancellationToken);
 
         return Ok(Students);
     }

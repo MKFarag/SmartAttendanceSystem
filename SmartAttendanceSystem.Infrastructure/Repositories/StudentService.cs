@@ -1,4 +1,6 @@
-﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
+﻿using System.Linq.Dynamic.Core;
+
+namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class StudentService
 
@@ -16,19 +18,30 @@ public class StudentService
 
     #region Get
 
-    public async Task<IEnumerable<StudentResponse>> GetAllAsync(
+    public async Task<PaginatedList<StudentResponse>> GetAllAsync(RequestFilters filters, 
         Expression<Func<Student, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<Student> query = _context.Students;
-
+        var query = _context.Students.AsNoTracking();
+            
         if (predicate is not null)
             query = query.Where(predicate);
 
-        return await query
-            .AsNoTracking()
-            .ProjectToType<StudentResponse>()
-            .ToListAsync(cancellationToken);
+        if (!string.IsNullOrEmpty(filters.SearchValue))
+            query = query.Where(x => x.User.Name.Contains(filters.SearchValue));
+
+        if (!string.IsNullOrEmpty(filters.SortColumn))
+            query = query.OrderBy($"{filters.SortColumn} {filters.SortDirection}");
+
+        var students = await PaginatedList<StudentResponse>.CreateAsync
+            (
+            query.ProjectToType<StudentResponse>(),
+            filters.PageNumber,
+            filters.PageSize,
+            cancellationToken
+            );
+
+        return students;
     }
 
     public async Task<Student?> GetMainAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
@@ -45,14 +58,6 @@ public class StudentService
             return Result.Success(student.Adapt<StudentAttendanceResponse>() with { CourseAttendances = [] });
 
         return Result.Success(student.Adapt<StudentAttendanceResponse>());
-
-        //The with expression allows you to create a copy of an immutable object while modifying specific properties
-        //var response = student.Adapt<StudentAttendanceResponse>() with
-        //{
-        //    CourseAttendances = []
-        //};
-        //foreach (var item in student.Attendances!)
-        //    response.CourseAttendances.Add(new CourseWithAttendance(item.Course.Adapt<CourseResponse>(), item.Total));
     }
 
     public async Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)

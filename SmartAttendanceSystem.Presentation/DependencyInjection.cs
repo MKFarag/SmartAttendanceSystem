@@ -108,7 +108,16 @@ public static class DependencyInjection
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
+        #region Jwt
+
         services.AddSingleton<IJwtProvider, JwtProvider>();
+
+        services.AddOptions<JwtOptions>()
+            .BindConfiguration(JwtOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        #endregion
 
         #region Roles
 
@@ -195,15 +204,6 @@ public static class DependencyInjection
 
     private static IServiceCollection AddOptionsLoadConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        #region Jwt
-
-        services.AddOptions<JwtOptions>()
-            .BindConfiguration(JwtOptions.SectionName)
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        #endregion
-
         #region Mail
 
         services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));

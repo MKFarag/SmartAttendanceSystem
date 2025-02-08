@@ -3,9 +3,7 @@
 public interface IStudentService
 {
     //GET
-    Task<IEnumerable<StudentResponse>> GetAllAsync(
-        Expression<Func<Student, bool>>? predicate = null,
-        CancellationToken cancellationToken = default);
+    Task<PaginatedList<StudentResponse>> GetAllAsync(RequestFilters filters, Expression<Func<Student, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<Result<StudentAttendanceResponse>> GetAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
     Task<Student?> GetMainAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
     Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
