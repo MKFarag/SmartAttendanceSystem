@@ -6,6 +6,7 @@ using SmartAttendanceSystem.Infrastructure.Repositories;
 using SmartAttendanceSystem.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SmartAttendanceSystem.Infrastructure.Helpers;
+using SmartAttendanceSystem.Infrastructure.Health;
 using SmartAttendanceSystem.Application.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SmartAttendanceSystem.Fingerprint;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
         services.AddHangfireConfig(configuration);
+        services.AddHealthCheckConfig(configuration);
         services.AddFingerprint();
 
         services.AddScoped<IAuthService, AuthService>();
@@ -77,9 +79,11 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection") ??
             throw new InvalidOperationException("The ConnectionString is not found");
 
-        services.AddDbContext<IDbContextManager, ApplicationDbContext>(options =>
+        services.AddDbContext<ApplicationDbContext>(options =>
             options.UseLazyLoadingProxies().UseSqlServer(connectionString)
         );
+
+        services.AddScoped<IDbContextManager, ApplicationDbContext>();
 
         return services;
     }
@@ -217,6 +221,19 @@ public static class DependencyInjection
         services.Configure<EnrollmentCommands>(configuration.GetSection(nameof(EnrollmentCommands)));
 
         #endregion
+
+        return services;
+    }
+    
+    private static IServiceCollection AddHealthCheckConfig(this IServiceCollection services, IConfiguration configuration)
+    {
+        //For Url we can add httpMethod
+
+        services.AddHealthChecks()
+            .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection")!, tags: ["Db"])
+            .AddHangfire(options => { options.MinimumAvailableServers = 1; })
+            .AddUrlGroup(name: "Network", uri: new Uri("https://www.google.com"))
+            .AddCheck<MailProviderHealthCheck>(name: "Mail service");
 
         return services;
     }

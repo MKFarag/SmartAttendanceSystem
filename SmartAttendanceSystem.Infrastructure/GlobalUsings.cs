@@ -2,6 +2,7 @@
 
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Metadata.Builders;
+global using Microsoft.Extensions.Diagnostics.HealthChecks;
 global using System.ComponentModel.DataAnnotations;
 global using Microsoft.AspNetCore.Authorization;
 global using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ global using SmartAttendanceSystem.Application.Interfaces;
 global using SmartAttendanceSystem.Application.Helpers;
 global using SmartAttendanceSystem.Core.Abstraction;
 global using SmartAttendanceSystem.Core.Entities;
+global using SmartAttendanceSystem.Core.Settings;
 global using SmartAttendanceSystem.Core.Errors;
 
 #endregion
