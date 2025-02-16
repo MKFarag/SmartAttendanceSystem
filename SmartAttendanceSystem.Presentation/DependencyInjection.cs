@@ -20,6 +20,7 @@ using System.Reflection;
 using FluentValidation;
 using MapsterMapper;
 using System.Text;
+using Asp.Versioning;
 
 #endregion
 
@@ -41,6 +42,7 @@ public static class DependencyInjection
         services.AddAuthConfig(configuration);
         services.AddHangfireConfig(configuration);
         services.AddHealthCheckConfig(configuration);
+        services.AddVersioningConfig();
         services.AddRateLimiter();
         services.AddFingerprint();
 
@@ -243,6 +245,8 @@ public static class DependencyInjection
 
     private static IServiceCollection AddRateLimiter(this IServiceCollection services)
     {
+        //[EnableRateLimiting("")]
+
         services.AddRateLimiter(rateLimiterOptions =>
         {
             rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
@@ -305,6 +309,28 @@ public static class DependencyInjection
                 options.Window = TimeSpan.FromSeconds(30);
                 options.SegmentsPerWindow = 3;
             });
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddVersioningConfig(this IServiceCollection services)
+    {
+        //In the head of controller we can add the version [ApiVersion(1, Deprecated = true)]
+        //In the head of endpoint we can add the version [MapToApiVersion(1)]
+
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+
+            options.ApiVersionReader = new HeaderApiVersionReader("x-api-version");
+        }
+        ).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'V";
+            options.SubstituteApiVersionInUrl = true;
         });
 
         return services;
