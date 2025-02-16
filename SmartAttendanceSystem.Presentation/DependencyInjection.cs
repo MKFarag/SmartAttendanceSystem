@@ -10,7 +10,9 @@ using SmartAttendanceSystem.Infrastructure.Health;
 using SmartAttendanceSystem.Application.Services;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using SmartAttendanceSystem.Fingerprint;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using FluentValidation.AspNetCore;
@@ -39,6 +41,7 @@ public static class DependencyInjection
         services.AddAuthConfig(configuration);
         services.AddHangfireConfig(configuration);
         services.AddHealthCheckConfig(configuration);
+        services.AddRateLimiter();
         services.AddFingerprint();
 
         services.AddScoped<IAuthService, AuthService>();
@@ -234,6 +237,75 @@ public static class DependencyInjection
             .AddHangfire(options => { options.MinimumAvailableServers = 1; })
             .AddUrlGroup(name: "Network", uri: new Uri("https://www.google.com"))
             .AddCheck<MailProviderHealthCheck>(name: "Mail service");
+
+        return services;
+    }
+
+    private static IServiceCollection AddRateLimiter(this IServiceCollection services)
+    {
+        services.AddRateLimiter(rateLimiterOptions =>
+        {
+            rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            rateLimiterOptions.AddPolicy(RateLimiterSettings.IpLimit, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(15)
+                    }
+                )
+            );
+            
+            rateLimiterOptions.AddPolicy(RateLimiterSettings.UserLimit, httpContext =>
+                RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: httpContext.User.GetId(),
+                    factory: _ => new FixedWindowRateLimiterOptions
+                    {
+                        PermitLimit = 2,
+                        Window = TimeSpan.FromSeconds(15)
+                    }
+                )
+            );
+
+            rateLimiterOptions.AddConcurrencyLimiter(RateLimiterSettings.Concurrency, options =>
+            {
+                options.PermitLimit = 1000;
+                options.QueueLimit = 100;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+            });
+
+            rateLimiterOptions.AddFixedWindowLimiter(RateLimiterSettings.Fixed, options =>
+            {
+                options.PermitLimit = 20;
+                options.QueueLimit = 5;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+
+                options.Window = TimeSpan.FromSeconds(15);
+            });
+
+            rateLimiterOptions.AddTokenBucketLimiter(RateLimiterSettings.Token, options =>
+            {
+                options.QueueLimit = 10;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+
+                options.TokenLimit = 50;
+                options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
+                options.TokensPerPeriod = 5;
+                options.AutoReplenishment = true;
+            });
+
+            rateLimiterOptions.AddSlidingWindowLimiter(RateLimiterSettings.Sliding, options =>
+            {
+                options.PermitLimit = 20;
+                options.QueueLimit = 5;
+                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+
+                options.Window = TimeSpan.FromSeconds(30);
+                options.SegmentsPerWindow = 3;
+            });
+        });
 
         return services;
     }
