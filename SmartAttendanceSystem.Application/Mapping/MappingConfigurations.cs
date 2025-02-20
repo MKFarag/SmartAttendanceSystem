@@ -11,8 +11,7 @@ public class MappingConfigurations : IRegister
 
         config.NewConfig<CreateUserRequest, ApplicationUser>()
             .Map(dest => dest.UserName, src => src.Email)
-            .Map(dest => dest.EmailConfirmed, src => true)
-            .Map(dest => dest.IsStudent, src => false);
+            .Map(dest => dest.EmailConfirmed, src => true);
 
         config.NewConfig<(ApplicationUser user, IList<string> roles), UserResponse>()
             .Map(dest => dest, src => src.user)

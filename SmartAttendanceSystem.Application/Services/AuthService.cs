@@ -14,10 +14,8 @@ public class AuthService
     IUserService userService,
     IJwtProvider jwtProvider,
     IEmailSender emailSender,
-    IJobManager jobManager,
-    IDepartmentService departmentService) : IAuthService
+    IJobManager jobManager) : IAuthService
 {
-    private readonly IDepartmentService _deptService = departmentService;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
@@ -146,28 +144,6 @@ public class AuthService
 
         var user = request.Adapt<ApplicationUser>();
 
-        if (!request.IsStudent.HasValue)
-            user.IsStudent = false;
-
-        #region AddStudentData
-
-        if (user.IsStudent)
-        {
-            if (!await _deptService.AnyAsync(x => x.Id == request.DeptId, cancellationToken))
-                return Result.Failure(UserErrors.AddDeptRelation);
-
-            user.StudentInfo = new Student
-            {
-                UserId = user.Id,
-                Level = request.Level,
-                DepartmentId = request.DeptId
-            };
-
-            //TODO: Fingerprint Register
-
-        }
-        #endregion
-
         var result = await _userManager.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
@@ -209,10 +185,7 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            if (user.IsStudent)
-                await _userManager.AddToRoleAsync(user, DefaultRoles.Student);
-            else
-                await _userManager.AddToRoleAsync(user, DefaultRoles.NotActiveInstructor);
+            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
 
             return Result.Success();
         }
@@ -250,7 +223,8 @@ public class AuthService
         if (await _userManager.FindByEmailAsync(email) is not { } user)
             return Result.Success();
 
-        //Check Confirmation
+        if (!user.EmailConfirmed)
+            return Result.Success();
 
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
@@ -269,6 +243,7 @@ public class AuthService
 
         if (user is null || !user.EmailConfirmed)
             return Result.Failure(UserErrors.InvalidCode);
+
         IdentityResult result;
 
         try

@@ -53,26 +53,18 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
     #region Override-SaveChangesAsync
 
-    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var entities = ChangeTracker.Entries<ApplicationUser>();
+    //public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    //{
+    //    var entities = ChangeTracker.Entries<ApplicationUser>();
 
-        foreach (var entityEntry in entities)
-        {
-            var user = entityEntry.Entity;
+    //    foreach (var entityEntry in entities)
+    //    {
+    //        var user = entityEntry.Entity;
 
-            if (user.IsStudent && user.StudentInfo == null)
-            {
-                throw new InvalidOperationException("A user marked as a student must have associated student information");
-            }
-            if (!user.IsStudent && user.StudentInfo != null)
-            {
-                throw new InvalidOperationException("A user not marked as a student cannot have associated student information");
-            }
-        }
+    //    }
 
-        return base.SaveChangesAsync(cancellationToken);
-    }
+    //    return base.SaveChangesAsync(cancellationToken);
+    //}
 
     #endregion
 }

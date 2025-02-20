@@ -20,7 +20,6 @@ using System.Reflection;
 using FluentValidation;
 using MapsterMapper;
 using System.Text;
-using Asp.Versioning;
 
 #endregion
 
@@ -48,6 +47,7 @@ public static class DependencyInjection
 
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
+        services.AddScoped<IRoleAskService, RoleAskService>();
         services.AddScoped<IClaimService, ClaimService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ICourseService, CourseService>();
@@ -224,6 +224,15 @@ public static class DependencyInjection
         #region Fingerprint
 
         services.Configure<EnrollmentCommands>(configuration.GetSection(nameof(EnrollmentCommands)));
+
+        #endregion
+
+        #region InstructorRole
+
+        services.AddOptions<InstructorRoleSettings>()
+            .BindConfiguration(InstructorRoleSettings.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         #endregion
 

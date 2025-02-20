@@ -309,7 +309,7 @@ public class StudentService
         //Check Student Permission
 
         var StdId = await _context.Users
-            .Where(x => x.Id == UserId && x.IsStudent)
+            .Where(x => x.Id == UserId && x.StudentInfo != null)
             .AsNoTracking()
             .Select(x => x.StudentInfo!.Id)
             .FirstOrDefaultAsync(cancellationToken);

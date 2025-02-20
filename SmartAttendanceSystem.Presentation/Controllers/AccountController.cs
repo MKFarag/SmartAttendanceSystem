@@ -9,7 +9,7 @@ public class AccountController(IUserService userService) : ControllerBase
 
     [HttpGet("")]
     public async Task<IActionResult> Info(CancellationToken cancellationToken)
-        => Ok(await _userService.GetProfileAsync(User.GetId()!, User.GetRoles(), cancellationToken));
+        => Ok(await _userService.GetProfileAsync(User.GetId()!, cancellationToken));
 
     [HttpPut("info")]
     public async Task<IActionResult> Info([FromBody] UpdateProfileRequest request)

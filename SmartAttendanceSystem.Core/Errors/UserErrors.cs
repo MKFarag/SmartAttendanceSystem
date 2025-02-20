@@ -40,4 +40,10 @@ public static class UserErrors
 
     public static readonly Error InvalidRoles =
         new("User.InvalidRoles", "Invalid roles", StatusCodes.Status400BadRequest);
+    
+    public static readonly Error InvalidRolePassword =
+        new("User.InvalidRolePassword", "Invalid role password", StatusCodes.Status400BadRequest);
+    
+    public static readonly Error AlreadyInRole =
+        new("User.AlreadyInRole", "You have this role already", StatusCodes.Status400BadRequest);
 }

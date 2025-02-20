@@ -16,56 +16,6 @@ public class UserService
 
     #endregion
 
-    #region User Profile
-
-    #region Get
-
-    public async Task<object> GetProfileAsync(string userId, IEnumerable<string> roles, CancellationToken cancellationToken = default)
-    {
-        if (roles.Contains(DefaultRoles.Student))
-            return await GetStudentProfileAsync(userId, cancellationToken);
-
-        return await _userManager.Users
-            .Where(x => x.Id == userId)
-            .ProjectToType<UserProfileResponse>()
-            .AsNoTracking()
-            .FirstAsync(cancellationToken);
-    }
-
-    #endregion
-
-    #region Update
-
-    public async Task<Result> UpdateProfileAsync(string userId, UpdateProfileRequest request)
-    {
-        await _userManager.Users
-            .Where(x => x.Id == userId)
-            .ExecuteUpdateAsync(setters =>
-                setters
-                    .SetProperty(x => x.Name, request.Name)
-            );
-
-        return Result.Success();
-    }
-
-    public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
-    {
-        var user = await _userManager.FindByIdAsync(userId);
-
-        var result = await _userManager.ChangePasswordAsync(user!, request.CurrentPassword, request.NewPassword);
-
-        if (result.Succeeded)
-            return Result.Success();
-
-        var error = result.Errors.First();
-
-        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
-    }
-
-    #endregion
-
-    #endregion
-
     #region Admin
 
     #region Get
@@ -77,7 +27,7 @@ public class UserService
               on u.Id equals ur.UserId
               join r in _roleService.Roles
               on ur.RoleId equals r.Id into roles
-              where !roles.Any(x => x.Name == DefaultRoles.NotActiveInstructor)
+              where !roles.Any(x => x.Name == DefaultRoles.Member)
               select new
               {
                   u.Id,
@@ -214,6 +164,86 @@ public class UserService
 
     #endregion
 
+    #region User Profile
+
+    #region Get
+
+    public async Task<object> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        var stdCheck = await _context.UserRoles.AnyAsync(x => x.UserId == userId && x.RoleId == DefaultRoles.StudentRoleId, cancellationToken: cancellationToken);
+
+        if (stdCheck)
+        {
+            var user = await _userManager.Users
+                .Where(x => x.Id == userId)
+                .Select(x => new
+                {
+                    x.StudentInfo!.Id,
+                    x.Name,
+                    x.Email,
+                    x.StudentInfo.Level,
+                    x.StudentInfo.Department
+                }
+                )
+                .AsNoTracking()
+                .FirstAsync(cancellationToken);
+
+            var courses = await _studentService.GetCoursesWithAttendancesDTOsAsync(user.Id, cancellationToken: cancellationToken);
+
+            StudentProfileResponse response = new
+                (
+                    user.Id,
+                    user.Name,
+                    user.Email!,
+                    user.Level,
+                    (user.Department).Adapt<DepartmentResponse>(),
+                    courses
+                );
+
+            return response;
+        }
+
+        return await _userManager.Users
+            .Where(x => x.Id == userId)
+            .ProjectToType<UserProfileResponse>()
+            .AsNoTracking()
+            .FirstAsync(cancellationToken);
+    }
+
+    #endregion
+
+    #region Update
+
+    public async Task<Result> UpdateProfileAsync(string userId, UpdateProfileRequest request)
+    {
+        await _userManager.Users
+            .Where(x => x.Id == userId)
+            .ExecuteUpdateAsync(setters =>
+                setters
+                    .SetProperty(x => x.Name, request.Name)
+            );
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        var result = await _userManager.ChangePasswordAsync(user!, request.CurrentPassword, request.NewPassword);
+
+        if (result.Succeeded)
+            return Result.Success();
+
+        var error = result.Errors.First();
+
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+    }
+
+    #endregion
+
+    #endregion
+
     #region Get User Roles & Claims
 
     public async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetRolesAndClaimsAsync(ApplicationUser user, CancellationToken cancellationToken = default)
@@ -229,41 +259,6 @@ public class UserService
                                      .ToListAsync(cancellationToken);
 
         return (userRoles, userPermissions);
-    }
-
-    #endregion
-
-    #region Private methods
-
-    private async Task<StudentProfileResponse> GetStudentProfileAsync(string userId, CancellationToken cancellationToken = default)
-    {
-        var user = await _userManager.Users
-            .Where(x => x.Id == userId)
-            .Select(x => new
-            {
-                x.StudentInfo!.Id,
-                x.Name,
-                x.Email,
-                x.StudentInfo.Level,
-                x.StudentInfo.Department
-            }
-            )
-            .AsNoTracking()
-            .FirstAsync(cancellationToken);
-
-        var courses = await _studentService.GetCoursesWithAttendancesDTOsAsync(user.Id, cancellationToken: cancellationToken);
-
-        StudentProfileResponse response = new
-            (
-                user.Id,
-                user.Name,
-                user.Email!,
-                user.Level,
-                (user.Department).Adapt<DepartmentResponse>(),
-                courses
-            );
-
-        return response;
     }
 
     #endregion

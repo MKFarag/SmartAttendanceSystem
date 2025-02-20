@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SmartAttendanceSystem.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using SmartAttendanceSystem.Infrastructure.Persistence;
 namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250220081704_AddMemberRole")]
+    partial class AddMemberRole
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -154,20 +157,6 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                             ClaimType = "permissions",
                             ClaimValue = "Role:update",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            ClaimType = "permissions",
-                            ClaimValue = "Role:ask",
-                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            ClaimType = "permissions",
-                            ClaimValue = "Role:ask",
-                            RoleId = "019519df-03ea-78aa-8c1f-86eccefa5aeb"
                         });
                 });
 

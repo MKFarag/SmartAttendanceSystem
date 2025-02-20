@@ -25,6 +25,9 @@ public static class Permissions
     public const string AddRoles = "Role:add";
     public const string UpdateRoles = "Role:update";
 
+    public const string RoleAsk = "Role:ask";
+    
+
     public static IList<string?> GetAllPermissions() =>
-        typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string).ToList();
+        [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 }
