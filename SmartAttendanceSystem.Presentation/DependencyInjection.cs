@@ -20,6 +20,7 @@ using System.Reflection;
 using FluentValidation;
 using MapsterMapper;
 using System.Text;
+using Asp.Versioning.ApiExplorer;
 
 #endregion
 
@@ -31,7 +32,6 @@ public static class DependencyInjection
     {
         services.AddControllers();
         services.AddDistributedMemoryCache();
-        services.AddOpenApiConfig();
         services.AddMapsterConfig();
         services.AddFluentValidationConfig();
         services.AddExceptionHandlerConfig();
@@ -56,6 +56,10 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
 
         services.AddHttpContextAccessor();
+
+        services
+            .AddEndpointsApiExplorer()
+            .AddOpenApiConfig();
 
         return services;
     }
@@ -201,13 +205,19 @@ public static class DependencyInjection
 
     private static IServiceCollection AddOpenApiConfig(this IServiceCollection services)
     {
-        services
-            .AddEndpointsApiExplorer()
-            .AddOpenApi(options =>
+        //Doc -> https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi?view=aspnetcore-9.0&tabs=visual-studio
+
+        var serviceProvider = services.BuildServiceProvider();
+        var apiVersionDescriptionProvider = serviceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
+
+        foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+        {
+            services.AddOpenApi(options =>
             {
                 options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+                options.AddDocumentTransformer(new ApiVersioningTransformer(description));
             });
-
+        }
         return services;
     }
 
