@@ -18,5 +18,5 @@ public class ApiVersioningTransformer(ApiVersionDescription description) : IOpen
         };
 
         return Task.CompletedTask;
-    } 
+    }
 }

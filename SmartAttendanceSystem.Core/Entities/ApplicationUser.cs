@@ -2,6 +2,12 @@
 
 public class ApplicationUser : IdentityUser
 {
+    //public ApplicationUser()
+    //{
+    //    Id = Guid.CreateVersion7().ToString();
+    //    SecurityStamp = Guid.CreateVersion7().ToString();
+    //}
+
     public string Name { get; set; } = string.Empty;
     public bool IsDisabled { get; set; }
 

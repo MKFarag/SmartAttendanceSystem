@@ -41,7 +41,7 @@ public class RoleAskService
     public async Task<Result> RoleAskAsync(string UserId, StudentRoleAskRequest request)
     {
         if (!await _departmentService.AnyAsync(x => x.Id == request.DepartmentId))
-        return Result.Failure(GlobalErrors.IdNotFound("Departments"));
+            return Result.Failure(GlobalErrors.IdNotFound("Departments"));
 
         if (await _userManager.FindByIdAsync(UserId) is not { } user)
             return Result.Failure<UserResponse>(UserErrors.NotFount);

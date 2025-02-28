@@ -33,7 +33,7 @@ public class MappingConfigurations : IRegister
             .Map(dest => dest.Name, src => src.User.Name)
             .Map(dest => dest.Email, src => src.User.Email)
             .Map(dest => dest.CourseAttendances, src => src.Attendances);
-            
+
 
         #region ByCourse
 

@@ -20,7 +20,7 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, IClaimService
             .AsNoTracking()
             .ProjectToType<RoleResponse>()
             .ToListAsync(cancellationToken);
-    
+
     public async Task<IEnumerable<string>> GetAllNamesAsync(bool includeDisabled = false, CancellationToken cancellationToken = default)
         => await Roles
             .Where(x => !x.IsDefault && (!x.IsDeleted || includeDisabled))

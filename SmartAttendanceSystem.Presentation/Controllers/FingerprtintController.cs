@@ -113,7 +113,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
             ? Ok(matchResult.Value)
             : matchResult.ToProblem();
     }
-    
+
     [HttpGet("sMatch")]
     [HasPermission(Permissions.AdminFingerprint)]
     public async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
@@ -156,7 +156,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
             ? Ok("The student has been registered successfully")
             : FpRegisterResult.ToProblem();
     }
-    
+
     [HttpGet("Register/New")]
     [HasPermission(Permissions.AddFingerprint)]
     public async Task<IActionResult> NewFingerprint()

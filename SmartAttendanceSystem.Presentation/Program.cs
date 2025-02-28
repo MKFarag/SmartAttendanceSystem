@@ -1,14 +1,16 @@
 #region Usings
 
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using SmartAttendanceSystem.Presentation;
+using Hangfire.Dashboard;
 using HangfireBasicAuthenticationFilter;
 using HealthChecks.UI.Client;
-using Hangfire.Dashboard;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Scalar.AspNetCore;
 using Serilog;
+using SmartAttendanceSystem.Presentation;
 
 #endregion
+
+//CRTL + Shift + F
 
 var builder = WebApplication.CreateBuilder(args);
 

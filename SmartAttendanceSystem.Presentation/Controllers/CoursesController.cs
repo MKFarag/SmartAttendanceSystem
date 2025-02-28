@@ -36,7 +36,7 @@ public class CoursesController(ICourseService courseService) : ControllerBase
         var courseResult = await _courseService.AddAsync(request, cancellationToken);
 
         return courseResult.IsSuccess
-            ? CreatedAtAction(nameof(Get), new {courseResult.Value.Id}, courseResult.Value)
+            ? CreatedAtAction(nameof(Get), new { courseResult.Value.Id }, courseResult.Value)
             : courseResult.ToProblem();
     }
 
@@ -53,7 +53,7 @@ public class CoursesController(ICourseService courseService) : ControllerBase
             ? NoContent()
             : courseResult.ToProblem();
     }
-    
+
     [HttpPut("{Id}")]
     [HasPermission(Permissions.ModifyCourses)]
     public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] CourseRequest request, CancellationToken cancellationToken)

@@ -7,10 +7,10 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
         builder.HasData([
             new ApplicationRole
             {
-                Id = DefaultRoles.AdminRoleId,
-                Name = DefaultRoles.Admin,
-                NormalizedName = DefaultRoles.Admin.ToUpper(),
-                ConcurrencyStamp = DefaultRoles.AdminRoleConcurrencyStamp
+                Id = DefaultRoles.Admin.Id,
+                Name = DefaultRoles.Admin.Name,
+                NormalizedName = DefaultRoles.Admin.Name.ToUpper(),
+                ConcurrencyStamp = DefaultRoles.Admin.ConcurrencyStamp
             },
             new ApplicationRole
             {

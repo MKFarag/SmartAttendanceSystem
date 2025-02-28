@@ -1,26 +1,26 @@
 ﻿# region Usings
 
-using SmartAttendanceSystem.Presentation.OpenApiTransformers;
-using SmartAttendanceSystem.Infrastructure.Authentication;
-using SmartAttendanceSystem.Infrastructure.Repositories;
-using SmartAttendanceSystem.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using SmartAttendanceSystem.Infrastructure.Helpers;
-using SmartAttendanceSystem.Infrastructure.Health;
-using SmartAttendanceSystem.Application.Services;
-using Microsoft.AspNetCore.Identity.UI.Services;
-using SmartAttendanceSystem.Fingerprint;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.IdentityModel.Tokens;
-using System.Threading.RateLimiting;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using FluentValidation.AspNetCore;
-using System.Reflection;
-using FluentValidation;
-using MapsterMapper;
-using System.Text;
 using Asp.Versioning.ApiExplorer;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MapsterMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using SmartAttendanceSystem.Application.Services;
+using SmartAttendanceSystem.Fingerprint;
+using SmartAttendanceSystem.Infrastructure.Authentication;
+using SmartAttendanceSystem.Infrastructure.Health;
+using SmartAttendanceSystem.Infrastructure.Helpers;
+using SmartAttendanceSystem.Infrastructure.Persistence;
+using SmartAttendanceSystem.Infrastructure.Repositories;
+using SmartAttendanceSystem.Presentation.OpenApiTransformers;
+using System.Reflection;
+using System.Text;
+using System.Threading.RateLimiting;
 
 #endregion
 
@@ -248,7 +248,7 @@ public static class DependencyInjection
 
         return services;
     }
-    
+
     private static IServiceCollection AddHealthCheckConfig(this IServiceCollection services, IConfiguration configuration)
     {
         //For Url we can add httpMethod
@@ -280,7 +280,7 @@ public static class DependencyInjection
                     }
                 )
             );
-            
+
             rateLimiterOptions.AddPolicy(RateLimiterSettings.UserLimit, httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.User.GetId(),

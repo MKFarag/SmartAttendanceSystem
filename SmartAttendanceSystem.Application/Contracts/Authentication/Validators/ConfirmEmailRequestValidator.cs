@@ -6,7 +6,7 @@ public class ConfirmEmailRequestValidator : AbstractValidator<ConfirmEmailReques
     {
         RuleFor(x => x.UserId)
             .NotEmpty();
-        
+
         RuleFor(x => x.Code)
             .NotEmpty();
     }

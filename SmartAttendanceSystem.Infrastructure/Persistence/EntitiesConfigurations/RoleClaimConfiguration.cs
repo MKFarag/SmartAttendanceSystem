@@ -13,7 +13,7 @@ public class RoleClaimConfiguration : IEntityTypeConfiguration<IdentityRoleClaim
                 Id = i + 1,
                 ClaimType = Permissions.Type,
                 ClaimValue = allPermissions[i],
-                RoleId = DefaultRoles.AdminRoleId,
+                RoleId = DefaultRoles.Admin.Id,
             });
 
         builder.HasData(adminClaims);

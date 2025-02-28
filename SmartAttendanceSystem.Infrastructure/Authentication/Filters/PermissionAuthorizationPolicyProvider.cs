@@ -1,6 +1,6 @@
 ﻿namespace SmartAttendanceSystem.Infrastructure.Authentication.Filters;
 
-public class PermissionAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options) 
+public class PermissionAuthorizationPolicyProvider(IOptions<AuthorizationOptions> options)
     : DefaultAuthorizationPolicyProvider(options)
 {
     private readonly AuthorizationOptions _authorizationOptions = options.Value;

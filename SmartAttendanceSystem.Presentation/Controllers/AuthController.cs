@@ -35,7 +35,7 @@ public class AuthController(IAuthService authService) : ControllerBase
             ? Ok()
             : response.ToProblem();
     }
-    
+
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
@@ -54,8 +54,8 @@ public class AuthController(IAuthService authService) : ControllerBase
         return response.IsSuccess
             ? Ok()
             : response.ToProblem();
-    }    
-    
+    }
+
     [HttpPost("resend-confirmation")]
     public async Task<IActionResult> ResendConfirmationEmail([FromBody] ResendConfirmationEmailRequest request)
     {

@@ -5,7 +5,7 @@
 [Authorize]
 public class StudentsController
 
-    #region Initial
+#region Initial
 
     (IStudentService studentService,
     IDepartmentService deptService) : ControllerBase
@@ -37,7 +37,7 @@ public class StudentsController
 
         return Ok(Students);
     }
-    
+
     [HttpGet("Level/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
@@ -49,7 +49,7 @@ public class StudentsController
 
         return Ok(Students);
     }
-    
+
     [HttpGet("Dept/{DeptId}/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> GetAll([FromRoute] int DeptId, [FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)

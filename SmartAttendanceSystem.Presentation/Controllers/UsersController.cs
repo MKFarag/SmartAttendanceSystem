@@ -9,7 +9,7 @@ public class UsersController(IUserService userService) : ControllerBase
     [HttpGet("")]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await _userService.GetAllAsync(cancellationToken));
-    
+
     [HttpGet("{Id}")]
     public async Task<IActionResult> Get([FromRoute] string Id)
     {
@@ -19,7 +19,7 @@ public class UsersController(IUserService userService) : ControllerBase
             ? Ok(getResult.Value)
             : getResult.ToProblem();
     }
-    
+
     [HttpPost("")]
     public async Task<IActionResult> Add([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
@@ -29,7 +29,7 @@ public class UsersController(IUserService userService) : ControllerBase
             ? CreatedAtAction(nameof(Get), new { addResult.Value.Id }, addResult.Value)
             : addResult.ToProblem();
     }
-    
+
     [HttpPut("{Id}")]
     public async Task<IActionResult> Update([FromRoute] string Id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
@@ -45,8 +45,8 @@ public class UsersController(IUserService userService) : ControllerBase
     {
         var toggleStatusResult = await _userService.ToggleStatusAsync(id);
 
-        return toggleStatusResult.IsSuccess 
-            ? NoContent() 
+        return toggleStatusResult.IsSuccess
+            ? NoContent()
             : toggleStatusResult.ToProblem();
     }
 
@@ -55,8 +55,8 @@ public class UsersController(IUserService userService) : ControllerBase
     {
         var unlockResult = await _userService.UnlockAsync(id);
 
-        return unlockResult.IsSuccess 
-            ? NoContent() 
+        return unlockResult.IsSuccess
+            ? NoContent()
             : unlockResult.ToProblem();
     }
 }

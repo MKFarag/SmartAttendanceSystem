@@ -20,7 +20,7 @@ public class RolesController(IRoleService roleService) : ControllerBase
     {
         var result = await _roleService.GetAsync(id);
 
-        return result.IsSuccess 
+        return result.IsSuccess
             ? Ok(result.Value)
             : result.ToProblem();
     }
@@ -65,8 +65,8 @@ public class RolesController(IRoleService roleService) : ControllerBase
     {
         var result = await _roleService.ToggleStatusAsync(id);
 
-        return result.IsSuccess 
-            ? NoContent() 
+        return result.IsSuccess
+            ? NoContent()
             : result.ToProblem();
     }
 

@@ -4,7 +4,7 @@ namespace SmartAttendanceSystem.Application.Services;
 
 public class AuthService
 
-    #region Initialize Fields
+#region Initialize Fields
 
     (IOptions<EmailConfirmationSettings> emailOptions,
     SignInManager<ApplicationUser> signInManager,
@@ -85,7 +85,7 @@ public class AuthService
 
         if (user.IsDisabled)
             return Result.Failure<AuthResponse>(UserErrors.DisabledUser);
-        
+
         if (user.LockoutEnd > DateTime.UtcNow)
             return Result.Failure<AuthResponse>(UserErrors.LockedUser);
 
@@ -224,7 +224,7 @@ public class AuthService
             return Result.Success();
 
         if (!user.EmailConfirmed)
-            return Result.Success();
+            return Result.Failure(UserErrors.EmailNotConfirmed with { StatusCode = StatusCodes.Status400BadRequest });
 
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

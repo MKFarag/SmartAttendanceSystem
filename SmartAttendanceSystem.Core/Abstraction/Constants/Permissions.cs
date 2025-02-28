@@ -6,10 +6,10 @@ public static class Permissions
 
     public const string GetCourses = "courses:read";
     public const string ModifyCourses = "courses:modify";
-    
+
     public const string GetDepartments = "departments:read";
     public const string ModifyDepartments = "departments:modify";
-    
+
     public const string GetStudents = "students:read";
     public const string StudentCourses = "students:courses";
 
@@ -26,7 +26,7 @@ public static class Permissions
     public const string UpdateRoles = "Role:update";
 
     public const string RoleAsk = "Role:ask";
-    
+
 
     public static IList<string?> GetAllPermissions() =>
         [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];

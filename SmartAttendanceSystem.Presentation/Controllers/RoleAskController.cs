@@ -17,7 +17,7 @@ public class RoleAskController(IRoleAskService roleAskService) : ControllerBase
             ? Ok()
             : result.ToProblem();
     }
-    
+
     [HttpPost("Student")]
     [HasPermission(Permissions.RoleAsk)]
     public async Task<IActionResult> RoleAskAsync([FromBody] StudentRoleAskRequest request)

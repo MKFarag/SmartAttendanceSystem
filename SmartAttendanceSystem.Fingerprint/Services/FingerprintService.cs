@@ -2,7 +2,7 @@
 
 public class FingerprintService
 
-    #region Initial
+#region Initial
 
     (IOptions<EnrollmentCommands> enrollmentOptions,
     ISerialPortService serialPortService,

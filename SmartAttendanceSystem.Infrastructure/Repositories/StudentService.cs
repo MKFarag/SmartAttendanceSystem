@@ -4,7 +4,7 @@ namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class StudentService
 
-    #region Initial
+#region Initial
 
     (ApplicationDbContext context,
     ICourseService courseService,
@@ -18,12 +18,12 @@ public class StudentService
 
     #region Get
 
-    public async Task<PaginatedList<StudentResponse>> GetAllAsync(RequestFilters filters, 
+    public async Task<PaginatedList<StudentResponse>> GetAllAsync(RequestFilters filters,
         Expression<Func<Student, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
         var query = _context.Students.AsNoTracking();
-            
+
         if (predicate is not null)
             query = query.Where(predicate);
 
