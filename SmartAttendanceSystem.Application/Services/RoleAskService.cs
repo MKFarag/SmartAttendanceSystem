@@ -20,13 +20,13 @@ public class RoleAskService
 
         var roles = await _userManager.GetRolesAsync(user);
 
-        if (roles.Contains(DefaultRoles.Student))
+        if (roles.Contains(DefaultRoles.Student.Name))
             return Result.Failure(UserErrors.NoPermission);
 
-        if (roles.Contains(DefaultRoles.Instructor))
+        if (roles.Contains(DefaultRoles.Instructor.Name))
             return Result.Failure(UserErrors.AlreadyInRole);
 
-        var result = await _userManager.AddToRoleAsync(user, DefaultRoles.Instructor);
+        var result = await _userManager.AddToRoleAsync(user, DefaultRoles.Instructor.Name);
 
         if (!result.Succeeded)
         {
@@ -48,10 +48,10 @@ public class RoleAskService
 
         var roles = await _userManager.GetRolesAsync(user);
 
-        if (roles.Contains(DefaultRoles.Instructor))
+        if (roles.Contains(DefaultRoles.Instructor.Name))
             return Result.Failure(UserErrors.NoPermission);
 
-        if (roles.Contains(DefaultRoles.Student))
+        if (roles.Contains(DefaultRoles.Student.Name))
             return Result.Failure(UserErrors.AlreadyInRole);
 
         user.StudentInfo = new Student
@@ -60,7 +60,7 @@ public class RoleAskService
             Level = request.Level,
         };
 
-        var result = await _userManager.AddToRoleAsync(user, DefaultRoles.Student);
+        var result = await _userManager.AddToRoleAsync(user, DefaultRoles.Student.Name);
 
         if (!result.Succeeded)
         {

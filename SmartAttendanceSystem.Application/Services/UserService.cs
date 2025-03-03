@@ -27,7 +27,7 @@ public class UserService
               on u.Id equals ur.UserId
               join r in _roleService.Roles
               on ur.RoleId equals r.Id into roles
-              where !roles.Any(x => x.Name == DefaultRoles.Member)
+              where !roles.Any(x => x.Name == DefaultRoles.Member.Name)
               select new
               {
                   u.Id,
@@ -170,7 +170,7 @@ public class UserService
 
     public async Task<object> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var stdCheck = await _context.UserRoles.AnyAsync(x => x.UserId == userId && x.RoleId == DefaultRoles.StudentRoleId, cancellationToken: cancellationToken);
+        var stdCheck = await _context.UserRoles.AnyAsync(x => x.UserId == userId && x.RoleId == DefaultRoles.Student.Id, cancellationToken: cancellationToken);
 
         if (stdCheck)
         {

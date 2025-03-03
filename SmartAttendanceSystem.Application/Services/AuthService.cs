@@ -185,7 +185,7 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            await _userManager.AddToRoleAsync(user, DefaultRoles.Member);
+            await _userManager.AddToRoleAsync(user, DefaultRoles.Member.Name);
 
             return Result.Success();
         }

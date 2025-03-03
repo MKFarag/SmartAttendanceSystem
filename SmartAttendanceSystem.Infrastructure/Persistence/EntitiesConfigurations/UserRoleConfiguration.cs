@@ -6,7 +6,7 @@ public class UserRoleConfiguration : IEntityTypeConfiguration<IdentityUserRole<s
     {
         builder.HasData(new IdentityUserRole<string>
         {
-            UserId = DefaultUser.AdminId,
+            UserId = DefaultUser.Admin.Id,
             RoleId = DefaultRoles.Admin.Id,
         });
     }

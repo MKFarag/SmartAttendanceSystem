@@ -23,7 +23,7 @@ public class RoleClaimConfiguration : IEntityTypeConfiguration<IdentityRoleClaim
             Id = allPermissions.Count + 1,
             ClaimType = Permissions.Type,
             ClaimValue = Permissions.RoleAsk,
-            RoleId = DefaultRoles.MemberRoleId,
+            RoleId = DefaultRoles.Member.Id,
         });
     }
 }

@@ -30,6 +30,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
+        #region Services load
+
         services.AddControllers();
         services.AddDistributedMemoryCache();
         services.AddMapsterConfig();
@@ -45,6 +47,10 @@ public static class DependencyInjection
         services.AddRateLimiter();
         services.AddFingerprint();
 
+        #endregion
+
+        #region Repositories load
+
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IRoleAskService, RoleAskService>();
@@ -55,14 +61,22 @@ public static class DependencyInjection
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
 
+        #endregion
+
+        #region Plus
+
         services.AddHttpContextAccessor();
 
         services
             .AddEndpointsApiExplorer()
             .AddOpenApiConfig();
 
+        #endregion
+
         return services;
     }
+
+    #region Mapster
 
     private static IServiceCollection AddMapsterConfig(this IServiceCollection services)
     {
@@ -74,6 +88,10 @@ public static class DependencyInjection
         return services;
     }
 
+    #endregion
+
+    #region FlunetValidation
+
     private static IServiceCollection AddFluentValidationConfig(this IServiceCollection services)
     {
         services
@@ -82,6 +100,10 @@ public static class DependencyInjection
 
         return services;
     }
+
+    #endregion
+
+    #region DbSql
 
     private static IServiceCollection AddDbSqlConfig(this IServiceCollection services, IConfiguration configuration)
     {
@@ -97,6 +119,10 @@ public static class DependencyInjection
         return services;
     }
 
+    #endregion
+
+    #region ExceptionHandler
+
     private static IServiceCollection AddExceptionHandlerConfig(this IServiceCollection services)
     {
         services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -104,6 +130,10 @@ public static class DependencyInjection
 
         return services;
     }
+
+    #endregion
+
+    #region CORS
 
     private static IServiceCollection AddCorsConfig(this IServiceCollection services, IConfiguration configuration)
     {
@@ -118,6 +148,10 @@ public static class DependencyInjection
 
         return services;
     }
+
+    #endregion
+
+    #region Auth
 
     private static IServiceCollection AddAuthConfig(this IServiceCollection services, IConfiguration configuration)
     {
@@ -188,6 +222,10 @@ public static class DependencyInjection
         return services;
     }
 
+    #endregion
+
+    #region Hangfire
+
     private static IServiceCollection AddHangfireConfig(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IJobManager, JobManager>();
@@ -202,6 +240,10 @@ public static class DependencyInjection
 
         return services;
     }
+
+    #endregion
+
+    #region OpenApi
 
     private static IServiceCollection AddOpenApiConfig(this IServiceCollection services)
     {
@@ -220,6 +262,10 @@ public static class DependencyInjection
         }
         return services;
     }
+
+    #endregion
+
+    #region Options
 
     private static IServiceCollection AddOptionsLoadConfig(this IServiceCollection services, IConfiguration configuration)
     {
@@ -249,6 +295,10 @@ public static class DependencyInjection
         return services;
     }
 
+    #endregion
+
+    #region HealthCheck
+
     private static IServiceCollection AddHealthCheckConfig(this IServiceCollection services, IConfiguration configuration)
     {
         //For Url we can add httpMethod
@@ -261,6 +311,10 @@ public static class DependencyInjection
 
         return services;
     }
+
+    #endregion
+
+    #region RateLimiter
 
     private static IServiceCollection AddRateLimiter(this IServiceCollection services)
     {
@@ -333,6 +387,10 @@ public static class DependencyInjection
         return services;
     }
 
+    #endregion
+
+    #region Versioning
+
     private static IServiceCollection AddVersioningConfig(this IServiceCollection services)
     {
         //In the head of controller we can add the version [ApiVersion(1, Deprecated = true)]
@@ -354,4 +412,6 @@ public static class DependencyInjection
 
         return services;
     }
+
+    #endregion
 }
