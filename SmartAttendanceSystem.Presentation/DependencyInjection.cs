@@ -51,14 +51,14 @@ public static class DependencyInjection
         #region Repositories load
 
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IDepartmentService, DepartmentService>();
-        services.AddScoped<IRoleAskService, RoleAskService>();
         services.AddScoped<IClaimService, ClaimService>();
-        services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<ICourseService, CourseService>();
+        services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IEmailSender, EmailService>();
-        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IRoleAskService, RoleAskService>();
         services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IStudentService, StudentService>();
+        services.AddScoped<IUserService, UserService>();
 
         #endregion
 
