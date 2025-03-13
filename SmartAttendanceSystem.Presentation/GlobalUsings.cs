@@ -1,6 +1,7 @@
 ﻿#region Packges | Microsoft
 
 global using Microsoft.AspNetCore.Authorization;
+global using System.Threading.RateLimiting;
 global using Microsoft.AspNetCore.Mvc;
 global using Asp.Versioning;
 global using Hangfire;
