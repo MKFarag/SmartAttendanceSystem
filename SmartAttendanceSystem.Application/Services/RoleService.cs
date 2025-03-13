@@ -74,7 +74,7 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, IClaimService
 
             await _claimsService.AddRangeAsync(permissions);
 
-            var response = new RoleDetailResponse(role.Id, role.Name, role.IsDefault, request.Permissions);
+            var response = new RoleDetailResponse(role.Id, role.Name, role.IsDeleted, request.Permissions);
 
             return Result.Success(response);
         }
@@ -93,12 +93,12 @@ public class RoleService(RoleManager<ApplicationRole> roleManager, IClaimService
             return Result.Failure(RoleErrors.NotFound);
 
         if (await _roleManager.Roles.AnyAsync(x => x.Name == request.Name && x.Id != id))
-            return Result.Failure<RoleDetailResponse>(RoleErrors.DuplicatedName);
+            return Result.Failure(RoleErrors.DuplicatedName);
 
         var allowedPermissions = Permissions.GetAllPermissions();
 
         if (request.Permissions.Except(allowedPermissions).Any())
-            return Result.Failure<RoleDetailResponse>(RoleErrors.InvalidPermissions);
+            return Result.Failure(RoleErrors.InvalidPermissions);
 
         role.Name = request.Name;
 
