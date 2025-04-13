@@ -6,13 +6,11 @@ public class UserService
 
     (UserManager<ApplicationUser> userManager,
     IStudentService studentService,
-    IDbContextManager context,
     IRoleService roleService) : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IStudentService _studentService = studentService;
     private readonly IRoleService _roleService = roleService;
-    private readonly IDbContextManager _context = context;
 
     #endregion
 
@@ -23,7 +21,7 @@ public class UserService
     //GET ALL
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
     => await (from u in _userManager.Users
-              join ur in _context.UserRoles
+              join ur in _roleService.UserRoles
               on u.Id equals ur.UserId
               join r in _roleService.Roles
               on ur.RoleId equals r.Id into roles
@@ -114,7 +112,7 @@ public class UserService
 
         if (result.Succeeded)
         {
-            await _context.UserRoles
+            await _roleService.UserRoles
                     .Where(x => x.UserId == Id)
                     .ExecuteDeleteAsync(cancellationToken);
 
@@ -169,7 +167,7 @@ public class UserService
 
     public async Task<object> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var stdCheck = await _context.UserRoles.AnyAsync(x => x.UserId == userId && x.RoleId == DefaultRoles.Student.Id, cancellationToken: cancellationToken);
+        var stdCheck = await _roleService.UserRoles.AnyAsync(x => x.UserId == userId && x.RoleId == DefaultRoles.Student.Id, cancellationToken: cancellationToken);
 
         if (stdCheck)
         {

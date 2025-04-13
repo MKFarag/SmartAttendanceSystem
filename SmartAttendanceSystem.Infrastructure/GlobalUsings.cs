@@ -38,6 +38,8 @@ global using SmartAttendanceSystem.Application.Contracts.Department.Requests;
 global using SmartAttendanceSystem.Application.Contracts.Student.Responses;
 global using SmartAttendanceSystem.Application.Contracts.Course.Responses;
 global using SmartAttendanceSystem.Application.Contracts.Course.Requests;
+global using SmartAttendanceSystem.Application.Contracts.Roles.Responses;
+global using SmartAttendanceSystem.Application.Contracts.Roles.Requests;
 global using SmartAttendanceSystem.Application.Contracts.Common;
 
 #endregion

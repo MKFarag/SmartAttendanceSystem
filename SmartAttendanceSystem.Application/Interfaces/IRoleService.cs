@@ -5,6 +5,7 @@ public interface IRoleService
     //DbSet
     IQueryable<ApplicationRole> Roles { get; }
     IQueryable<IdentityRoleClaim<string>> RoleClaims { get; }
+    IQueryable<IdentityUserRole<string>> UserRoles { get; }
 
     //GET
     Task<IEnumerable<RoleResponse>> GetAllAsync(bool includeDisabled = false, CancellationToken cancellationToken = default);
