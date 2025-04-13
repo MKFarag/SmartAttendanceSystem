@@ -17,13 +17,5 @@ public class RoleClaimConfiguration : IEntityTypeConfiguration<IdentityRoleClaim
             });
 
         builder.HasData(adminClaims);
-
-        builder.HasData(new IdentityRoleClaim<string>
-        {
-            Id = allPermissions.Count + 1,
-            ClaimType = Permissions.Type,
-            ClaimValue = Permissions.RoleAsk,
-            RoleId = DefaultRoles.Member.Id,
-        });
     }
 }

@@ -55,7 +55,6 @@ public static class DependencyInjection
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IEmailSender, EmailService>();
-        services.AddScoped<IRoleAskService, RoleAskService>();
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IUserService, UserService>();
@@ -282,10 +281,10 @@ public static class DependencyInjection
 
         #endregion
 
-        #region InstructorRole
+        #region Instructor
 
-        services.AddOptions<InstructorRoleSettings>()
-            .BindConfiguration(InstructorRoleSettings.SectionName)
+        services.AddOptions<InstructorPassword>()
+            .BindConfiguration(nameof(InstructorPassword))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

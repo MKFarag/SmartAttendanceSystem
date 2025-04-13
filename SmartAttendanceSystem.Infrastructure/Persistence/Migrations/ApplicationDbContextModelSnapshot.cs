@@ -17,7 +17,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -154,20 +154,6 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                             ClaimType = "permissions",
                             ClaimValue = "Role:update",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
-                        },
-                        new
-                        {
-                            Id = 16,
-                            ClaimType = "permissions",
-                            ClaimValue = "Role:ask",
-                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
-                        },
-                        new
-                        {
-                            Id = 17,
-                            ClaimType = "permissions",
-                            ClaimValue = "Role:ask",
-                            RoleId = "019519df-03ea-78aa-8c1f-86eccefa5aeb"
                         });
                 });
 
