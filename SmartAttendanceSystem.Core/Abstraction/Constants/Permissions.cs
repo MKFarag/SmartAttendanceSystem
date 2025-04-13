@@ -27,6 +27,16 @@ public static class Permissions
 
     public const string RoleAsk = "Role:ask";
 
+    //#region Users
+
+    //public const string GetUsers = "user:read";
+    //public const string AddUsers = "user:add";
+    //public const string UpdateUsers = "user:update";
+    //public const string ToggleStatusUsers = "user:toggle-status";
+    //public const string UnlockUsers = "user:unlock";
+
+    //#endregion
+
 
     public static IList<string?> GetAllPermissions() =>
         [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];

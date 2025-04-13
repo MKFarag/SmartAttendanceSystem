@@ -1,5 +1,7 @@
 ﻿namespace SmartAttendanceSystem.Presentation.Controllers;
 
+//TODO: Add auth and permissions for admin
+
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController(IUserService userService) : ControllerBase

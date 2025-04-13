@@ -16,7 +16,7 @@ public class UserService
 
     #endregion
 
-    #region Admin
+    #region Admin (Dashboard)
 
     #region Get
 
@@ -66,7 +66,7 @@ public class UserService
 
     public async Task<Result<UserResponse>> AddAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
-        if (await _userManager.Users.AsNoTracking().AnyAsync(x => x.Email == request.Email, cancellationToken))
+        if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
             return Result.Failure<UserResponse>(UserErrors.DuplicatedEmail);
 
         var allowedRoles = await _roleService.GetAllNamesAsync(cancellationToken: cancellationToken);
@@ -98,7 +98,7 @@ public class UserService
     //UPDATE
     public async Task<Result> UpdateAsync(string Id, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
-        if (await _userManager.Users.AsNoTracking().AnyAsync(x => x.Email == request.Email && x.Id != Id, cancellationToken))
+        if (await _userManager.Users.AnyAsync(x => x.Email == request.Email && x.Id != Id, cancellationToken))
             return Result.Failure(UserErrors.DuplicatedEmail);
 
         var allowedRoles = await _roleService.GetAllNamesAsync(cancellationToken: cancellationToken);
@@ -164,7 +164,7 @@ public class UserService
 
     #endregion
 
-    #region User Profile
+    #region User Profile (Public)
 
     #region Get
 
