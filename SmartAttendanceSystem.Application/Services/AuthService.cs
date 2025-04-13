@@ -7,6 +7,7 @@ public class AuthService
 #region Initialize Fields
 
     (IOptions<EmailConfirmationSettings> emailOptions,
+    IOptions<InstructorPassword> instructorPassword,
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
     IHttpContextAccessor httpContextAccessor,
@@ -16,6 +17,7 @@ public class AuthService
     IEmailSender emailSender,
     IJobManager jobManager) : IAuthService
 {
+    private readonly InstructorPassword _instructorPassword = instructorPassword.Value;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
     private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
@@ -139,6 +141,9 @@ public class AuthService
 
     public async Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
+        if (!request.InstructorPassword.Equals(_instructorPassword.Value))
+            return Result.Failure(UserErrors.InvalidRolePassword);
+
         if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
             return Result.Failure(UserErrors.DuplicatedEmail);
 
@@ -185,7 +190,7 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            await _userManager.AddToRoleAsync(user, DefaultRoles.Member.Name);
+            await _userManager.AddToRoleAsync(user, DefaultRoles.Instructor.Name);
 
             return Result.Success();
         }

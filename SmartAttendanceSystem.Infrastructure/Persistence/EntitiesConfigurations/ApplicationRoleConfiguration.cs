@@ -14,14 +14,6 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
             },
             new ApplicationRole
             {
-                Id = DefaultRoles.Member.Id,
-                Name = DefaultRoles.Member.Name,
-                NormalizedName = DefaultRoles.Member.Name.ToUpper(),
-                ConcurrencyStamp = DefaultRoles.Member.ConcurrencyStamp,
-                IsDefault = true
-            },
-            new ApplicationRole
-            {
                 Id = DefaultRoles.Student.Id,
                 Name = DefaultRoles.Student.Name,
                 NormalizedName = DefaultRoles.Student.Name.ToUpper(),
@@ -32,7 +24,8 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
                 Id = DefaultRoles.Instructor.Id,
                 Name = DefaultRoles.Instructor.Name,
                 NormalizedName = DefaultRoles.Instructor.Name.ToUpper(),
-                ConcurrencyStamp = DefaultRoles.Instructor.ConcurrencyStamp
+                ConcurrencyStamp = DefaultRoles.Instructor.ConcurrencyStamp,
+                IsDefault = true
             }
         ]);
     }

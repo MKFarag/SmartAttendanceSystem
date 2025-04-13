@@ -27,7 +27,6 @@ public class UserService
               on u.Id equals ur.UserId
               join r in _roleService.Roles
               on ur.RoleId equals r.Id into roles
-              where !roles.Any(x => x.Name == DefaultRoles.Member.Name)
               select new
               {
                   u.Id,
@@ -51,7 +50,7 @@ public class UserService
     public async Task<Result<UserResponse>> GetAsync(string Id)
     {
         if (await _userManager.FindByIdAsync(Id) is not { } user)
-            return Result.Failure<UserResponse>(UserErrors.NotFount);
+            return Result.Failure<UserResponse>(UserErrors.NotFound);
 
         var roles = await _userManager.GetRolesAsync(user);
 
@@ -107,7 +106,7 @@ public class UserService
             return Result.Failure(UserErrors.InvalidRoles);
 
         if (await _userManager.FindByIdAsync(Id) is not { } user)
-            return Result.Failure(UserErrors.NotFount);
+            return Result.Failure(UserErrors.NotFound);
 
         user = request.Adapt(user);
 
@@ -132,7 +131,7 @@ public class UserService
     public async Task<Result> ToggleStatusAsync(string Id)
     {
         if (await _userManager.FindByIdAsync(Id) is not { } user)
-            return Result.Failure(UserErrors.NotFount);
+            return Result.Failure(UserErrors.NotFound);
 
         user.IsDisabled = !user.IsDisabled;
 
@@ -149,7 +148,7 @@ public class UserService
     public async Task<Result> UnlockAsync(string Id)
     {
         if (await _userManager.FindByIdAsync(Id) is not { } user)
-            return Result.Failure(UserErrors.NotFount);
+            return Result.Failure(UserErrors.NotFound);
 
         var result = await _userManager.SetLockoutEndDateAsync(user, null);
 

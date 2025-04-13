@@ -12,15 +12,15 @@ using SmartAttendanceSystem.Infrastructure.Persistence;
 namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250220081704_AddMemberRole")]
-    partial class AddMemberRole
+    [Migration("20250413021850_AddUsersPermissions")]
+    partial class AddUsersPermissions
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -157,6 +157,41 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                             ClaimType = "permissions",
                             ClaimValue = "Role:update",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            ClaimType = "permissions",
+                            ClaimValue = "user:read",
+                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            ClaimType = "permissions",
+                            ClaimValue = "user:add",
+                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            ClaimType = "permissions",
+                            ClaimValue = "user:update",
+                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            ClaimType = "permissions",
+                            ClaimValue = "user:toggle-status",
+                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            ClaimType = "permissions",
+                            ClaimValue = "user:unlock",
+                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         });
                 });
 
@@ -292,15 +327,6 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = "019519df-03ea-78aa-8c1f-86eccefa5aeb",
-                            ConcurrencyStamp = "019519df-29b5-7992-a8e6-846793cb078f",
-                            IsDefault = true,
-                            IsDeleted = false,
-                            Name = "Member",
-                            NormalizedName = "MEMBER"
-                        },
-                        new
-                        {
                             Id = "0194ba0b-a50d-7568-b187-2279f6b03b05",
                             ConcurrencyStamp = "0194ba0b-a50d-7568-b187-227aba8bc12f",
                             IsDefault = false,
@@ -312,7 +338,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         {
                             Id = "0194bd46-ceca-7ea4-9d02-9e268a031756",
                             ConcurrencyStamp = "0194bd47-1793-75b0-a10b-9de81d580d84",
-                            IsDefault = false,
+                            IsDefault = true,
                             IsDeleted = false,
                             Name = "Instructor",
                             NormalizedName = "INSTRUCTOR"

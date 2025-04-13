@@ -324,15 +324,6 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         },
                         new
                         {
-                            Id = "019519df-03ea-78aa-8c1f-86eccefa5aeb",
-                            ConcurrencyStamp = "019519df-29b5-7992-a8e6-846793cb078f",
-                            IsDefault = true,
-                            IsDeleted = false,
-                            Name = "Member",
-                            NormalizedName = "MEMBER"
-                        },
-                        new
-                        {
                             Id = "0194ba0b-a50d-7568-b187-2279f6b03b05",
                             ConcurrencyStamp = "0194ba0b-a50d-7568-b187-227aba8bc12f",
                             IsDefault = false,
@@ -344,7 +335,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         {
                             Id = "0194bd46-ceca-7ea4-9d02-9e268a031756",
                             ConcurrencyStamp = "0194bd47-1793-75b0-a10b-9de81d580d84",
-                            IsDefault = false,
+                            IsDefault = true,
                             IsDeleted = false,
                             Name = "Instructor",
                             NormalizedName = "INSTRUCTOR"
@@ -465,7 +456,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("StudentId", "CourseId")
                         .IsUnique();
 
-                    b.ToTable("Attendances");
+                    b.ToTable("Attendances", (string)null);
                 });
 
             modelBuilder.Entity("SmartAttendanceSystem.Core.Entities.Course", b =>
@@ -494,7 +485,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Courses");
+                    b.ToTable("Courses", (string)null);
                 });
 
             modelBuilder.Entity("SmartAttendanceSystem.Core.Entities.Department", b =>
@@ -515,7 +506,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("SmartAttendanceSystem.Core.Entities.Student", b =>
@@ -550,7 +541,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Students");
+                    b.ToTable("Students", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

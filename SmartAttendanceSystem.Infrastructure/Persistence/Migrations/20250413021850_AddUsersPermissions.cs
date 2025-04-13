@@ -23,6 +23,13 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     { 19, "permissions", "user:toggle-status", "0194ba0b-a50d-7568-b187-227d0faed2e9" },
                     { 20, "permissions", "user:unlock", "0194ba0b-a50d-7568-b187-227d0faed2e9" }
                 });
+
+            migrationBuilder.UpdateData(
+                table: "AspNetRoles",
+                keyColumn: "Id",
+                keyValue: "0194bd46-ceca-7ea4-9d02-9e268a031756",
+                column: "IsDefault",
+                value: true);
         }
 
         /// <inheritdoc />
@@ -52,6 +59,13 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                 table: "AspNetRoleClaims",
                 keyColumn: "Id",
                 keyValue: 20);
+
+            migrationBuilder.UpdateData(
+                table: "AspNetRoles",
+                keyColumn: "Id",
+                keyValue: "0194bd46-ceca-7ea4-9d02-9e268a031756",
+                column: "IsDefault",
+                value: false);
         }
     }
 }

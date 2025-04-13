@@ -2,7 +2,7 @@
 
 public record UserErrors
 {
-    public static readonly Error NotFount =
+    public static readonly Error NotFound =
         new("User.NotFount", "No user found", StatusCodes.Status404NotFound);
 
     public static readonly Error InvalidCredentials =
