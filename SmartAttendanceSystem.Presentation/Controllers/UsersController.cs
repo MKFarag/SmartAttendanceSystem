@@ -1,7 +1,5 @@
 ﻿namespace SmartAttendanceSystem.Presentation.Controllers;
 
-//TODO: Add auth and permissions for admin
-
 [Route("api/[controller]")]
 [ApiController]
 public class UsersController(IUserService userService) : ControllerBase
@@ -9,10 +7,12 @@ public class UsersController(IUserService userService) : ControllerBase
     private readonly IUserService _userService = userService;
 
     [HttpGet("")]
+    [HasPermission(Permissions.GetUsers)]
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await _userService.GetAllAsync(cancellationToken));
 
     [HttpGet("{Id}")]
+    [HasPermission(Permissions.GetUsers)]
     public async Task<IActionResult> Get([FromRoute] string Id)
     {
         var getResult = await _userService.GetAsync(Id);
@@ -23,6 +23,7 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPost("")]
+    [HasPermission(Permissions.AddUsers)]
     public async Task<IActionResult> Add([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         var addResult = await _userService.AddAsync(request, cancellationToken);
@@ -33,6 +34,7 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPut("{Id}")]
+    [HasPermission(Permissions.UpdateUsers)]
     public async Task<IActionResult> Update([FromRoute] string Id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
         var updateResult = await _userService.UpdateAsync(Id, request, cancellationToken);
@@ -43,6 +45,7 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPut("{id}/Toggle-status")]
+    [HasPermission(Permissions.ToggleStatusUsers)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id)
     {
         var toggleStatusResult = await _userService.ToggleStatusAsync(id);
@@ -53,6 +56,7 @@ public class UsersController(IUserService userService) : ControllerBase
     }
 
     [HttpPut("{id}/Unlock")]
+    [HasPermission(Permissions.UnlockUsers)]
     public async Task<IActionResult> Unlock([FromRoute] string id)
     {
         var unlockResult = await _userService.UnlockAsync(id);
