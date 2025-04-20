@@ -6,8 +6,6 @@ public class Student
     public string UserId { get; set; } = string.Empty;
     public int DepartmentId { get; set; }
 
-    //public string StudentCode { get; set; } = string.Empty;
-
     [Range(1, 4, ErrorMessage = "Level must be between 1 and 4")]
     public int Level { get; set; }
     public int? FingerId { get; set; }

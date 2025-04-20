@@ -7,8 +7,8 @@ using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SmartAttendanceSystem.Application.Services;
 using SmartAttendanceSystem.Fingerprint;
@@ -29,8 +29,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddDependencies(this IServiceCollection services, IConfiguration configuration)
     {
-        #region Services load
-
         services.AddControllers();
         services.AddDistributedMemoryCache();
         services.AddMapsterConfig();
@@ -43,15 +41,11 @@ public static class DependencyInjection
         services.AddHangfireConfig(configuration);
         services.AddHealthCheckConfig(configuration);
         services.AddVersioningConfig();
-        services.AddRateLimiter();
+        services.AddHybridCache();
+        services.AddRateLimiterConfig();
         services.AddFingerprint();
 
-        #endregion
-
-        #region Repositories load
-
         services.AddScoped<IAuthService, AuthService>();
-        services.AddScoped<IClaimService, ClaimService>();
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IEmailSender, EmailService>();
@@ -59,17 +53,11 @@ public static class DependencyInjection
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IUserService, UserService>();
 
-        #endregion
-
-        #region Plus
-
         services.AddHttpContextAccessor();
 
         services
             .AddEndpointsApiExplorer()
             .AddOpenApiConfig();
-
-        #endregion
 
         return services;
     }
@@ -111,8 +99,6 @@ public static class DependencyInjection
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseLazyLoadingProxies().UseSqlServer(connectionString)
         );
-
-        services.AddScoped<IDbContextManager, ApplicationDbContext>();
 
         return services;
     }
@@ -245,8 +231,6 @@ public static class DependencyInjection
 
     private static IServiceCollection AddOpenApiConfig(this IServiceCollection services)
     {
-        //Doc -> https://learn.microsoft.com/en-us/aspnet/core/fundamentals/openapi/aspnetcore-openapi?view=aspnetcore-9.0&tabs=visual-studio
-
         var serviceProvider = services.BuildServiceProvider();
         var apiVersionDescriptionProvider = serviceProvider.GetRequiredService<IApiVersionDescriptionProvider>();
 
@@ -267,28 +251,25 @@ public static class DependencyInjection
 
     private static IServiceCollection AddOptionsLoadConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        #region Mail
+        services.AddOptions<MailSettings>()
+            .BindConfiguration(nameof(MailSettings))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.Configure<MailSettings>(configuration.GetSection(nameof(MailSettings)));
+        services.AddOptions<EmailConfirmationSettings>()
+            .BindConfiguration(nameof(EmailConfirmationSettings))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
-        services.Configure<EmailConfirmationSettings>(configuration.GetSection(nameof(EmailConfirmationSettings)));
-
-        #endregion
-
-        #region Fingerprint
-
-        services.Configure<EnrollmentCommands>(configuration.GetSection(nameof(EnrollmentCommands)));
-
-        #endregion
-
-        #region Instructor
+        services.AddOptions<EnrollmentCommands>()
+            .BindConfiguration(nameof(EnrollmentCommands))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
 
         services.AddOptions<InstructorPassword>()
             .BindConfiguration(nameof(InstructorPassword))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        #endregion
 
         return services;
     }
@@ -299,12 +280,10 @@ public static class DependencyInjection
 
     private static IServiceCollection AddHealthCheckConfig(this IServiceCollection services, IConfiguration configuration)
     {
-        //For Url we can add httpMethod
-
         services.AddHealthChecks()
-            .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection")!, tags: ["Db"])
+            .AddSqlServer(name: "Database", connectionString: configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("The ConnectionString is not found"))
             .AddHangfire(options => { options.MinimumAvailableServers = 1; })
-            .AddUrlGroup(name: "Network", uri: new Uri("https://www.google.com"))
             .AddCheck<MailProviderHealthCheck>(name: "Mail service");
 
         return services;
@@ -314,71 +293,48 @@ public static class DependencyInjection
 
     #region RateLimiter
 
-    private static IServiceCollection AddRateLimiter(this IServiceCollection services)
+    private static IServiceCollection AddRateLimiterConfig(this IServiceCollection services)
     {
-        //[EnableRateLimiting("")]
+        services.AddOptions<RateLimitingOptions>()
+            .BindConfiguration(nameof(RateLimitingOptions))
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        var provider = services.BuildServiceProvider();
+        var settings = provider.GetRequiredService<IOptions<RateLimitingOptions>>().Value;
 
         services.AddRateLimiter(rateLimiterOptions =>
         {
             rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
-            rateLimiterOptions.AddPolicy(RateLimiterSettings.IpLimit, httpContext =>
+            rateLimiterOptions.AddPolicy(RateLimiters.IpLimit, httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.Connection.RemoteIpAddress?.ToString(),
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 2,
-                        Window = TimeSpan.FromSeconds(15)
+                        PermitLimit = settings.IpPolicy.PermitLimit,
+                        Window = TimeSpan.FromSeconds(settings.IpPolicy.WindowInSeconds)
                     }
                 )
             );
 
-            rateLimiterOptions.AddPolicy(RateLimiterSettings.UserLimit, httpContext =>
+            rateLimiterOptions.AddPolicy(RateLimiters.UserLimit, httpContext =>
                 RateLimitPartition.GetFixedWindowLimiter(
                     partitionKey: httpContext.User.GetId(),
                     factory: _ => new FixedWindowRateLimiterOptions
                     {
-                        PermitLimit = 2,
-                        Window = TimeSpan.FromSeconds(15)
+                        PermitLimit = settings.UserPolicy.PermitLimit,
+                        Window = TimeSpan.FromSeconds(settings.UserPolicy.WindowInSeconds)
                     }
                 )
             );
 
-            rateLimiterOptions.AddConcurrencyLimiter(RateLimiterSettings.Concurrency, options =>
+            rateLimiterOptions.AddConcurrencyLimiter(RateLimiters.Concurrency, options =>
             {
-                options.PermitLimit = 1000;
-                options.QueueLimit = 100;
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-            });
-
-            rateLimiterOptions.AddFixedWindowLimiter(RateLimiterSettings.Fixed, options =>
-            {
-                options.PermitLimit = 20;
-                options.QueueLimit = 5;
+                options.QueueLimit = settings.Concurrency.QueueLimit;
                 options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
 
-                options.Window = TimeSpan.FromSeconds(15);
-            });
-
-            rateLimiterOptions.AddTokenBucketLimiter(RateLimiterSettings.Token, options =>
-            {
-                options.QueueLimit = 10;
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-
-                options.TokenLimit = 50;
-                options.ReplenishmentPeriod = TimeSpan.FromSeconds(10);
-                options.TokensPerPeriod = 5;
-                options.AutoReplenishment = true;
-            });
-
-            rateLimiterOptions.AddSlidingWindowLimiter(RateLimiterSettings.Sliding, options =>
-            {
-                options.PermitLimit = 20;
-                options.QueueLimit = 5;
-                options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
-
-                options.Window = TimeSpan.FromSeconds(30);
-                options.SegmentsPerWindow = 3;
+                options.PermitLimit = settings.Concurrency.PermitLimit;
             });
         });
 
@@ -391,9 +347,6 @@ public static class DependencyInjection
 
     private static IServiceCollection AddVersioningConfig(this IServiceCollection services)
     {
-        //In the head of controller we can add the version [ApiVersion(1, Deprecated = true)]
-        //In the head of endpoint we can add the version [MapToApiVersion(1)]
-
         services.AddApiVersioning(options =>
         {
             options.DefaultApiVersion = new ApiVersion(1);

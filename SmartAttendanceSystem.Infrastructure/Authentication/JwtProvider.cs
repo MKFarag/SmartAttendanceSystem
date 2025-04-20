@@ -20,7 +20,7 @@ public class JwtProvider(IOptions<JwtOptions> jwtOptions) : IJwtProvider
             new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email!),
             new(JwtRegisteredClaimNames.GivenName, user.Name),
-            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString()),
             new(nameof(roles), JsonSerializer.Serialize(roles), JsonClaimValueTypes.JsonArray),
             new(nameof(permissions), JsonSerializer.Serialize(permissions), JsonClaimValueTypes.JsonArray)
         ];

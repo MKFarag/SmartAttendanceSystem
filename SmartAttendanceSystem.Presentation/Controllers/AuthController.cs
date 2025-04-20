@@ -2,6 +2,7 @@
 
 [Route("[controller]")]
 [ApiController]
+[EnableRateLimiting(RateLimiters.IpLimit)]
 public class AuthController(IAuthService authService) : ControllerBase
 {
     private readonly IAuthService _authService = authService;

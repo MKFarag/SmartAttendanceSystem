@@ -1,9 +1,9 @@
 ﻿namespace SmartAttendanceSystem.Core.Errors;
 
-public static class StudentErrors
+public record StudentErrors
 {
-    public static readonly Error NotFount =
-        new("Student.NotFount", "No student found", StatusCodes.Status404NotFound);
+    public static readonly Error NotFound =
+        new("Student.NotFound", "No student found", StatusCodes.Status404NotFound);
 
     public static readonly Error CourseNotFound =
         new("Student.CourseNotFound", "No course found by this id", StatusCodes.Status404NotFound);
@@ -21,5 +21,5 @@ public static class StudentErrors
         new("Student.AlreadyHaveFp", "This student has a fingerprint Id already", StatusCodes.Status409Conflict);
 
     public static Error CourseNotAdded(int id) =>
-        new("Student.CourseNotAdded", $"The course of id {id} has not been added to your courses", StatusCodes.Status404NotFound);
+        new("Student.CourseNotAdded", $"The course of id {id} is not added to your courses", StatusCodes.Status404NotFound);
 }

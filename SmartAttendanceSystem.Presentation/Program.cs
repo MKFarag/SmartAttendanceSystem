@@ -33,8 +33,6 @@ app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
 
-#region Hangfire
-
 app.UseHangfireDashboard("/jobs", new DashboardOptions
 {
     Authorization =
@@ -48,8 +46,6 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
     DashboardTitle = "SmartAttendanceSystem Dashboard",
     IsReadOnlyFunc = (DashboardContext context) => true
 });
-
-#endregion
 
 app.UseCors();
 

@@ -3,7 +3,7 @@
 public record UserErrors
 {
     public static readonly Error NotFound =
-        new("User.NotFount", "No user found", StatusCodes.Status404NotFound);
+        new("User.NotFound", "No user found", StatusCodes.Status404NotFound);
 
     public static readonly Error InvalidCredentials =
         new("User.InvalidCredentials", "Invalid email/password", StatusCodes.Status401Unauthorized);
@@ -43,7 +43,4 @@ public record UserErrors
 
     public static readonly Error InvalidRolePassword =
         new("User.InvalidRolePassword", "Invalid role password", StatusCodes.Status400BadRequest);
-
-    public static readonly Error AlreadyInRole =
-        new("User.AlreadyInRole", "You have this role already", StatusCodes.Status400BadRequest);
 }

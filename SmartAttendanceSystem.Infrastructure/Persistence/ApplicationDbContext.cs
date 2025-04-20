@@ -3,7 +3,7 @@
 namespace SmartAttendanceSystem.Infrastructure.Persistence;
 
 public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options), IDbContextManager
+    : IdentityDbContext<ApplicationUser, ApplicationRole, string>(options)
 {
     #region DbSet
 
@@ -11,9 +11,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Course> Courses { get; set; } = default!;
     public DbSet<Department> Departments { get; set; } = default!;
     public DbSet<Student> Students { get; set; } = default!;
-
-    //For DbContextManager
-    DbSet<IdentityUserRole<string>> IDbContextManager.UserRoles => base.UserRoles;
 
     #endregion
 
@@ -50,21 +47,4 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         #endregion
 
     }
-
-    #region Override-SaveChangesAsync
-
-    //public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    //{
-    //    var entities = ChangeTracker.Entries<ApplicationUser>();
-
-    //    foreach (var entityEntry in entities)
-    //    {
-    //        var user = entityEntry.Entity;
-
-    //    }
-
-    //    return base.SaveChangesAsync(cancellationToken);
-    //}
-
-    #endregion
 }

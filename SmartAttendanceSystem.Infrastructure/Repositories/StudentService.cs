@@ -1,6 +1,4 @@
-﻿using System.Linq.Dynamic.Core;
-
-namespace SmartAttendanceSystem.Infrastructure.Repositories;
+﻿namespace SmartAttendanceSystem.Infrastructure.Repositories;
 
 public class StudentService
 
@@ -52,7 +50,7 @@ public class StudentService
         var student = await GetMainAsync(predicate, cancellationToken);
 
         if (student is null)
-            return Result.Failure<StudentAttendanceResponse>(StudentErrors.NotFount);
+            return Result.Failure<StudentAttendanceResponse>(StudentErrors.NotFound);
 
         if (student.Attendances is null)
             return Result.Success(student.Adapt<StudentAttendanceResponse>() with { CourseAttendances = [] });

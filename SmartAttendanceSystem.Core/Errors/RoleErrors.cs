@@ -1,6 +1,6 @@
 ﻿namespace SmartAttendanceSystem.Core.Errors;
 
-public static class RoleErrors
+public record RoleErrors
 {
     public static readonly Error NotFound =
         new("Role.NotFount", "No role found by this id", StatusCodes.Status404NotFound);

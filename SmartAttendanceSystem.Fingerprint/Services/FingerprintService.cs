@@ -209,7 +209,7 @@ public class FingerprintService
         if (StdIdResult == 0)
         {
             _logger.LogWarning("No student found with Fingerprint ID: {fid}", fId);
-            return Result.Failure<int>(StudentErrors.NotFount);
+            return Result.Failure<int>(StudentErrors.NotFound);
         }
         else
             _logger.LogInformation("Successfully matched student with id #{StudentId}", StdIdResult);

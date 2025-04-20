@@ -1,7 +1,7 @@
 ﻿namespace SmartAttendanceSystem.presentation.Controllers;
 
-[ApiController]
 [Route("api/[controller]")]
+[ApiController]
 [Authorize]
 public class FingerprintController(IFingerprintService fingerprintService) : ControllerBase
 {
