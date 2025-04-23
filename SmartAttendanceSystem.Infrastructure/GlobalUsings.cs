@@ -1,5 +1,6 @@
 ﻿global using Mapster;
 global using Microsoft.AspNetCore.Authorization;
+global using Microsoft.Extensions.Caching.Hybrid;
 global using Microsoft.AspNetCore.Identity;
 global using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore;
@@ -24,4 +25,6 @@ global using SmartAttendanceSystem.Infrastructure.Persistence;
 global using System.ComponentModel.DataAnnotations;
 global using System.Linq.Dynamic.Core;
 global using System.Linq.Expressions;
-
+global using SmartAttendanceSystem.Application.Contracts.Users;
+global using System.Security.Cryptography;
+global using System.Text;

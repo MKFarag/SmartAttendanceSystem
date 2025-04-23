@@ -5,13 +5,13 @@ public class UserService
 #region Initial
 
     (UserManager<ApplicationUser> userManager,
-    IStudentService studentService,
+    Lazy<IStudentService> studentService,
     IRoleService roleService) : IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IStudentService _studentService = studentService;
+    private readonly Lazy<IStudentService> _studentService = studentService;
     private readonly IRoleService _roleService = roleService;
-
+    
     #endregion
 
     #region Admin (Dashboard)
@@ -185,7 +185,7 @@ public class UserService
                 .AsNoTracking()
                 .FirstAsync(cancellationToken);
 
-            var courses = await _studentService.GetCoursesWithAttendancesDTOsAsync(user.Id, cancellationToken: cancellationToken);
+            var courses = await _studentService.Value.GetCoursesWithAttendancesDTOsAsync(user.Id, cancellationToken: cancellationToken);
 
             StudentProfileResponse response = new
                 (

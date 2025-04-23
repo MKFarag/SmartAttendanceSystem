@@ -20,6 +20,11 @@ using SmartAttendanceSystem.Infrastructure.Repositories;
 using SmartAttendanceSystem.Presentation.OpenApiTransformers;
 using System.Reflection;
 using System.Text;
+using System.Linq;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using System;
 
 #endregion
 
@@ -52,6 +57,9 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IUserService, UserService>();
+
+        // Add Lazy registration for IStudentService
+        services.AddScoped(provider => new Lazy<IStudentService>(() => provider.GetRequiredService<IStudentService>()));
 
         services.AddHttpContextAccessor();
 
@@ -256,8 +264,8 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        services.AddOptions<EmailConfirmationSettings>()
-            .BindConfiguration(nameof(EmailConfirmationSettings))
+        services.AddOptions<EmailTemplateOptions>()
+            .BindConfiguration(nameof(EmailTemplateOptions))
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

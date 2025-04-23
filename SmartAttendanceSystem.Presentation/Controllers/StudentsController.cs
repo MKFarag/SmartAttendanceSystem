@@ -3,6 +3,7 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class StudentsController
 
 #region Initial
@@ -74,6 +75,21 @@ public class StudentsController
         return stdResult.IsSuccess
             ? Ok(stdResult.Value)
             : stdResult.ToProblem();
+    }
+
+    #endregion
+
+    #region Add
+
+    [HttpPost("")]
+    [HasPermission(Permissions.AddStudents)]
+    public async Task<IActionResult> Add([FromBody] CreateStudentRequest request, CancellationToken cancellationToken)
+    {
+        var response = await _studentService.AddAsync(request, cancellationToken);
+
+        return response.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { response.Value.Id }, response.Value)
+            : response.ToProblem();
     }
 
     #endregion

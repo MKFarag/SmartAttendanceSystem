@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace SmartAttendanceSystem.Application.Services;
 
@@ -6,7 +7,7 @@ public class AuthService
 
 #region Initialize Fields
 
-    (IOptions<EmailConfirmationSettings> emailOptions,
+    (IOptions<EmailTemplateOptions> templateData,
     IOptions<InstructorPassword> instructorPassword,
     SignInManager<ApplicationUser> signInManager,
     UserManager<ApplicationUser> userManager,
@@ -20,7 +21,7 @@ public class AuthService
     private readonly InstructorPassword _instructorPassword = instructorPassword.Value;
     private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly EmailConfirmationSettings _emailOptions = emailOptions.Value;
+    private readonly EmailTemplateOptions _templateData = templateData.Value;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IUserService _userService = userService;
@@ -47,6 +48,9 @@ public class AuthService
         if (result.Succeeded)
         {
             var (userRoles, userPermissions) = await _userService.GetRolesAndClaimsAsync(user, cancellationToken);
+
+            if (userRoles.Contains(DefaultRoles.Student.Name))
+                return Result.Failure<AuthResponse>(UserErrors.NoPermission);
 
             var (token, expiresIn) = _jwtProvider.GenerateToken(user, userRoles, userPermissions);
 
@@ -153,8 +157,10 @@ public class AuthService
 
         if (result.Succeeded)
         {
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+            var code = GenerateEmailConfirmationCode();
+            user.EmailConfirmationCode = code;
+            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(15);
+            await _userManager.UpdateAsync(user);
 
             _logger.LogInformation("Confirm code: {code}", code);
 
@@ -274,25 +280,28 @@ public class AuthService
 
     private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
+    private static string GenerateEmailConfirmationCode()
+    {
+        var bytes = new byte[4];
+        RandomNumberGenerator.Fill(bytes);
+        return (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
+    }
+
     private async Task SendConfirmationEmail(ApplicationUser user, string code)
     {
-        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
-
-        var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmation",
+        var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationCode",
             new Dictionary<string, string>
             {
-                { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
-                { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
-                { EmailConfirmationSettings.PAddress, _emailOptions.Address },
-                { EmailConfirmationSettings.PCity, _emailOptions.City },
-                { EmailConfirmationSettings.PCountry, _emailOptions.Country },
-                { EmailConfirmationSettings.PUserName,  user.Name},
-
-                //FrontEnd should tell me where the user will go with what queries
-                { EmailConfirmationSettings.PAction_url, $"{origin}/auth/emailConfirmation?userId={user.Id}$code={code}" }
+                    { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
+                    { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
+                    { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
+                    { EmailTemplateOptions.Placeholders.City, _templateData.City },
+                    { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
+                    { EmailTemplateOptions.Placeholders.UserName, user.Name},
+                    { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
+                    { EmailTemplateOptions.Placeholders.Code, code}
             }
         );
-
         _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
 
         await Task.CompletedTask;
@@ -305,15 +314,15 @@ public class AuthService
         var emailBody = EmailBodyBuilder.GenerateEmailBody("ResetPassword",
             new Dictionary<string, string>
             {
-                { EmailConfirmationSettings.PTitleName, _emailOptions.TitleName },
-                { EmailConfirmationSettings.PTeamName, _emailOptions.TeamName },
-                { EmailConfirmationSettings.PAddress, _emailOptions.Address },
-                { EmailConfirmationSettings.PCity, _emailOptions.City },
-                { EmailConfirmationSettings.PCountry, _emailOptions.Country },
-                { EmailConfirmationSettings.PUserName,  user.Name},
+                { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
+                { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
+                { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
+                { EmailTemplateOptions.Placeholders.City, _templateData.City },
+                { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
+                { EmailTemplateOptions.Placeholders.UserName,  user.Name},
 
                 //FrontEnd should tell me where the user will go with what queries
-                { EmailConfirmationSettings.PAction_url, $"{origin}/auth/forgetPassword?email={user.Email}$code={code}" }
+                { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/forgetPassword?email={user.Email}$code={code}" }
             }
         );
 

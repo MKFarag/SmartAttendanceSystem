@@ -4,13 +4,40 @@ public class StudentService
 
 #region Initial
 
-    (ApplicationDbContext context,
+    (ILogger<StudentService> logger,
+    IDepartmentService deptService,
+    ApplicationDbContext context,
     ICourseService courseService,
-    ILogger<StudentService> logger) : IStudentService
+    IUserService userService) : IStudentService
 {
-    private readonly ApplicationDbContext _context = context;
     private readonly ICourseService _courseService = courseService;
+    private readonly IDepartmentService _deptService = deptService;
     private readonly ILogger<StudentService> _logger = logger;
+    private readonly IUserService _userService = userService;
+    private readonly ApplicationDbContext _context = context;
+
+    /// <summary>
+    /// A set of allowed search columns for filtering students.
+    /// </summary>
+    private static readonly HashSet<string> _allowedSearchColumns = new(StringComparer.OrdinalIgnoreCase)
+    { "Name", "Email" };
+
+    /// <summary>
+    /// A set of allowed sort columns for ordering students.
+    /// </summary>
+    private static readonly HashSet<string> _allowedSortColumns = new(StringComparer.OrdinalIgnoreCase)
+    { "Name", "Email", "Id", "Level", "DepartmentId" };
+
+    /// <summary>
+    /// A dictionary mapping department ID to their corresponding course IDs.
+    /// </summary>
+    private static readonly Dictionary<int, IList<int>> _coursesForDept = new()
+    {
+        { 1, [] },
+        { 2, [] },
+        { 3, [] },
+        { 4, [] }
+    };
 
     #endregion
 
@@ -26,10 +53,31 @@ public class StudentService
             query = query.Where(predicate);
 
         if (!string.IsNullOrEmpty(filters.SearchValue))
-            query = query.Where(x => x.User.Name.Contains(filters.SearchValue));
+        {
+            // Default to 'Name' if no search column is provided
+            var searchColumn = filters.SearchColumn ?? _allowedSearchColumns.First();
+
+            // Find the matching column in the allowed list
+            var validSearchColumn = _allowedSearchColumns
+                .FirstOrDefault(x => string.Equals(x, searchColumn, StringComparison.OrdinalIgnoreCase));
+
+            //@0 means: "Insert the first parameter from the method call after the expression string."
+            if (validSearchColumn is not null)
+                query = query.Where($"{validSearchColumn}.Contains(@0)", filters.SearchValue);
+        }
 
         if (!string.IsNullOrEmpty(filters.SortColumn))
-            query = query.OrderBy($"{filters.SortColumn} {filters.SortDirection}");
+        {
+            // Default to 'Name' if no sort column is provided
+            var sortColumn = filters.SortColumn ?? _allowedSortColumns.First();
+
+            // Find the matching column in the allowed list
+            var validSortColumn = _allowedSortColumns
+                .FirstOrDefault(x => string.Equals(x, sortColumn, StringComparison.OrdinalIgnoreCase));
+
+            if (validSortColumn is not null)
+                query = query.OrderBy($"{validSortColumn} {filters.SortDirection}");
+        }
 
         var students = await PaginatedList<StudentResponse>.CreateAsync
             (
@@ -60,6 +108,41 @@ public class StudentService
 
     public async Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
         => await _context.Students.Where(predicate).AsNoTracking().Select(x => x.Id).FirstOrDefaultAsync(cancellationToken);
+
+    #endregion
+
+    #region Add
+
+    public async Task<Result<StudentResponse>> AddAsync(CreateStudentRequest request, CancellationToken cancellationToken = default)
+    {
+        if (!await _deptService.AnyAsync(x => x.Id == request.DepartmentId, cancellationToken))
+            return Result.Failure<StudentResponse>(GlobalErrors.IdNotFound("Department"));
+
+        if (request.Level > 4 || request.Level < 1)
+            return Result.Failure<StudentResponse>(GlobalErrors.InvalidInput);
+
+        var userResponse = await _userService.AddAsync
+        (
+            new CreateUserRequest(request.Name, request.Email, GenerateRandomPassword(16), [DefaultRoles.Student.Name]),
+            cancellationToken
+        );
+
+        if (userResponse.IsFailure)
+            return Result.Failure<StudentResponse>(userResponse.Error);
+
+        var student = new Student
+        {
+            UserId = userResponse.Value.Id,
+            Level = request.Level,
+            DepartmentId = request.DepartmentId,
+            Attendances = [.. _coursesForDept[request.DepartmentId].Select(courseId => new Attendance { CourseId = courseId, Weeks = new() })]
+        };
+
+        await _context.Students.AddAsync(student, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success(student.Adapt<StudentResponse>());
+    }
 
     #endregion
 
@@ -316,6 +399,35 @@ public class StudentService
             return Result.Failure<int>(UserErrors.NoPermission);
 
         return Result.Success(StdId);
+    }
+
+    private static string GenerateRandomPassword(int length = 8)
+    {
+        if (length < 8)
+            throw new ArgumentException("Password length must be at least 8.");
+
+        const string upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const string lower = "abcdefghijklmnopqrstuvwxyz";
+        const string digits = "0123456789";
+        const string special = "!@#$%^&*()-_=+[]{};:,.<>?";
+
+        var randomChars = new[]
+        {
+            upper[RandomNumberGenerator.GetInt32(upper.Length)],
+            lower[RandomNumberGenerator.GetInt32(lower.Length)],
+            digits[RandomNumberGenerator.GetInt32(digits.Length)],
+            special[RandomNumberGenerator.GetInt32(special.Length)],
+        };
+
+        string allChars = upper + lower + digits + special;
+        var password = new StringBuilder();
+        password.Append(randomChars);
+
+        for (int i = randomChars.Length; i < length; i++)
+            password.Append(allChars[RandomNumberGenerator.GetInt32(allChars.Length)]);
+
+        // Shuffle the final password to avoid predictable first characters
+        return new string([.. password.ToString().OrderBy(_ => RandomNumberGenerator.GetInt32(int.MaxValue))]);
     }
 
     #endregion

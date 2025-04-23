@@ -21,6 +21,7 @@ public static class Permissions
     #region Students
 
     public const string GetStudents = "students:read";
+    public const string AddStudents = "students:create";
     public const string StudentCourses = "students:courses";
 
     public const string GetAttendance = "attendance:read";
@@ -54,7 +55,6 @@ public static class Permissions
     public const string UnlockUsers = "user:unlock";
 
     #endregion
-
 
     public static IList<string?> GetAllPermissions() =>
         [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];

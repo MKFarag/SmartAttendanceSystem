@@ -10,6 +10,10 @@ public class ApplicationUser : IdentityUser
 
     public string Name { get; set; } = string.Empty;
     public bool IsDisabled { get; set; }
+    public string? EmailConfirmationCode { get; set; }
+    public DateTime? EmailConfirmationCodeExpiration { get; set; }
+    public bool IsEmailConfirmationCodeActive
+        => EmailConfirmationCode is not null && (EmailConfirmationCodeExpiration > DateTime.UtcNow);
 
     public virtual Student? StudentInfo { get; set; } = null;
     public virtual List<RefreshToken> RefreshTokens { get; set; } = [];
