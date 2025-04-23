@@ -441,8 +441,7 @@
 </head>
 <body>
     <span class="preheader">
-        Use this link to reset your password. The link is only valid for 24
-        hours.
+        The code is only valid for 10 minutes.
     </span>
     <table class="email-wrapper"
            width="100%"
@@ -482,7 +481,7 @@
                                         <div class="f-fallback">
                                             <h1>Hi {{UserName}},</h1>
                                             <p>
-                                                To confirm your email, please click the button below:
+                                                The code for confirmation is:
                                             </p>
                                             <!-- Action -->
                                             <table class="body-action"
@@ -501,9 +500,9 @@
                                                                role="presentation">
                                                             <tr>
                                                                 <td text-align="center">
-                                                                    <a href="{{Action_url}}"
+                                                                    <div
                                                                        class="f-fallback button button--green"
-                                                                       target="_blank">Verify email address</a>
+                                                                       target="_blank">{{Code}}</div>
                                                                 </td>
                                                             </tr>
                                                         </table>
@@ -516,11 +515,9 @@
                                                 <tr>
                                                     <td>
                                                         <p class="f-fallback sub">
-                                                            If you are having trouble with the button above,
-                                                            copy and paste the URL below into your web
-                                                            browser.
+                                                            If you are having trouble with the code above,
+                                                            please contact us at {{SupportEmail}}.
                                                         </p>
-                                                        <p class="f-fallback sub">{{Action_url}}</p>
                                                     </td>
                                                 </tr>
                                             </table>

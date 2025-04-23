@@ -43,7 +43,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         var response = await _authService.RegisterAsync(request, cancellationToken);
 
         return response.IsSuccess
-            ? Ok()
+            ? Ok(response.Value)
             : response.ToProblem();
     }
 

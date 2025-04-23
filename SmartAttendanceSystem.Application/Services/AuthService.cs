@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using static Org.BouncyCastle.Crypto.Engines.SM2Engine;
 
 namespace SmartAttendanceSystem.Application.Services;
 
@@ -30,6 +29,8 @@ public class AuthService
     private readonly IJobManager _jobManager = jobManager;
 
     private readonly int _refreshTokenExpiryDays = 14;
+    private readonly int _confirmationCodeExpirationMinutes = 15;
+    private static readonly SemaphoreSlim _registrationLock = new(1, 1);
 
     #endregion
 
@@ -143,34 +144,41 @@ public class AuthService
 
     #region Register
 
-    public async Task<Result> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<string>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
     {
-        if (!request.InstructorPassword.Equals(_instructorPassword.Value))
-            return Result.Failure(UserErrors.InvalidRolePassword);
-
-        if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
-            return Result.Failure(UserErrors.DuplicatedEmail);
-
-        var user = request.Adapt<ApplicationUser>();
-
-        var result = await _userManager.CreateAsync(user, request.Password);
-
-        if (result.Succeeded)
+        await _registrationLock.WaitAsync(cancellationToken);
+        try
         {
-            var code = GenerateEmailConfirmationCode();
-            user.EmailConfirmationCode = code;
-            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(15);
-            await _userManager.UpdateAsync(user);
+            if (!request.InstructorPassword.Equals(_instructorPassword.Value))
+                return Result.Failure<string>(UserErrors.InvalidRolePassword);
 
-            _logger.LogInformation("Confirm code: {code}", code);
+            if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
+                return Result.Failure<string>(UserErrors.DuplicatedEmail);
 
-            await SendConfirmationEmail(user, code);
+            var user = request.Adapt<ApplicationUser>();
 
-            return Result.Success();
+            var result = await _userManager.CreateAsync(user, request.Password);
+
+            if (result.Succeeded)
+            {
+                var code = await GenerateEmailConfirmationCode(user);
+
+                #if DEBUG
+                _logger.LogInformation("Confirm code: {code}", code);
+                #endif
+
+                await SendConfirmationEmail(user, code);
+
+                return Result.Success(user.Id);
+            }
+
+            var error = result.Errors.First();
+            return Result.Failure<string>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
         }
-
-        var error = result.Errors.First();
-        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
+        finally
+        {
+            _registrationLock.Release();
+        }
     }
 
     #region Email Confirmation
@@ -183,16 +191,18 @@ public class AuthService
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.DuplicatedConfirmation);
 
-        try
-        {
-            code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
-        }
-        catch (FormatException)
-        {
-            return Result.Failure(UserErrors.InvalidCode);
-        }
+        IdentityResult result;
 
-        var result = await _userManager.ConfirmEmailAsync(user, code);
+        if (user.EmailConfirmationCode == code && user.IsEmailConfirmationCodeActive)
+        {
+            user.EmailConfirmed = true;
+            user.EmailConfirmationCode = null;
+            user.EmailConfirmationCodeExpiration = null;
+
+            result = await _userManager.UpdateAsync(user);
+        }
+        else
+            return Result.Failure(UserErrors.InvalidCode);
 
         if (result.Succeeded)
         {
@@ -213,10 +223,11 @@ public class AuthService
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.DuplicatedConfirmation);
 
-        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var code = await GenerateEmailConfirmationCode(user);
 
+        #if DEBUG
         _logger.LogInformation("Confirm code: {code}", code);
+        #endif
 
         await SendConfirmationEmail(user, code);
 
@@ -240,7 +251,9 @@ public class AuthService
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
+        #if DEBUG
         _logger.LogInformation("Reset code: {code}", code);
+        #endif
 
         await SendResetPasswordEmail(user, code);
 
@@ -280,11 +293,17 @@ public class AuthService
 
     private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
-    private static string GenerateEmailConfirmationCode()
+    private async Task<string> GenerateEmailConfirmationCode(ApplicationUser user)
     {
         var bytes = new byte[4];
         RandomNumberGenerator.Fill(bytes);
-        return (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
+        var code = (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
+
+        user.EmailConfirmationCode = code;
+        user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(_confirmationCodeExpirationMinutes);
+        await _userManager.UpdateAsync(user);
+
+        return code;
     }
 
     private async Task SendConfirmationEmail(ApplicationUser user, string code)
@@ -320,13 +339,13 @@ public class AuthService
                 { EmailTemplateOptions.Placeholders.City, _templateData.City },
                 { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
                 { EmailTemplateOptions.Placeholders.UserName,  user.Name},
+                { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
 
-                //FrontEnd should tell me where the user will go with what queries
-                { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/forgetPassword?email={user.Email}$code={code}" }
+                //TODO: FrontEnd should tell me where the user will go with what queries
+                { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/forgetPassword?email={user.Email}&code={code}" }
             }
         );
-
-        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Api.Builder reset password", emailBody));
 
         await Task.CompletedTask;
     }
