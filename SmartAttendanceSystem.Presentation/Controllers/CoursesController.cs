@@ -70,3 +70,5 @@ public class CoursesController(ICourseService courseService) : ControllerBase
 
     #endregion
 }
+//TODO: Add a method to get all courses by department id
+//TODO: Add a method to put the relationship between courses and departments

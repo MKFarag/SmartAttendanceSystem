@@ -20,6 +20,9 @@ public record StudentErrors
     public static readonly Error AlreadyHaveFp =
         new("Student.AlreadyHaveFp", "This student has a fingerprint Id already", StatusCodes.Status409Conflict);
 
+    public static readonly Error ServiceUnavailable =
+        new("Student.ServiceUnavailable", "You cannot add a student in level 1.", StatusCodes.Status400BadRequest);
+
     public static Error CourseNotAdded(int id) =>
         new("Student.CourseNotAdded", $"The course of id {id} is not added to your courses", StatusCodes.Status404NotFound);
 }

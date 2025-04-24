@@ -8,6 +8,9 @@ public static class GlobalErrors
     public static readonly Error RelationError =
         new("db.RelationError", "Unable to delete the record because it is referenced by other data", StatusCodes.Status409Conflict);
 
+    public static readonly Error NoCourseInDept =
+        new("db.NoCourseInDept", "No course found in this department", StatusCodes.Status404NotFound);
+
     public static Error DuplicatedData(string value) =>
         new("db.DuplicatedData", $"The '{value}' is duplicated", StatusCodes.Status409Conflict);
 

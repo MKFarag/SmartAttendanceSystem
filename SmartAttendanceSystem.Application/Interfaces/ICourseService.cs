@@ -4,5 +4,6 @@ public interface ICourseService : IGenericRepository<Course, CourseResponse, Cou
 {
     Task<Result> UpdateAsync(int Id, CourseRequest request, CancellationToken cancellationToken = default);
 
-    Task<IEnumerable<int>> GetIDsAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<int>> GetAllIDsAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<int>> GetAllIDsAsync(int departmentId, CancellationToken cancellationToken = default);
 }

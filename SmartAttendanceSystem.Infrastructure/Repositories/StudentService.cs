@@ -16,72 +16,34 @@ public class StudentService
     private readonly IUserService _userService = userService;
     private readonly ApplicationDbContext _context = context;
 
-    /// <summary>
-    /// A set of allowed search columns for filtering students.
-    /// </summary>
-    private static readonly HashSet<string> _allowedSearchColumns = new(StringComparer.OrdinalIgnoreCase)
-    { "Name", "Email" };
-
-    /// <summary>
-    /// A set of allowed sort columns for ordering students.
-    /// </summary>
-    private static readonly HashSet<string> _allowedSortColumns = new(StringComparer.OrdinalIgnoreCase)
-    { "Name", "Email", "Id", "Level", "DepartmentId" };
-
-    /// <summary>
-    /// A dictionary mapping department ID to their corresponding course IDs.
-    /// </summary>
-    private static readonly Dictionary<int, IList<int>> _coursesForDept = new()
-    {
-        { 1, [] },
-        { 2, [] },
-        { 3, [] },
-        { 4, [] }
-    };
+    public IQueryable<Student> Students => _context.Students;
 
     #endregion
 
+    //TODO: Add service which change the level of student and remove all his data from the old level and attendances
+    //TODO: To remove Student must delete its user first
+
+    // DONE
     #region Get
 
-    public async Task<PaginatedList<StudentResponse>> GetAllAsync(RequestFilters filters,
-        Expression<Func<Student, bool>>? predicate = null,
-        CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Get all students with pagination and filters.<br />
+    /// </summary>
+    /// <returns>A simple version of StudentResponse</returns>
+    public async Task<PaginatedList<StudentResponseV2>> GetAllAsync(RequestFilters filters, 
+        Expression<Func<Student, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
-        var query = _context.Students.AsNoTracking();
+        var query = Students.AsNoTracking();
 
         if (predicate is not null)
             query = query.Where(predicate);
 
         if (!string.IsNullOrEmpty(filters.SearchValue))
-        {
-            // Default to 'Name' if no search column is provided
-            var searchColumn = filters.SearchColumn ?? _allowedSearchColumns.First();
+            query = query.Where(s => s.User.Name.Contains(filters.SearchValue));
 
-            // Find the matching column in the allowed list
-            var validSearchColumn = _allowedSearchColumns
-                .FirstOrDefault(x => string.Equals(x, searchColumn, StringComparison.OrdinalIgnoreCase));
-
-            //@0 means: "Insert the first parameter from the method call after the expression string."
-            if (validSearchColumn is not null)
-                query = query.Where($"{validSearchColumn}.Contains(@0)", filters.SearchValue);
-        }
-
-        if (!string.IsNullOrEmpty(filters.SortColumn))
-        {
-            // Default to 'Name' if no sort column is provided
-            var sortColumn = filters.SortColumn ?? _allowedSortColumns.First();
-
-            // Find the matching column in the allowed list
-            var validSortColumn = _allowedSortColumns
-                .FirstOrDefault(x => string.Equals(x, sortColumn, StringComparison.OrdinalIgnoreCase));
-
-            if (validSortColumn is not null)
-                query = query.OrderBy($"{validSortColumn} {filters.SortDirection}");
-        }
-
-        var students = await PaginatedList<StudentResponse>.CreateAsync
+        var students = await PaginatedList<StudentResponseV2>.CreateAsync
             (
-            query.ProjectToType<StudentResponse>(),
+            query.ProjectToType<StudentResponseV2>(),
             filters.PageNumber,
             filters.PageSize,
             cancellationToken
@@ -90,12 +52,21 @@ public class StudentService
         return students;
     }
 
+    /// <summary>
+    /// Get a student by predicate.<br />
+    /// This version is for developers.
+    /// </summary>
+    /// <returns>Student object *NOT DTO*</returns>
     public async Task<Student?> GetMainAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _context.Students.Where(predicate).FirstOrDefaultAsync(cancellationToken);
+        => await Students.Where(predicate).FirstOrDefaultAsync(cancellationToken);
 
+    /// <summary>
+    /// Get a student by predicate.
+    /// </summary>
+    /// <returns>The DTO of student with his all details and all courses attendance</returns>
     public async Task<Result<StudentAttendanceResponse>> GetAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
     {
-        var student = await GetMainAsync(predicate, cancellationToken);
+        var student = await Students.AsNoTracking().Where(predicate).FirstOrDefaultAsync(cancellationToken);
 
         if (student is null)
             return Result.Failure<StudentAttendanceResponse>(StudentErrors.NotFound);
@@ -106,20 +77,37 @@ public class StudentService
         return Result.Success(student.Adapt<StudentAttendanceResponse>());
     }
 
+    /// <summary>
+    /// Get the ID of a student by predicate.
+    /// </summary>
     public async Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _context.Students.Where(predicate).AsNoTracking().Select(x => x.Id).FirstOrDefaultAsync(cancellationToken);
+        => await Students.Where(predicate).AsNoTracking().Select(x => x.Id).FirstOrDefaultAsync(cancellationToken);
 
     #endregion
 
+    // DONE
     #region Add
 
+    /// <summary>
+    /// Add a new student to the database, like creating a user in dashboard.<br />
+    /// Adding a random password and courses from its department.
+    /// </summary>
+    /// <returns>The DTO of Student with some information about him and his courses.</returns>
     public async Task<Result<StudentResponse>> AddAsync(CreateStudentRequest request, CancellationToken cancellationToken = default)
     {
         if (!await _deptService.AnyAsync(x => x.Id == request.DepartmentId, cancellationToken))
-            return Result.Failure<StudentResponse>(GlobalErrors.IdNotFound("Department"));
+            return Result.Failure<StudentResponse>(GlobalErrors.IdNotFound(nameof(Department)));
 
-        if (request.Level > 4 || request.Level < 1)
+        if (request.Level == 1)
+            return Result.Failure<StudentResponse>(StudentErrors.ServiceUnavailable);
+
+        if (request.Level > 4 || request.Level < 2)
             return Result.Failure<StudentResponse>(GlobalErrors.InvalidInput);
+
+        var coursesIds = await _courseService.GetAllIDsAsync(request.DepartmentId, cancellationToken);
+
+        if (!coursesIds.Any())
+            return Result.Failure<StudentResponse>(GlobalErrors.NoCourseInDept);
 
         var userResponse = await _userService.AddAsync
         (
@@ -135,7 +123,7 @@ public class StudentService
             UserId = userResponse.Value.Id,
             Level = request.Level,
             DepartmentId = request.DepartmentId,
-            Attendances = [.. _coursesForDept[request.DepartmentId].Select(courseId => new Attendance { CourseId = courseId, Weeks = new() })]
+            Attendances = [..coursesIds.Select(x => new Attendance { CourseId = x })]
         };
 
         await _context.Students.AddAsync(student, cancellationToken);
@@ -146,39 +134,43 @@ public class StudentService
 
     #endregion
 
+    // DONE
     #region Any
 
+    /// <summary>
+    /// Check if any student exists in the database by predicate.
+    /// </summary>
+    /// <returns>Boolean</returns>
     public async Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _context.Students.AnyAsync(predicate, cancellationToken);
+        => await Students.AnyAsync(predicate, cancellationToken);
 
     #endregion
 
+    // DONE
     #region Courses
 
+    /// <summary>
+    /// Add courses to the student by his userId (Login).
+    /// </summary>
     public async Task<Result> AddCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
     {
-        #region Checks
-
         var StdId = await CoursesCheck(coursesId, UserId, cancellationToken);
 
         if (StdId.IsFailure)
             return StdId;
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        //Check Duplicated Course
-
-        var StudentCourseIDs = new HashSet<int>(await _context.Attendances
+        // Get all courses of the student
+        var StudentCourseIDs = 
+            new HashSet<int>(await _context.Attendances
             .AsNoTracking()
             .Where(x => x.StudentId == StdId.Value)
             .Select(x => x.CourseId)
             .ToListAsync(cancellationToken));
 
+        // Check duplicated course in Attendance table
         if (StudentCourseIDs.Count > 0)
             if (StudentCourseIDs.Any(x => coursesId.Contains(x)))
                 return Result.Failure<int>(GlobalErrors.DuplicatedData("course"));
-
-        #endregion
 
         var student = await GetMainAsync(x => x.Id == StdId.Value, cancellationToken);
 
@@ -192,6 +184,9 @@ public class StudentService
         return Result.Success();
     }
 
+    /// <summary>
+    /// Delete courses from the student by his userId (Login).
+    /// </summary>
     public async Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
     {
         var StdId = await CoursesCheck(coursesId, UserId, cancellationToken);
@@ -218,7 +213,7 @@ public class StudentService
     #region Get Attendance
 
     /// <summary>
-    /// See the total attendance for all student by course
+    /// See the total attendance for all student by course.
     /// </summary>
     public async Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? StdId = null, CancellationToken cancellationToken = default)
     {
@@ -237,7 +232,7 @@ public class StudentService
     }
 
     /// <summary>
-    /// See the attendance for all student by week and course
+    /// See the attendance for all student by week and course.
     /// </summary>
     public async Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? StdId = null, CancellationToken cancellationToken = default)
     {
@@ -374,33 +369,36 @@ public class StudentService
 
     #endregion
 
+    // DONE
     #region PrivateMethods
 
+    /// <summary>
+    /// Check if the courses exist in the database, after that check if the student exist in the database.
+    /// </summary>
+    /// <returns>Student's Id if the two checks is true.</returns>
     private async Task<Result<int>> CoursesCheck(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
     {
-        //Check Request
+        var allowedCoursesIds = new HashSet<int>(await _courseService.GetAllIDsAsync(cancellationToken));
 
-        var DbCoursesIDs = new HashSet<int>(await _courseService.GetIDsAsync(cancellationToken));
-
-        if (!coursesId.All(x => DbCoursesIDs.Contains(x)))
+        if (!coursesId.All(x => allowedCoursesIds.Contains(x)))
             return Result.Failure<int>(StudentErrors.CourseNotFound);
 
-        ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-        //Check Student Permission
-
-        var StdId = await _context.Users
-            .Where(x => x.Id == UserId && x.StudentInfo != null)
+        var StdId = await Students
+            .Where(x => x.UserId == UserId)
             .AsNoTracking()
-            .Select(x => x.StudentInfo!.Id)
+            .Select(x => x.Id)
             .FirstOrDefaultAsync(cancellationToken);
 
         if (StdId == 0)
-            return Result.Failure<int>(UserErrors.NoPermission);
+            return Result.Failure<int>(StudentErrors.NotFound);
 
         return Result.Success(StdId);
     }
 
+    /// <summary>
+    /// Generate a random complex password with at least 8 characters.
+    /// </summary>
+    /// <exception cref="ArgumentException">If the length is lowest than 8.</exception>
     private static string GenerateRandomPassword(int length = 8)
     {
         if (length < 8)
@@ -426,7 +424,6 @@ public class StudentService
         for (int i = randomChars.Length; i < length; i++)
             password.Append(allChars[RandomNumberGenerator.GetInt32(allChars.Length)]);
 
-        // Shuffle the final password to avoid predictable first characters
         return new string([.. password.ToString().OrderBy(_ => RandomNumberGenerator.GetInt32(int.MaxValue))]);
     }
 

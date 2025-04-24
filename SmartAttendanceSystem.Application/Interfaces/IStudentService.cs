@@ -2,8 +2,11 @@
 
 public interface IStudentService
 {
+    //DbSet
+    IQueryable<Student> Students { get; }
+
     //GET
-    Task<PaginatedList<StudentResponse>> GetAllAsync(RequestFilters filters, Expression<Func<Student, bool>>? predicate = null, CancellationToken cancellationToken = default);
+    Task<PaginatedList<StudentResponseV2>> GetAllAsync(RequestFilters filters, Expression<Func<Student, bool>>? predicate = null, CancellationToken cancellationToken = default);
     Task<Result<StudentAttendanceResponse>> GetAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
     Task<Student?> GetMainAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
     Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
@@ -15,7 +18,7 @@ public interface IStudentService
     Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
     //COURSE
-    Task<Result> AddCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default);
+    Task<Result>AddCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default);
     Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default);
 
     //ATTENDANCE

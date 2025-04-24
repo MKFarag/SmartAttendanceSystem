@@ -11,6 +11,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Course> Courses { get; set; } = default!;
     public DbSet<Department> Departments { get; set; } = default!;
     public DbSet<Student> Students { get; set; } = default!;
+    public DbSet<DepartmentCourses> DepartmentCourses { get; set; } = default!;
 
     #endregion
 
@@ -32,14 +33,15 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
         #region Configure Specific Cascade Delete Relationships
 
-        builder.Entity<ApplicationUser>()
-            .HasOne(u => u.StudentInfo)
-            .WithOne(s => s.User)
-            .OnDelete(DeleteBehavior.Cascade);
-
         builder.Entity<Student>()
             .HasMany(s => s.Attendances)
             .WithOne(a => a.Student)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Student>()
+            .HasOne(s => s.User)
+            .WithOne()
+            .HasForeignKey<Student>(s => s.UserId)
             .OnDelete(DeleteBehavior.Cascade);
 
         #endregion

@@ -23,6 +23,11 @@ public class StudentsController
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
         Ok(await _studentService.GetAllAsync(filters, cancellationToken: cancellationToken));
+    
+    [HttpGet("no-finger")]
+    [HasPermission(Permissions.GetStudents)]
+    public async Task<IActionResult> NoFingerId_GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
+        Ok(await _studentService.GetAllAsync(filters, x => x.FingerId == null, cancellationToken));
 
     [HttpGet("Dept/{DeptId}")]
     [HasPermission(Permissions.GetStudents)]

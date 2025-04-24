@@ -4,6 +4,6 @@ public record WeekAttendanceResponse(
     int Id,
     string Name,
     int Level,
-    string DepartmentName,
+    string Department,
     bool? Attend
 );

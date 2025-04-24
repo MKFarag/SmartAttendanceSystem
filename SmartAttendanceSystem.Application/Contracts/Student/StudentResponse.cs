@@ -8,3 +8,13 @@ public record StudentResponse(
     string Department,
     IEnumerable<string>? Courses
 );
+
+/// <summary>
+/// Simple version of StudentResponse
+/// </summary>
+public record StudentResponseV2(
+    int Id,
+    string Name,
+    int Level,
+    string Department
+);

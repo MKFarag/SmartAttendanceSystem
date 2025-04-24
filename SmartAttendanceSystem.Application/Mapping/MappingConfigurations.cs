@@ -27,6 +27,10 @@ public class MappingConfigurations : IRegister
             .Map(dest => dest.Department, src => src.Department.Name)
             .Map(dest => dest.Courses, src => src.Attendances!.Select(x => x.Course.Name));
 
+        config.NewConfig<Student, StudentResponseV2>()
+            .Map(dest => dest.Name, src => src.User.Name)
+            .Map(dest => dest.Department, src => src.Department.Name);
+
         #region Attendance
 
         config.NewConfig<Student, StudentAttendanceResponse>()
@@ -52,7 +56,7 @@ public class MappingConfigurations : IRegister
             .Map(dest => dest.Id, src => src.Student.Id)
             .Map(dest => dest.Name, src => src.Student.User.Name)
             .Map(dest => dest.Level, src => src.Student.Level)
-            .Map(dest => dest.DepartmentName, src => src.Student.Department.Name)
+            .Map(dest => dest.Department, src => src.Student.Department.Name)
             .Map(dest => dest.Attend, src => src.Weeks!.Week(MapContext.Current!.Get<int>("weekNum")));
 
         #endregion

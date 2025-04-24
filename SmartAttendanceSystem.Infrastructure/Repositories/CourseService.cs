@@ -31,9 +31,16 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         return Result.Success();
     }
 
-    public async Task<IEnumerable<int>> GetIDsAsync(CancellationToken cancellationToken = default)
+    public async Task<IEnumerable<int>> GetAllIDsAsync(CancellationToken cancellationToken = default)
         => await _context.Courses
         .AsNoTracking()
         .Select(x => x.Id)
+        .ToListAsync(cancellationToken);
+
+    public async Task<IEnumerable<int>> GetAllIDsAsync(int departmentId, CancellationToken cancellationToken = default)
+        => await _context.DepartmentCourses
+        .AsNoTracking()
+        .Where(x => x.DepartmentId == departmentId)
+        .Select(x => x.CourseId)
         .ToListAsync(cancellationToken);
 }

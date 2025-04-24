@@ -15,6 +15,5 @@ public class ApplicationUser : IdentityUser
     public bool IsEmailConfirmationCodeActive
         => EmailConfirmationCode is not null && (EmailConfirmationCodeExpiration > DateTime.UtcNow);
 
-    public virtual Student? StudentInfo { get; set; } = null;
     public virtual List<RefreshToken> RefreshTokens { get; set; } = [];
 }

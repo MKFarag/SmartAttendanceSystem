@@ -171,15 +171,15 @@ public class UserService
 
         if (stdCheck)
         {
-            var user = await _userManager.Users
-                .Where(x => x.Id == userId)
+            var user = await _studentService.Value.Students
+                .Where(x => x.UserId == userId)
                 .Select(x => new
                 {
-                    x.StudentInfo!.Id,
-                    x.Name,
-                    x.Email,
-                    x.StudentInfo.Level,
-                    x.StudentInfo.Department
+                    x.Id,
+                    x.User.Name,
+                    x.User.Email,
+                    x.Level,
+                    x.Department
                 }
                 )
                 .AsNoTracking()
