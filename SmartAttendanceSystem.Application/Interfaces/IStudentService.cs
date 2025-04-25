@@ -18,18 +18,20 @@ public interface IStudentService
     Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
     //COURSE
-    Task<Result>AddCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default);
-    Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default);
+    Task<Result>AddCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default);
+    Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default);
 
     //ATTENDANCE
-    Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? StdId = null, CancellationToken cancellationToken = default);
-    Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? StdId = null, CancellationToken cancellationToken = default);
-    Task<IList<CourseWithAttendanceResponse>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? stdId = null, CancellationToken cancellationToken = default);
+    Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? stdId = null, CancellationToken cancellationToken = default);
+    Task<IList<CourseWithAttendanceResponse>> GetCoursesWithAttendancesDTOsAsync(int stdId = 0, string? userId = null, CancellationToken cancellationToken = default);
+    Task<Result> RemoveStudentAttendanceAsync(int weekNum, int courseId, int stdId, CancellationToken cancellationToken = default);
 
     //FINGERPRINT
     Task<Result> AttendedAsync(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default);
     Task CheckForAllWeeksAsync(int weekNum, int courseId, CancellationToken cancellationToken = default);
-    Task<Result> RegisterFingerIDAsync(string UserId, int fId, CancellationToken cancellationToken = default);
+    Task<Result> RegisterFingerIdAsync(int fingerId, string? userId = null, int? stdId = null, CancellationToken cancellationToken = default);
+    Task<Result> RemoveAllFingerIdAsync(CancellationToken cancellationToken = default);
 
     //TODO: NULL week check --> if attend start from week 2 so check week 1 is not null
 }

@@ -3,6 +3,7 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class DepartmentsController(IDepartmentService deptService) : ControllerBase
 {
     private readonly IDepartmentService _deptService = deptService;

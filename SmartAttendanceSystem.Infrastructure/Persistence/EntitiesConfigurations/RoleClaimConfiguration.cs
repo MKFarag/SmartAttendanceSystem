@@ -4,18 +4,33 @@ public class RoleClaimConfiguration : IEntityTypeConfiguration<IdentityRoleClaim
 {
     public void Configure(EntityTypeBuilder<IdentityRoleClaim<string>> builder)
     {
+        int seedId = 1;
+
         var allPermissions = Permissions.GetAllPermissions();
         var adminClaims = new List<IdentityRoleClaim<string>>();
 
-        for (var i = 0; i < allPermissions.Count; i++)
+        var instructorPermissions = Permissions.GetInstructorPermissions();
+        var instructorClaims = new List<IdentityRoleClaim<string>>();
+
+        foreach (var permission in allPermissions)
             adminClaims.Add(new IdentityRoleClaim<string>
             {
-                Id = i + 1,
+                Id = seedId++,
                 ClaimType = Permissions.Type,
-                ClaimValue = allPermissions[i],
+                ClaimValue = permission,
                 RoleId = DefaultRoles.Admin.Id,
             });
 
+        foreach (var permission in instructorPermissions)
+            instructorClaims.Add(new IdentityRoleClaim<string>
+            {
+                Id = seedId++,
+                ClaimType = Permissions.Type,
+                ClaimValue = permission,
+                RoleId = DefaultRoles.Instructor.Id,
+            });
+
         builder.HasData(adminClaims);
+        builder.HasData(instructorClaims);
     }
 }

@@ -14,6 +14,9 @@ public record FingerprintErrors
     public static readonly Error NoData =
         new("Fingerprint.NoData", "No data received from the fingerprint sensor yet", StatusCodes.Status404NotFound);
 
+    public static readonly Error InvalidPassword =
+        new("Fingerprint.InvalidPassword", "Invalid password provided for fingerprint service.", StatusCodes.Status400BadRequest);
+
     public static readonly Error NoResponse =
         new("Fingerprint.NoResponse", "No response received from the fingerprint sensor for enrollment status", StatusCodes.Status408RequestTimeout);
 

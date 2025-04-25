@@ -3,6 +3,7 @@
 [Route("me")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class AccountController(IUserService userService) : ControllerBase
 {
     private readonly IUserService _userService = userService;
@@ -21,7 +22,7 @@ public class AccountController(IUserService userService) : ControllerBase
             : result.ToProblem();
     }
 
-    [HttpPut("Change-Password")]
+    [HttpPut("change-password")]
     public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request)
     {
         var result = await _userService.ChangePasswordAsync(User.GetId()!, request);

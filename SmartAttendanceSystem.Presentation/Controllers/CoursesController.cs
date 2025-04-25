@@ -3,6 +3,7 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class CoursesController(ICourseService courseService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
@@ -72,3 +73,4 @@ public class CoursesController(ICourseService courseService) : ControllerBase
 }
 //TODO: Add a method to get all courses by department id
 //TODO: Add a method to put the relationship between courses and departments
+//TODO: Change the method of add course to make it add a level and its department

@@ -8,7 +8,7 @@ public static class FingerprintDI
     {
         // Register SerialPortService as a singleton
         services.AddSingleton<ISerialPortService>(provider =>
-            new SerialPortService("COM3", 9600, provider.GetRequiredService<ILogger<SerialPortService>>()));
+            new SerialPortService("COM4", 9600, provider.GetRequiredService<ILogger<SerialPortService>>()));
 
         // Register AttendanceRepository
         services.AddScoped<IFingerprintService, FingerprintService>();

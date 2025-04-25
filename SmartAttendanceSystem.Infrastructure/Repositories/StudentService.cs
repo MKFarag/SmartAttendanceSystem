@@ -22,6 +22,7 @@ public class StudentService
 
     //TODO: Add service which change the level of student and remove all his data from the old level and attendances
     //TODO: To remove Student must delete its user first
+    //TODO: Add a method which can upgrade the student to a new level and remove all his data from the old level and attendances
 
     // DONE
     #region Get
@@ -104,6 +105,8 @@ public class StudentService
         if (request.Level > 4 || request.Level < 2)
             return Result.Failure<StudentResponse>(GlobalErrors.InvalidInput);
 
+        // Here we are taking all courses in the department
+        // TODO: If we want to change it to take courses by level and department
         var coursesIds = await _courseService.GetAllIDsAsync(request.DepartmentId, cancellationToken);
 
         if (!coursesIds.Any())
@@ -152,18 +155,18 @@ public class StudentService
     /// <summary>
     /// Add courses to the student by his userId (Login).
     /// </summary>
-    public async Task<Result> AddCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
+    public async Task<Result> AddCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default)
     {
-        var StdId = await CoursesCheck(coursesId, UserId, cancellationToken);
+        var studentId = await CoursesCheck(coursesId, userId, cancellationToken);
 
-        if (StdId.IsFailure)
-            return StdId;
+        if (studentId.IsFailure)
+            return studentId;
 
         // Get all courses of the student
         var StudentCourseIDs = 
             new HashSet<int>(await _context.Attendances
             .AsNoTracking()
-            .Where(x => x.StudentId == StdId.Value)
+            .Where(x => x.StudentId == studentId.Value)
             .Select(x => x.CourseId)
             .ToListAsync(cancellationToken));
 
@@ -172,12 +175,12 @@ public class StudentService
             if (StudentCourseIDs.Any(x => coursesId.Contains(x)))
                 return Result.Failure<int>(GlobalErrors.DuplicatedData("course"));
 
-        var student = await GetMainAsync(x => x.Id == StdId.Value, cancellationToken);
+        var student = await GetMainAsync(x => x.Id == studentId.Value, cancellationToken);
 
         student!.Attendances = [];
 
         foreach (var id in coursesId)
-            student.Attendances.Add(new Attendance { StudentId = StdId.Value, CourseId = id });
+            student.Attendances.Add(new Attendance { StudentId = studentId.Value, CourseId = id });
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -187,16 +190,16 @@ public class StudentService
     /// <summary>
     /// Delete courses from the student by his userId (Login).
     /// </summary>
-    public async Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string UserId, CancellationToken cancellationToken = default)
+    public async Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default)
     {
-        var StdId = await CoursesCheck(coursesId, UserId, cancellationToken);
+        var studentId = await CoursesCheck(coursesId, userId, cancellationToken);
 
-        if (StdId.IsFailure)
-            return StdId;
+        if (studentId.IsFailure)
+            return studentId;
 
         foreach (var id in coursesId)
         {
-            if (await _context.Attendances.FirstOrDefaultAsync(x => x.StudentId == StdId.Value && x.CourseId == id,
+            if (await _context.Attendances.FirstOrDefaultAsync(x => x.StudentId == studentId.Value && x.CourseId == id,
                 cancellationToken) is not { } deletedCourse)
                 return Result.Failure(StudentErrors.CourseNotAdded(id));
 
@@ -210,19 +213,20 @@ public class StudentService
 
     #endregion
 
-    #region Get Attendance
+    // Mostly done, but we may change on it to fix the bug of 'CheckForAllWeeksAsync'
+    #region Attendance
 
     /// <summary>
     /// See the total attendance for all student by course.
     /// </summary>
-    public async Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? StdId = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<CourseAttendanceResponse>>> GetCourseAttendanceAsync(int courseId, int? stdId = null, CancellationToken cancellationToken = default)
     {
         if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
             return Result.Failure<IEnumerable<CourseAttendanceResponse>>(GlobalErrors.IdNotFound("Courses"));
 
         var attendances = await _context.Attendances
             .AsNoTracking()
-            .Where(x => x.CourseId == courseId && (!StdId.HasValue || x.StudentId == StdId))
+            .Where(x => x.CourseId == courseId && (!stdId.HasValue || x.StudentId == stdId))
             .ProjectToType<CourseAttendanceResponse>()
             .ToListAsync(cancellationToken);
 
@@ -234,7 +238,7 @@ public class StudentService
     /// <summary>
     /// See the attendance for all student by week and course.
     /// </summary>
-    public async Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? StdId = null, CancellationToken cancellationToken = default)
+    public async Task<Result<IEnumerable<WeekAttendanceResponse>>> GetWeekAttendanceAsync(int weekNum, int courseId, int? stdId = null, CancellationToken cancellationToken = default)
     {
         if (!await _courseService.AnyAsync(x => x.Id == courseId, cancellationToken))
             return Result.Failure<IEnumerable<WeekAttendanceResponse>>(GlobalErrors.IdNotFound("Courses"));
@@ -248,7 +252,7 @@ public class StudentService
 
         var attendances = await _context.Attendances
             .AsNoTracking()
-            .Where(x => x.CourseId == courseId && x.Weeks != null && (!StdId.HasValue || x.StudentId == StdId))
+            .Where(x => x.CourseId == courseId && x.Weeks != null && (!stdId.HasValue || x.StudentId == stdId))
             .ProjectToType<WeekAttendanceResponse>()
             .ToListAsync(cancellationToken);
 
@@ -260,21 +264,21 @@ public class StudentService
     /// <summary>
     /// See the courses with attendance for one student by his id or userId
     /// </summary>
-    public async Task<IList<CourseWithAttendanceResponse>> GetCoursesWithAttendancesDTOsAsync(int StdId = 0, string? UserId = null, CancellationToken cancellationToken = default)
+    public async Task<IList<CourseWithAttendanceResponse>> GetCoursesWithAttendancesDTOsAsync(int stdId = 0, string? userId = null, CancellationToken cancellationToken = default)
     {
-        if (StdId != 0 && UserId is not null)
+        if (stdId != 0 && userId is not null)
             throw new InvalidOperationException("StudentService.GetCourseWithAttendances cannot have StdId and userId in the same time");
 
-        if (UserId is not null)
-            StdId = await GetIDAsync(x => x.UserId == UserId, cancellationToken);
+        if (userId is not null)
+            stdId = await GetIDAsync(x => x.UserId == userId, cancellationToken);
 
-        if (StdId == 0)
+        if (stdId == 0)
             return [];
 
         var response = await (from c in _context.Attendances
                               join s in _context.Students
                               on c.StudentId equals s.Id
-                              where c.StudentId == StdId
+                              where c.StudentId == stdId
                               select new CourseWithAttendanceResponse
                               (
                                    new CourseResponse
@@ -292,11 +296,48 @@ public class StudentService
         return response;
     }
 
+    /// <summary>
+    /// Remove the attendance of a student by week number and course id.
+    /// </summary>
+    public async Task<Result> RemoveStudentAttendanceAsync(int weekNum, int courseId, int stdId, CancellationToken cancellationToken = default)
+    {
+        var student = await GetMainAsync(x => x.Id == stdId, cancellationToken);
+
+        if (student is null)
+            return Result.Failure(StudentErrors.NotFound);
+
+        if (student.FingerId is null)
+            return Result.Failure(StudentErrors.NoFingerId);
+
+        if (student.Attendances is null)
+            return Result.Failure(StudentErrors.NoCourses);
+
+        var studentAttendance = student.Attendances.Where(x => x.CourseId == courseId && x.Weeks != null).FirstOrDefault();
+
+        if (studentAttendance is null)
+            return Result.Failure(StudentErrors.NotAddedCourse);
+
+        var propertyInfo = typeof(Weeks).GetProperty($"Week{weekNum}");
+
+        if (propertyInfo == null)
+            return Result.Failure(GlobalErrors.InvalidInput);
+
+        propertyInfo.SetValue(studentAttendance.Weeks, true);
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
+
     #endregion
 
-    #region Fingerprint ServicesPart
+    // Here there is a BUG in 'CheckForAllWeeksAsync'
+    #region Fingerprint Services
 
-    //Start Action
+    /// <summary>
+    /// Register the attendance of a student by week number and course id.<br />
+    /// This process is done to 'Start Action'
+    /// </summary>
     public async Task<Result> AttendedAsync(int stdId, int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         var studentAttendance = await _context.Attendances
@@ -325,12 +366,27 @@ public class StudentService
         return Result.Success();
     }
 
-    //In End Action
+    //TODO: This method have a bug -> if we start the action for week 1 so ANYONE who did not attend will take a false value,
+    //                  this is not allowed cuz we use a relation to add ALL COURSES in department. -> over load on db
+    //                              Try to handle it.
+    // I fix it by adding a level to course but that will make another issue if the student add a course from another level
+
+    /// <summary>
+    /// Find any student who did not attend and give him a false value for this week.<br />
+    /// This process is done to 'End Action'
+    /// </summary>
     public async Task CheckForAllWeeksAsync(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("The remaining students who did not attend are being registered");
+        _logger.LogInformation("The remaining students who did not attend are being registered.");
 
-        var courseAttendances = await _context.Attendances.Where(x => x.CourseId == courseId).ToListAsync(cancellationToken);
+        var courseLevel = await _courseService.GetLevelAsync(courseId, cancellationToken);
+
+        if (courseLevel == 0)
+            return;
+
+        var courseAttendances = await _context.Attendances
+            .Where(x => x.CourseId == courseId && x.Student.Level == courseLevel)
+            .ToListAsync(cancellationToken);
 
         var propertyInfo = typeof(Weeks).GetProperty($"Week{weekNum}");
 
@@ -351,19 +407,46 @@ public class StudentService
         _logger.LogInformation("Successfully completed");
     }
 
-    public async Task<Result> RegisterFingerIDAsync(string UserId, int fId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Register the fingerId of a student.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">If you do not pass any of userId or stdId.</exception>
+    public async Task<Result> RegisterFingerIdAsync(int fingerId, string? userId = null, int? stdId = null, CancellationToken cancellationToken = default)
     {
-        var User = await GetMainAsync(x => x.UserId == UserId, cancellationToken);
+        if (stdId is null && userId is null)
+            throw new InvalidOperationException("StudentService.RegisterFingerIdAsync has a null value for both stdId and userId.");
 
-        if (User is null)
-            return Result.Failure(GlobalErrors.IdNotFound("User"));
+        Student? student;
 
-        if (await AnyAsync(x => x.FingerId == fId, cancellationToken))
+        if (stdId is null)
+            student = await GetMainAsync(x => x.UserId == userId, cancellationToken);
+        else
+            student = await GetMainAsync(x => x.Id == stdId.Value, cancellationToken);
+
+        if (student is null)
+            return Result.Failure(StudentErrors.NotFound);
+
+        if (await AnyAsync(x => x.FingerId == fingerId, cancellationToken))
             return Result.Failure(StudentErrors.AlreadyHaveFp);
 
-        User.FingerId = fId;
+        student.FingerId = fingerId;
         await _context.SaveChangesAsync(cancellationToken);
 
+        return Result.Success();
+    }
+
+    /// <summary>
+    /// This method is so CRITICAL, it will remove all fingerId from all students.<br />
+    /// This process is done when you request to delete all data in fingerprint reader with its correct delete password.
+    /// </summary>
+    public async Task<Result> RemoveAllFingerIdAsync(CancellationToken cancellationToken = default)
+    {
+        var students = await Students.Where(x => x.FingerId != null).ToListAsync(cancellationToken);
+
+        foreach (var student in students)
+            student.FingerId = null;
+
+        await _context.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }
 

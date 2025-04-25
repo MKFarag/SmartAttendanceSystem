@@ -9,5 +9,5 @@ public static class RegexPatterns
     public const string AlphanumericUnderscorePattern = @"^[a-zA-Z0-9_]+$";
 
     // For course codes
-    public const string CourseCode = @"^r\d+$";
+    public const string CourseCode = @"^[a-zA-Z]\d{3}$";
 }

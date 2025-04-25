@@ -7,5 +7,4 @@ public class DepartmentCourses
 
     public virtual Department Department { get; set; } = default!;
     public virtual Course Course { get; set; } = default!;
-
 }

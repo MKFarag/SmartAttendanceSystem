@@ -43,4 +43,11 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         .Where(x => x.DepartmentId == departmentId)
         .Select(x => x.CourseId)
         .ToListAsync(cancellationToken);
+
+    public async Task<int> GetLevelAsync(int courseId, CancellationToken cancellationToken = default)
+        => await _context.Courses
+        .AsNoTracking()
+        .Where(x => x.Id == courseId)
+        .Select(x => x.Level)
+        .FirstOrDefaultAsync(cancellationToken);
 }

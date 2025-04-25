@@ -3,6 +3,7 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class UsersController(IUserService userService) : ControllerBase
 {
     private readonly IUserService _userService = userService;
@@ -45,7 +46,7 @@ public class UsersController(IUserService userService) : ControllerBase
             : updateResult.ToProblem();
     }
 
-    [HttpPut("{id}/Toggle-status")]
+    [HttpPut("{id}/toggle-status")]
     [HasPermission(Permissions.ToggleStatusUsers)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id)
     {
@@ -56,7 +57,7 @@ public class UsersController(IUserService userService) : ControllerBase
             : toggleStatusResult.ToProblem();
     }
 
-    [HttpPut("{id}/Unlock")]
+    [HttpPut("{id}/unlock")]
     [HasPermission(Permissions.UnlockUsers)]
     public async Task<IActionResult> Unlock([FromRoute] string id)
     {

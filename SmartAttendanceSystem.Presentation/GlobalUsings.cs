@@ -22,3 +22,4 @@ global using SmartAttendanceSystem.Infrastructure.Authentication.Filters;
 global using SmartAttendanceSystem.Presentation.Abstraction;
 global using SmartAttendanceSystem.Presentation.Extensions;
 global using System.Threading.RateLimiting;
+global using SmartAttendanceSystem.Application.Contracts.Fingerprint;

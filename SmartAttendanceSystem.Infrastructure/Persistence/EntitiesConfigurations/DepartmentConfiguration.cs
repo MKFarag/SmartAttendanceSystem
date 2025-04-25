@@ -9,5 +9,13 @@ public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
 
         builder.Property(x => x.Name)
             .HasMaxLength(100);
+
+        // Seed data
+        builder.HasData(
+            new Department { Id = 1, Name = "Computer Science" },
+            new Department { Id = 2, Name = "Mathematics" },
+            new Department { Id = 3, Name = "Physics" },
+            new Department { Id = 4, Name = "Chemistry" }
+        );
     }
 }

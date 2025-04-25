@@ -58,4 +58,16 @@ public static class Permissions
 
     public static IList<string?> GetAllPermissions() =>
         [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
+
+    public static IList<string?> GetInstructorPermissions() =>
+        [
+            GetCourses,
+            GetDepartments,
+            GetStudents,
+            AddStudents,
+            GetAttendance,
+            MatchFingerprint,
+            AddFingerprint,
+            ActionFingerprint
+        ];
 }

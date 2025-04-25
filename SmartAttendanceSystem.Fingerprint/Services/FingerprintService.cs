@@ -22,8 +22,11 @@ public class FingerprintService
 
     #endregion
 
-    #region Start&Stop
+    #region Start & Stop
 
+    /// <summary>
+    /// Start the fingerprint reader service.
+    /// </summary>
     public Result Start()
     {
         try
@@ -38,6 +41,9 @@ public class FingerprintService
         }
     }
 
+    /// <summary>
+    /// Stop the fingerprint reader service.
+    /// </summary>
     public Result Stop()
     {
         if (!_fpTempData.FpStatus)
@@ -53,8 +59,11 @@ public class FingerprintService
 
     #endregion
 
-    #region GetLastReceivedData
+    #region Get LastReceivedData
 
+    /// <summary>
+    /// Get the last received data from the fingerprint reader.
+    /// </summary>
     public Result<string> GetLastReceivedData()
     {
         if (!_fpTempData.FpStatus)
@@ -74,33 +83,34 @@ public class FingerprintService
 
     #region Start
 
-    public async Task<Result> StartEnrollment()
+    /// <summary>
+    /// Start enrollment action for add one new fingerprint and register it to the student by his id.
+    /// </summary>
+    public async Task<Result> StartEnrollment(int studentId)
     {
+        if (!await _studentService.AnyAsync(x => x.Id == studentId))
+            return Result.Failure(StudentErrors.NotFound);
+
         if (!_fpTempData.FpStatus)
-            return Result.Failure(FingerprintErrors.ServiceUnavailable);
+        {
+            var startResult = Start();
+
+            if (startResult.IsFailure)
+                return startResult;
+
+            await Task.Delay(1000);
+        }
 
         _logger.LogInformation("The enrollment has been successfully started");
 
         _serialPortService.DeleteLastValue();
 
+        await Task.Delay(500);
+
         _serialPortService.SendCommand(_enrollmentOptions.Start);
 
-        while (true)
-        {
-            await Task.Delay(1000);
+        _jobManager.Enqueue(() => BG_AddNewFinger(studentId));
 
-            var idCheck = GetFpId();
-
-            if (idCheck.IsSuccess)
-                break;
-
-            var enrollmentCheck = await IsEnrollmentAllowedAsync();
-
-            if (enrollmentCheck.IsSuccess && !enrollmentCheck.Value && idCheck.IsFailure)
-                break;
-        }
-
-        _logger.LogWarning("Enrollment is over");
         return Result.Success();
     }
 
@@ -108,6 +118,9 @@ public class FingerprintService
 
     #region Set
 
+    /// <summary>
+    /// Set the enrollment state to allow or deny enrollment.
+    /// </summary>
     public Result SetEnrollmentState(bool allowEnrollment)
     {
         if (!_fpTempData.FpStatus)
@@ -123,6 +136,9 @@ public class FingerprintService
 
     #region Get
 
+    /// <summary>
+    /// Check if enrollment is allowed.
+    /// </summary>
     public async Task<Result<bool>> IsEnrollmentAllowedAsync(CancellationToken cancellationToken = default)
     {
         if (!_fpTempData.FpStatus)
@@ -158,16 +174,25 @@ public class FingerprintService
 
     #endregion
 
-    #region DeleteAllData
+    #region Delete all data
 
-    public async Task<Result> DeleteAllData(CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Delete all data from the fingerprint reader and its values with the students in database.
+    /// </summary>
+    /// <param name="password">You must pass the correct password to activate this service.</param>
+    public async Task<Result> DeleteAllData(string password, CancellationToken cancellationToken = default)
     {
         if (!_fpTempData.FpStatus)
             return Result.Failure(FingerprintErrors.ServiceUnavailable);
 
+        if (!password.Equals(_enrollmentOptions.Delete))
+            return Result.Failure(FingerprintErrors.InvalidPassword);
+
         await Task.Delay(50, cancellationToken);
 
         _serialPortService.SendCommand(_enrollmentOptions.Delete);
+
+        await _studentService.RemoveAllFingerIdAsync(cancellationToken);
 
         return Result.Success();
     }
@@ -176,6 +201,10 @@ public class FingerprintService
 
     #region Matching
 
+    /// <summary>
+    /// Matching the latest fingerprint id with the student in the database.
+    /// </summary>
+    /// <returns>StudentAttendanceResponse which contain a full information about the student.</returns>
     public async Task<Result<StudentAttendanceResponse>> Match(CancellationToken cancellationToken = default)
     {
         var fId = GetFpId();
@@ -183,18 +212,22 @@ public class FingerprintService
         if (fId.IsFailure)
             return Result.Failure<StudentAttendanceResponse>(fId.Error);
 
-        _logger.LogInformation("Attempting to match fingerprint ID: {fid}", fId);
+        _logger.LogInformation("Attempting to match fingerprint ID: {fid}", fId.Value);
 
         var studentResult = await _studentService.GetAsync(x => x.FingerId == fId.Value, cancellationToken: cancellationToken);
 
         if (studentResult.IsFailure)
-            _logger.LogWarning("No student found with Fingerprint ID: {fid}", fId);
+            _logger.LogWarning("No student found with Fingerprint ID: {fid}", fId.Value);
         else
             _logger.LogInformation("Successfully matched student: #{id} {name}", studentResult.Value.Id, studentResult.Value.Name);
 
         return studentResult;
     }
 
+    /// <summary>
+    /// Matching the latest fingerprint id with the student in the database.
+    /// </summary>
+    /// <returns>The id of student.</returns>
     public async Task<Result<int>> SimpleMatch(CancellationToken cancellationToken = default)
     {
         var fId = GetFpId();
@@ -221,6 +254,9 @@ public class FingerprintService
 
     #region Attend
 
+    /// <summary>
+    /// Attend the student which has the latest fingerprint id.
+    /// </summary>
     public async Task<Result> Attend(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         if (weekNum < 1 || weekNum > 12)
@@ -243,14 +279,17 @@ public class FingerprintService
 
     #region Register
 
-    public async Task<Result> Register(string UserId, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Add the latest fingerprint id to the student with the given userId (By login).
+    /// </summary>
+    public async Task<Result> Register(string userId, CancellationToken cancellationToken = default)
     {
-        var fId = GetFpId();
+        var fingerId = GetFpId();
 
-        if (fId.IsFailure)
-            return fId;
+        if (fingerId.IsFailure)
+            return fingerId;
 
-        var registerResult = await _studentService.RegisterFingerIDAsync(UserId, fId.Value, cancellationToken);
+        var registerResult = await _studentService.RegisterFingerIdAsync(fingerId.Value, userId: userId, cancellationToken: cancellationToken);
 
         if (registerResult.IsFailure)
             return registerResult;
@@ -260,9 +299,11 @@ public class FingerprintService
 
     #endregion
 
-    #region ActionButtons
+    #region Action buttons
 
-    //Start
+    /// <summary>
+    /// Start the fingerprint reader service and begin reading fingerprints.
+    /// </summary>
     public async Task<Result> StartAttendance(CancellationToken cancellationToken = default)
     {
         await Task.Delay(1, cancellationToken);
@@ -277,12 +318,14 @@ public class FingerprintService
 
         _fpTempData.ActionButtonStatus = true;
 
-        _jobManager.Enqueue(() => ActionButton_Service());
+        _jobManager.Enqueue(() => BG_ActionButton_Service());
 
         return Result.Success();
     }
 
-    //End
+    /// <summary>
+    /// End the attendance process and register the fingerprints to the students.
+    /// </summary>
     public async Task<Result> EndAttendance(int weekNum, int courseId, CancellationToken cancellationToken = default)
     {
         if (!_fpTempData.ActionButtonStatus)
@@ -357,7 +400,7 @@ public class FingerprintService
         return Result.Success(FpId);
     }
 
-    public async Task ActionButton_Service()
+    public async Task BG_ActionButton_Service()
     {
         List<int> fIds = [];
 
@@ -393,6 +436,38 @@ public class FingerprintService
             _logger.LogWarning("No data has been read");
 
         _logger.LogWarning("Reading service has been stopped");
+    }
+
+    public async Task BG_AddNewFinger(int studentId)
+    {
+        var endTime = DateTime.Now.AddSeconds(12);
+        while (DateTime.Now < endTime)
+        {
+            await Task.Delay(1000);
+
+            var fingerId = GetFpId();
+
+            if (fingerId.IsSuccess)
+            {
+                var result = await _studentService.RegisterFingerIdAsync(fingerId.Value, stdId: studentId);
+
+                await Task.Delay(1000);
+
+                if (result.IsSuccess)
+                {
+                    _serialPortService.DeleteLastValue();
+                    break;
+                }
+
+                _logger.LogCritical("Error while registering fingerprint id #{fid} for student with id {id}: {error}", fingerId.Value, studentId, result.Error.Description);
+                break;
+            }
+        }
+        _serialPortService.SendCommand(_enrollmentOptions.Deny);
+
+        _logger.LogWarning("Enrollment is over");
+
+        Stop();
     }
 
     #endregion

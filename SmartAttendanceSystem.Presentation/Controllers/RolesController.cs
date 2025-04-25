@@ -3,6 +3,7 @@
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
+[EnableRateLimiting(RateLimiters.Concurrency)]
 public class RolesController(IRoleService roleService) : ControllerBase
 {
     private readonly IRoleService _roleService = roleService;
@@ -60,7 +61,7 @@ public class RolesController(IRoleService roleService) : ControllerBase
 
     #region Toggle Status
 
-    [HttpPut("{id}/Toggle-status")]
+    [HttpPut("{id}/toggle-status")]
     [HasPermission(Permissions.UpdateRoles)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id)
     {

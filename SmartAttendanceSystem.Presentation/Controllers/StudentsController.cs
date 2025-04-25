@@ -29,7 +29,7 @@ public class StudentsController
     public async Task<IActionResult> NoFingerId_GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
         Ok(await _studentService.GetAllAsync(filters, x => x.FingerId == null, cancellationToken));
 
-    [HttpGet("Dept/{DeptId}")]
+    [HttpGet("dept/{DeptId}")]
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> Department_GetAll([FromRoute] int DeptId, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
     {
@@ -44,19 +44,7 @@ public class StudentsController
         return Ok(Students);
     }
 
-    [HttpGet("Level/{Lvl}")]
-    [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
-    {
-        if (Lvl <= 0 || Lvl > 4)
-            return BadRequest();
-
-        var Students = await _studentService.GetAllAsync(filters, x => x.Level == Lvl, cancellationToken);
-
-        return Ok(Students);
-    }
-
-    [HttpGet("Dept/{DeptId}/{Lvl}")]
+    [HttpGet("dept/{DeptId}/{Lvl}")]
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> GetAll([FromRoute] int DeptId, [FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
     {
@@ -67,6 +55,18 @@ public class StudentsController
             return NotFound(GlobalErrors.IdNotFound("Department"));
 
         var Students = await _studentService.GetAllAsync(filters, x => x.DepartmentId == DeptId && x.Level == Lvl, cancellationToken);
+
+        return Ok(Students);
+    }
+    
+    [HttpGet("level/{Lvl}")]
+    [HasPermission(Permissions.GetStudents)]
+    public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
+    {
+        if (Lvl <= 0 || Lvl > 4)
+            return BadRequest();
+
+        var Students = await _studentService.GetAllAsync(filters, x => x.Level == Lvl, cancellationToken);
 
         return Ok(Students);
     }
@@ -103,7 +103,7 @@ public class StudentsController
 
     #region Add
 
-    [HttpPost("Courses")]
+    [HttpPost("courses")]
     [HasPermission(Permissions.StudentCourses)]
     public async Task<IActionResult> AddCourses([FromBody] StudentCoursesRequest request, CancellationToken cancellationToken)
     {
@@ -118,7 +118,7 @@ public class StudentsController
 
     #region Remove
 
-    [HttpDelete("Courses")]
+    [HttpDelete("courses")]
     [HasPermission(Permissions.StudentCourses)]
     public async Task<IActionResult> RemoveCourses([FromBody] StudentCoursesRequest request, CancellationToken cancellationToken)
     {
@@ -133,11 +133,11 @@ public class StudentsController
 
     #endregion
 
-    #region Get Attendance
+    #region Attendance
 
-    #region ByCourse
+    #region Get by course
 
-    [HttpGet("Attendance/{courseId}")]
+    [HttpGet("attendance/{courseId}")]
     [HasPermission(Permissions.GetAttendance)]
     public async Task<IActionResult> GetAttendance([FromRoute] int courseId, CancellationToken cancellationToken)
     {
@@ -153,9 +153,9 @@ public class StudentsController
 
     #endregion
 
-    #region ByWeek
+    #region Get by week
 
-    [HttpGet("Attendance/{courseId}/{weekNum}")]
+    [HttpGet("attendance/{courseId}/{weekNum}")]
     [HasPermission(Permissions.GetAttendance)]
     public async Task<IActionResult> GetAttendance([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
     {
@@ -171,11 +171,11 @@ public class StudentsController
 
     #endregion
 
-    #region One student
+    #region For one student
 
-    #region ByCourse
+    #region Get by course
 
-    [HttpGet("{stdId}/Attendance/{courseId}")]
+    [HttpGet("{stdId}/attendance/{courseId}")]
     [HasPermission(Permissions.GetAttendance)]
     public async Task<IActionResult> GetOneAttendance([FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
     {
@@ -191,9 +191,9 @@ public class StudentsController
 
     #endregion
 
-    #region ByWeek
+    #region Get by week
 
-    [HttpGet("{stdId}/Attendance/{courseId}/{weekNum}")]
+    [HttpGet("{stdId}/attendance/{courseId}/{weekNum}")]
     [HasPermission(Permissions.GetAttendance)]
     public async Task<IActionResult> GetOneAttendance([FromRoute] int weekNum, [FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
     {
@@ -205,6 +205,24 @@ public class StudentsController
         return weekAttendance.IsSuccess
             ? Ok(weekAttendance.Value)
             : weekAttendance.ToProblem();
+    }
+
+    #endregion
+
+    #region Remove by week
+
+    [HttpDelete("{stdId}/attendance/{courseId}/{weekNum}")]
+    [HasPermission(Permissions.GetAttendance)]
+    public async Task<IActionResult> RemoveOneAttendance([FromRoute] int weekNum, [FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
+    {
+        if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
+            return BadRequest();
+
+        var removeAttendance = await _studentService.RemoveStudentAttendanceAsync(weekNum, courseId, stdId, cancellationToken);
+
+        return removeAttendance.IsSuccess
+            ? NoContent()
+            : removeAttendance.ToProblem();
     }
 
     #endregion
