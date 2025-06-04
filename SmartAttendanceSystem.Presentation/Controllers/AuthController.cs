@@ -40,7 +40,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
     {
-        var response = await _authService.RegisterAsync(request, cancellationToken);
+        var response = await _authService.RegisterAsync(request, cancellationToken: cancellationToken);
 
         return response.IsSuccess
             ? Ok(response.Value)

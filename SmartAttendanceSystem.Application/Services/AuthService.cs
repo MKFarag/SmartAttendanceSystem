@@ -29,7 +29,6 @@ public class AuthService
     private readonly IJobManager _jobManager = jobManager;
 
     private readonly int _refreshTokenExpiryDays = 14;
-    private readonly int _confirmationCodeExpirationMinutes = 15;
     private static readonly SemaphoreSlim _registrationLock = new(1, 1);
 
     #endregion
@@ -144,7 +143,7 @@ public class AuthService
 
     #region Register
 
-    public async Task<Result<string>> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<string>> RegisterAsync(RegisterRequest request, bool confirmWithLink = true, CancellationToken cancellationToken = default)
     {
         await _registrationLock.WaitAsync(cancellationToken);
         try
@@ -161,13 +160,13 @@ public class AuthService
 
             if (result.Succeeded)
             {
-                var code = await GenerateEmailConfirmationCode(user);
+                var code = await GenerateEmailConfirmationCode(user, confirmWithLink);
 
                 #if DEBUG
                 _logger.LogInformation("Confirm code: {code}", code);
                 #endif
 
-                await SendConfirmationEmail(user, code);
+                SendConfirmationEmail(user, code, confirmWithLink);
 
                 return Result.Success(user.Id);
             }
@@ -191,18 +190,36 @@ public class AuthService
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.DuplicatedConfirmation);
 
+        bool confirmWithCode = code.Length == 6 && user.IsEmailConfirmationCodeActive;
+
         IdentityResult result;
 
-        if (user.EmailConfirmationCode == code && user.IsEmailConfirmationCodeActive)
+        if (confirmWithCode)
         {
-            user.EmailConfirmed = true;
-            user.EmailConfirmationCode = null;
-            user.EmailConfirmationCodeExpiration = null;
+            if (user.EmailConfirmationCode == code && user.IsEmailConfirmationCodeActive)
+            {
+                user.EmailConfirmed = true;
+                user.EmailConfirmationCode = null;
+                user.EmailConfirmationCodeExpiration = null;
 
-            result = await _userManager.UpdateAsync(user);
+                result = await _userManager.UpdateAsync(user);
+            }
+            else
+                return Result.Failure(UserErrors.InvalidCode);
         }
         else
-            return Result.Failure(UserErrors.InvalidCode);
+        {
+            try
+            {
+                code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+            }
+            catch (FormatException)
+            {
+                return Result.Failure(UserErrors.InvalidCode);
+            }
+
+            result = await _userManager.ConfirmEmailAsync(user, code);
+        }
 
         if (result.Succeeded)
         {
@@ -215,7 +232,7 @@ public class AuthService
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
-    public async Task<Result> ResendConfirmationEmailAsync(string email)
+    public async Task<Result> ResendConfirmationEmailAsync(string email, bool confirmWithLink = true)
     {
         if (await _userManager.FindByEmailAsync(email) is not { } user)
             return Result.Success();
@@ -223,13 +240,13 @@ public class AuthService
         if (user.EmailConfirmed)
             return Result.Failure(UserErrors.DuplicatedConfirmation);
 
-        var code = await GenerateEmailConfirmationCode(user);
+        var code = await GenerateEmailConfirmationCode(user, confirmWithLink);
 
         #if DEBUG
         _logger.LogInformation("Confirm code: {code}", code);
         #endif
 
-        await SendConfirmationEmail(user, code);
+        SendConfirmationEmail(user, code, confirmWithLink);
 
         return Result.Success();
     }
@@ -255,7 +272,7 @@ public class AuthService
         _logger.LogInformation("Reset code: {code}", code);
         #endif
 
-        await SendResetPasswordEmail(user, code);
+        SendResetPasswordEmail(user, code);
 
         return Result.Success();
 
@@ -293,40 +310,75 @@ public class AuthService
 
     private static string GenerateRefreshToken() => Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
-    private async Task<string> GenerateEmailConfirmationCode(ApplicationUser user)
+    private async Task<string> GenerateEmailConfirmationCode(ApplicationUser user, bool confirmWithLink)
     {
-        var bytes = new byte[4];
-        RandomNumberGenerator.Fill(bytes);
-        var code = (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
+        string code;
 
-        user.EmailConfirmationCode = code;
-        user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(_confirmationCodeExpirationMinutes);
-        await _userManager.UpdateAsync(user);
+        if (confirmWithLink)
+        {
+            code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        }
+        else
+        {
+            var bytes = new byte[4];
+            RandomNumberGenerator.Fill(bytes);
+            code = (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
+
+            user.EmailConfirmationCode = code;
+            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
+            await _userManager.UpdateAsync(user);
+        }
+
+        _logger.LogInformation("Confirm code: {code}", code);
 
         return code;
     }
 
-    private async Task SendConfirmationEmail(ApplicationUser user, string code)
+    private void SendConfirmationEmail(ApplicationUser user, string code, bool confirmWithLink)
     {
-        var emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationCode",
-            new Dictionary<string, string>
-            {
+        string emailBody;
+
+        if (confirmWithLink)
+        {
+            var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+
+            emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationLink",
+                new Dictionary<string, string>
+                {
                     { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
                     { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
                     { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
                     { EmailTemplateOptions.Placeholders.City, _templateData.City },
                     { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
+                    { EmailTemplateOptions.Placeholders.UserName,  user.Name},
+
+                    //FrontEnd should tell me where the user will go with what queries
+                    { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}" }
+                }
+            );
+        }
+        else
+        {
+            emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationCode",
+                new Dictionary<string, string>
+                {
+                    { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
+                    { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
+                    { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
+                    { EmailTemplateOptions.Placeholders.City, _templateData.City }, 
+                    { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
                     { EmailTemplateOptions.Placeholders.UserName, user.Name},
                     { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
                     { EmailTemplateOptions.Placeholders.Code, code}
-            }
-        );
-        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "✅ Smart Attendance System", emailBody));
+                }
+            );
+        }
 
-        await Task.CompletedTask;
+        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Api.Builder email confirmation", emailBody));
     }
 
-    private async Task SendResetPasswordEmail(ApplicationUser user, string code)
+    private void SendResetPasswordEmail(ApplicationUser user, string code)
     {
         var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
 
@@ -346,8 +398,6 @@ public class AuthService
             }
         );
         _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Api.Builder reset password", emailBody));
-
-        await Task.CompletedTask;
     }
 
     #endregion
