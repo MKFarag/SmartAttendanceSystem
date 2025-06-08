@@ -136,14 +136,14 @@ public class RoleService(ApplicationDbContext context, RoleManager<ApplicationRo
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
-    public async Task<Result> ToggleStatusAsync(string id)
+    public async Task<Result> ToggleStatusAsync(string id, CancellationToken cancellationToken = default)
     {
         if (await _roleManager.FindByIdAsync(id) is not { } role)
             return Result.Failure(RoleErrors.NotFound);
 
         role.IsDisabled = !role.IsDisabled;
-
-        await _roleManager.UpdateAsync(role);
+        
+        await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();
     }

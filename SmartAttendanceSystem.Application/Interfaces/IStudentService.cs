@@ -12,7 +12,7 @@ public interface IStudentService
     Task<int> GetIDAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
     //ADD
-    Task<Result<StudentResponse>> AddAsync(CreateStudentRequest request, CancellationToken cancellationToken = default);
+    Task<Result<StudentResponseV3>> AddAsync(CreateStudentRequest request, CancellationToken cancellationToken = default);
 
     //ANY
     Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);

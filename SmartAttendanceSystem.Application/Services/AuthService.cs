@@ -351,6 +351,7 @@ public class AuthService
                     { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
                     { EmailTemplateOptions.Placeholders.City, _templateData.City },
                     { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
+                    { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
                     { EmailTemplateOptions.Placeholders.UserName,  user.Name},
 
                     //FrontEnd should tell me where the user will go with what queries
@@ -368,8 +369,8 @@ public class AuthService
                     { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
                     { EmailTemplateOptions.Placeholders.City, _templateData.City }, 
                     { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
-                    { EmailTemplateOptions.Placeholders.UserName, user.Name},
                     { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
+                    { EmailTemplateOptions.Placeholders.UserName, user.Name},
                     { EmailTemplateOptions.Placeholders.Code, code}
                 }
             );

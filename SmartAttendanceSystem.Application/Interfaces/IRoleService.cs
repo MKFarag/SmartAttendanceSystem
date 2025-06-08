@@ -17,5 +17,5 @@ public interface IRoleService
 
     //UPDATE
     Task<Result> UpdateAsync(string id, RoleRequest request);
-    Task<Result> ToggleStatusAsync(string id);
+    Task<Result> ToggleStatusAsync(string id, CancellationToken cancellationToken = default);
 }

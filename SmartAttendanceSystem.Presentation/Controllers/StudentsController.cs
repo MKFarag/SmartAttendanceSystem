@@ -212,7 +212,7 @@ public class StudentsController
     #region Remove by week
 
     [HttpDelete("{stdId}/attendance/{courseId}/{weekNum}")]
-    [HasPermission(Permissions.GetAttendance)]
+    [HasPermission(Permissions.RemoveAttendance)]
     public async Task<IActionResult> RemoveOneAttendance([FromRoute] int weekNum, [FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
     {
         if (courseId <= 0 || weekNum <= 0 || weekNum > 12)

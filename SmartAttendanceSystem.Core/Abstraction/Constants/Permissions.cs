@@ -25,6 +25,7 @@ public static class Permissions
     public const string StudentCourses = "students:courses";
 
     public const string GetAttendance = "attendance:read";
+    public const string RemoveAttendance = "attendance:remove";
 
     #endregion
 
@@ -66,6 +67,7 @@ public static class Permissions
             GetStudents,
             AddStudents,
             GetAttendance,
+            RemoveAttendance,
             MatchFingerprint,
             AddFingerprint,
             ActionFingerprint

@@ -65,7 +65,7 @@ public class UserService
     {
         if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
             return Result.Failure<UserResponse>(UserErrors.DuplicatedEmail);
-
+        
         var allowedRoles = await _roleService.GetAllNamesAsync(cancellationToken: cancellationToken);
 
         if (request.Roles.Except(allowedRoles).Any())
@@ -147,6 +147,9 @@ public class UserService
     {
         if (await _userManager.FindByIdAsync(Id) is not { } user)
             return Result.Failure(UserErrors.NotFound);
+
+        if (!await _userManager.IsLockedOutAsync(user))
+            return Result.Failure(UserErrors.NotLockedUser);
 
         var result = await _userManager.SetLockoutEndDateAsync(user, null);
 

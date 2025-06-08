@@ -94,23 +94,25 @@ public class StudentService
     /// Adding a random password and courses from its department.
     /// </summary>
     /// <returns>The DTO of Student with some information about him and his courses.</returns>
-    public async Task<Result<StudentResponse>> AddAsync(CreateStudentRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result<StudentResponseV3>> AddAsync(CreateStudentRequest request, CancellationToken cancellationToken = default)
     {
-        if (!await _deptService.AnyAsync(x => x.Id == request.DepartmentId, cancellationToken))
-            return Result.Failure<StudentResponse>(GlobalErrors.IdNotFound(nameof(Department)));
+        var department = await _deptService.GetAsync(request.DepartmentId, cancellationToken);
+
+        if (department.IsFailure)
+            return Result.Failure<StudentResponseV3>(department.Error);
 
         if (request.Level == 1)
-            return Result.Failure<StudentResponse>(StudentErrors.ServiceUnavailable);
+            return Result.Failure<StudentResponseV3>(StudentErrors.ServiceUnavailable);
 
         if (request.Level > 4 || request.Level < 2)
-            return Result.Failure<StudentResponse>(GlobalErrors.InvalidInput);
+            return Result.Failure<StudentResponseV3>(GlobalErrors.InvalidInput);
 
         // Here we are taking all courses in the department
         // TODO: If we want to change it to take courses by level and department
         var coursesIds = await _courseService.GetAllIDsAsync(request.DepartmentId, cancellationToken);
 
         if (!coursesIds.Any())
-            return Result.Failure<StudentResponse>(GlobalErrors.NoCourseInDept);
+            return Result.Failure<StudentResponseV3>(GlobalErrors.NoCourseInDept);
 
         var userResponse = await _userService.AddAsync
         (
@@ -119,7 +121,7 @@ public class StudentService
         );
 
         if (userResponse.IsFailure)
-            return Result.Failure<StudentResponse>(userResponse.Error);
+            return Result.Failure<StudentResponseV3>(userResponse.Error);
 
         var student = new Student
         {
@@ -132,7 +134,9 @@ public class StudentService
         await _context.Students.AddAsync(student, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success(student.Adapt<StudentResponse>());
+        var response = new StudentResponseV3(student.Id, request.Name, request.Email, request.Level, department.Value.Name);
+        
+        return Result.Success(response);
     }
 
     #endregion
