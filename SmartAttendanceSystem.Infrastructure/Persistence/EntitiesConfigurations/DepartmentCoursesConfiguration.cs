@@ -18,7 +18,7 @@ public class DepartmentCoursesConfiguration : IEntityTypeConfiguration<Departmen
         departmentCourses.Add(new DepartmentCourses { DepartmentId = 2, CourseId = 14 }); // Ordinary Differential Equations
         departmentCourses.Add(new DepartmentCourses { DepartmentId = 2, CourseId = 19 }); // Abstract Algebra 1
         departmentCourses.Add(new DepartmentCourses { DepartmentId = 2, CourseId = 20 }); // Ordinary Differential Equation Theory
-        
+
         for (int i = 31; i <= 51; i++)
             departmentCourses.Add(new DepartmentCourses { DepartmentId = 2, CourseId = i });
 

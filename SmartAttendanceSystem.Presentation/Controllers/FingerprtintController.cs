@@ -70,7 +70,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     #region For Students
 
-    [HttpPut("new/{studentId}")]
+    [HttpPost("new/{studentId}")]
     [HasPermission(Permissions.AddFingerprint)]
     public async Task<IActionResult> NewFingerprint([FromRoute] int studentId)
     {

@@ -11,7 +11,7 @@ public class UserService
     private readonly UserManager<ApplicationUser> _userManager = userManager;
     private readonly Lazy<IStudentService> _studentService = studentService;
     private readonly IRoleService _roleService = roleService;
-    
+
     #endregion
 
     #region Admin (Dashboard)
@@ -65,7 +65,7 @@ public class UserService
     {
         if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
             return Result.Failure<UserResponse>(UserErrors.DuplicatedEmail);
-        
+
         var allowedRoles = await _roleService.GetAllNamesAsync(cancellationToken: cancellationToken);
 
         if (request.Roles.Except(allowedRoles).Any())

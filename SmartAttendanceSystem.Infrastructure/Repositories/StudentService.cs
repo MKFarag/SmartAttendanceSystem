@@ -31,7 +31,7 @@ public class StudentService
     /// Get all students with pagination and filters.<br />
     /// </summary>
     /// <returns>A simple version of StudentResponse</returns>
-    public async Task<PaginatedList<StudentResponseV2>> GetAllAsync(RequestFilters filters, 
+    public async Task<PaginatedList<StudentResponseV2>> GetAllAsync(RequestFilters filters,
         Expression<Func<Student, bool>>? predicate = null, CancellationToken cancellationToken = default)
     {
         var query = Students.AsNoTracking();
@@ -128,14 +128,14 @@ public class StudentService
             UserId = userResponse.Value.Id,
             Level = request.Level,
             DepartmentId = request.DepartmentId,
-            Attendances = [..coursesIds.Select(x => new Attendance { CourseId = x })]
+            Attendances = [.. coursesIds.Select(x => new Attendance { CourseId = x })]
         };
 
         await _context.Students.AddAsync(student, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
         var response = new StudentResponseV3(student.Id, request.Name, request.Email, request.Level, department.Value.Name);
-        
+
         return Result.Success(response);
     }
 
@@ -167,7 +167,7 @@ public class StudentService
             return studentId;
 
         // Get all courses of the student
-        var StudentCourseIDs = 
+        var StudentCourseIDs =
             new HashSet<int>(await _context.Attendances
             .AsNoTracking()
             .Where(x => x.StudentId == studentId.Value)

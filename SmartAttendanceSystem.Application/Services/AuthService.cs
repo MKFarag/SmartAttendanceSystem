@@ -162,9 +162,9 @@ public class AuthService
             {
                 var code = await GenerateEmailConfirmationCode(user, confirmWithLink);
 
-                #if DEBUG
+#if DEBUG
                 _logger.LogInformation("Confirm code: {code}", code);
-                #endif
+#endif
 
                 SendConfirmationEmail(user, code, confirmWithLink);
 
@@ -242,9 +242,9 @@ public class AuthService
 
         var code = await GenerateEmailConfirmationCode(user, confirmWithLink);
 
-        #if DEBUG
+#if DEBUG
         _logger.LogInformation("Confirm code: {code}", code);
-        #endif
+#endif
 
         SendConfirmationEmail(user, code, confirmWithLink);
 
@@ -268,9 +268,9 @@ public class AuthService
         var code = await _userManager.GeneratePasswordResetTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
 
-        #if DEBUG
+#if DEBUG
         _logger.LogInformation("Reset code: {code}", code);
-        #endif
+#endif
 
         SendResetPasswordEmail(user, code);
 

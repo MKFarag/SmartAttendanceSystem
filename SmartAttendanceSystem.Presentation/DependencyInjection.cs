@@ -20,11 +20,6 @@ using SmartAttendanceSystem.Infrastructure.Repositories;
 using SmartAttendanceSystem.Presentation.OpenApiTransformers;
 using System.Reflection;
 using System.Text;
-using System.Linq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using System;
 
 #endregion
 

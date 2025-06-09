@@ -142,7 +142,7 @@ public class RoleService(ApplicationDbContext context, RoleManager<ApplicationRo
             return Result.Failure(RoleErrors.NotFound);
 
         role.IsDisabled = !role.IsDisabled;
-        
+
         await _context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

@@ -18,7 +18,7 @@ public interface IStudentService
     Task<bool> AnyAsync(Expression<Func<Student, bool>> predicate, CancellationToken cancellationToken = default);
 
     //COURSE
-    Task<Result>AddCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default);
+    Task<Result> AddCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default);
     Task<Result> DeleteCourseAsync(IEnumerable<int> coursesId, string userId, CancellationToken cancellationToken = default);
 
     //ATTENDANCE
