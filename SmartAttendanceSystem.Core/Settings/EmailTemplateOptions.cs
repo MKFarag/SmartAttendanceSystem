@@ -2,6 +2,7 @@
 
 public class EmailTemplateOptions
 {
+    public string BaseUrl { get; init; } = string.Empty;
     public string TitleName { get; init; } = string.Empty;
     public string TeamName { get; init; } = string.Empty;
     public string Address { get; init; } = string.Empty;
@@ -11,6 +12,7 @@ public class EmailTemplateOptions
 
     public partial class Placeholders
     {
+        public static readonly string BaseUrl = "{{BaseUrl}}";
         public static readonly string TitleName = "{{TitleName}}";
         public static readonly string TeamName = "{{TeamName}}";
         public static readonly string Address = "{{Address}}";

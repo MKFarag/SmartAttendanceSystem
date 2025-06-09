@@ -341,11 +341,12 @@ public class AuthService
 
         if (confirmWithLink)
         {
-            var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
+            //var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
 
             emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationLink",
                 new Dictionary<string, string>
                 {
+                    { EmailTemplateOptions.Placeholders.BaseUrl, _templateData.BaseUrl },
                     { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
                     { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
                     { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
@@ -355,7 +356,8 @@ public class AuthService
                     { EmailTemplateOptions.Placeholders.UserName,  user.Name},
 
                     //FrontEnd should tell me where the user will go with what queries
-                    { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}" }
+                    //{ EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}" }
+                    { EmailTemplateOptions.Placeholders.Action_url, $"https://localhost:7120/public/users/confirm-email?UserId={user.Id}&Code={code}" }
                 }
             );
         }
@@ -364,10 +366,11 @@ public class AuthService
             emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationCode",
                 new Dictionary<string, string>
                 {
+                    { EmailTemplateOptions.Placeholders.BaseUrl, _templateData.BaseUrl },
                     { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
                     { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
                     { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
-                    { EmailTemplateOptions.Placeholders.City, _templateData.City }, 
+                    { EmailTemplateOptions.Placeholders.City, _templateData.City },
                     { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
                     { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
                     { EmailTemplateOptions.Placeholders.UserName, user.Name},
@@ -386,18 +389,20 @@ public class AuthService
         var emailBody = EmailBodyBuilder.GenerateEmailBody("ResetPassword",
             new Dictionary<string, string>
             {
+                { EmailTemplateOptions.Placeholders.BaseUrl, _templateData.BaseUrl },
                 { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
                 { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
                 { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
                 { EmailTemplateOptions.Placeholders.City, _templateData.City },
                 { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
-                { EmailTemplateOptions.Placeholders.UserName,  user.Name},
                 { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
+                { EmailTemplateOptions.Placeholders.UserName,  user.Name},
 
-                //TODO: FrontEnd should tell me where the user will go with what queries
+                //FrontEnd should tell me where the user will go with what queries
                 { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/forgetPassword?email={user.Email}&code={code}" }
             }
         );
+
         _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Api.Builder reset password", emailBody));
     }
 
