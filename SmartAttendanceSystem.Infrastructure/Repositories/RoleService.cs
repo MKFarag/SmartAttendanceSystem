@@ -22,7 +22,7 @@ public class RoleService(ApplicationDbContext context, RoleManager<ApplicationRo
 
     public async Task<IEnumerable<string>> GetAllNamesAsync(bool includeDisabled = false, CancellationToken cancellationToken = default)
         => await Roles
-            .Where(x => !x.IsDefault && (!x.IsDisabled || includeDisabled))
+            .Where(x => !x.IsDisabled || includeDisabled)
             .AsNoTracking()
             .Select(x => x.Name!)
             .ToListAsync(cancellationToken);
