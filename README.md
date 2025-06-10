@@ -15,11 +15,11 @@ The Smart Attendance System is a graduation project designed to streamline atten
 - **Course Management**: Create, update, and manage courses and their attendance requirements
 - **Department Organization**: Organize courses by academic departments
 - **Real-time Attendance Tracking**: Mark and monitor student attendance instantly
-<!-- - **Weekly Attendance Reports**: Generate detailed reports on student attendance patterns -->
 - **JWT Authentication**: Secure API access with token-based authentication
 - **Role-based Access Control**: Different capabilities based on user roles
 - **API Versioning**: Support for evolving API endpoints while maintaining backward compatibility
 - **Health Monitoring**: Built-in system health checks
+<!-- - **Weekly Attendance Reports**: Generate detailed reports on student attendance patterns -->
 
 ## 🏗️ Architecture
 
