@@ -6,29 +6,24 @@ public class AuthService
 
 #region Initialize Fields
 
-    (IOptions<EmailTemplateOptions> templateData,
-    IOptions<InstructorPassword> instructorPassword,
+    (IOptions<InstructorPassword> instructorPassword,
     SignInManager<ApplicationUser> signInManager,
+    IEmailTemplateService emailTemplateService,
     UserManager<ApplicationUser> userManager,
-    IHttpContextAccessor httpContextAccessor,
     ILogger<AuthService> logger,
-    IUserService userService,
     IJwtProvider jwtProvider,
-    IEmailSender emailSender,
-    IJobManager jobManager) : IAuthService
+    IUserService userService) : IAuthService
 {
     private readonly InstructorPassword _instructorPassword = instructorPassword.Value;
-    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly IEmailTemplateService _emailTemplateService = emailTemplateService;
     private readonly SignInManager<ApplicationUser> _signInManager = signInManager;
-    private readonly EmailTemplateOptions _templateData = templateData.Value;
     private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly IUserService _userService = userService;
-    private readonly IEmailSender _emailSender = emailSender;
+    private readonly IJwtProvider _jwtProvider = jwtProvider;
     private readonly ILogger<AuthService> _logger = logger;
-    private readonly IJobManager _jobManager = jobManager;
 
     private readonly int _refreshTokenExpiryDays = 14;
+    private readonly int _confirmationCodeExpiryMinutes = 10;
     private static readonly SemaphoreSlim _registrationLock = new(1, 1);
 
     #endregion
@@ -162,11 +157,10 @@ public class AuthService
             {
                 var code = await GenerateEmailConfirmationCode(user, confirmWithLink);
 
-#if DEBUG
-                _logger.LogInformation("Confirm code: {code}", code);
-#endif
-
-                SendConfirmationEmail(user, code, confirmWithLink);
+                if (confirmWithLink)
+                    _emailTemplateService.SendConfirmationLink(user, code);
+                else
+                    _emailTemplateService.SendConfirmationCode(user, code, _confirmationCodeExpiryMinutes);
 
                 return Result.Success(user.Id);
             }
@@ -246,7 +240,10 @@ public class AuthService
         _logger.LogInformation("Confirm code: {code}", code);
 #endif
 
-        SendConfirmationEmail(user, code, confirmWithLink);
+        if (confirmWithLink)
+            _emailTemplateService.SendConfirmationLink(user, code);
+        else
+            _emailTemplateService.SendConfirmationCode(user, code, _confirmationCodeExpiryMinutes);
 
         return Result.Success();
     }
@@ -272,7 +269,7 @@ public class AuthService
         _logger.LogInformation("Reset code: {code}", code);
 #endif
 
-        SendResetPasswordEmail(user, code);
+        _emailTemplateService.SendResetPassword(user, code);
 
         return Result.Success();
 
@@ -326,84 +323,15 @@ public class AuthService
             code = (BitConverter.ToUInt32(bytes) % 900000 + 100000).ToString();
 
             user.EmailConfirmationCode = code;
-            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(10);
+            user.EmailConfirmationCodeExpiration = DateTime.UtcNow.AddMinutes(_confirmationCodeExpiryMinutes);
             await _userManager.UpdateAsync(user);
         }
 
+#if DEBUG
         _logger.LogInformation("Confirm code: {code}", code);
+#endif
 
         return code;
-    }
-
-    private void SendConfirmationEmail(ApplicationUser user, string code, bool confirmWithLink)
-    {
-        string emailBody;
-
-        if (confirmWithLink)
-        {
-            //var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
-
-            emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationLink",
-                new Dictionary<string, string>
-                {
-                    { EmailTemplateOptions.Placeholders.BaseUrl, _templateData.BaseUrl },
-                    { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
-                    { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
-                    { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
-                    { EmailTemplateOptions.Placeholders.City, _templateData.City },
-                    { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
-                    { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
-                    { EmailTemplateOptions.Placeholders.UserName,  user.Name},
-
-                    //FrontEnd should tell me where the user will go with what queries
-                    //{ EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/emailConfirmation?userId={user.Id}&code={code}" }
-                    { EmailTemplateOptions.Placeholders.Action_url, $"https://localhost:7120/public/users/confirm-email?UserId={user.Id}&Code={code}" }
-                }
-            );
-        }
-        else
-        {
-            emailBody = EmailBodyBuilder.GenerateEmailBody("EmailConfirmationCode",
-                new Dictionary<string, string>
-                {
-                    { EmailTemplateOptions.Placeholders.BaseUrl, _templateData.BaseUrl },
-                    { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
-                    { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
-                    { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
-                    { EmailTemplateOptions.Placeholders.City, _templateData.City },
-                    { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
-                    { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
-                    { EmailTemplateOptions.Placeholders.UserName, user.Name},
-                    { EmailTemplateOptions.Placeholders.Code, code}
-                }
-            );
-        }
-
-        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Api.Builder email confirmation", emailBody));
-    }
-
-    private void SendResetPasswordEmail(ApplicationUser user, string code)
-    {
-        var origin = _httpContextAccessor.HttpContext?.Request.Headers.Origin;
-
-        var emailBody = EmailBodyBuilder.GenerateEmailBody("ResetPassword",
-            new Dictionary<string, string>
-            {
-                { EmailTemplateOptions.Placeholders.BaseUrl, _templateData.BaseUrl },
-                { EmailTemplateOptions.Placeholders.TitleName, _templateData.TitleName },
-                { EmailTemplateOptions.Placeholders.TeamName, _templateData.TeamName },
-                { EmailTemplateOptions.Placeholders.Address, _templateData.Address },
-                { EmailTemplateOptions.Placeholders.City, _templateData.City },
-                { EmailTemplateOptions.Placeholders.Country, _templateData.Country },
-                { EmailTemplateOptions.Placeholders.SupportEmail, _templateData.SupportEmail},
-                { EmailTemplateOptions.Placeholders.UserName,  user.Name},
-
-                //FrontEnd should tell me where the user will go with what queries
-                { EmailTemplateOptions.Placeholders.Action_url, $"{origin}/auth/forgetPassword?email={user.Email}&code={code}" }
-            }
-        );
-
-        _jobManager.Enqueue(() => _emailSender.SendEmailAsync(user.Email!, "Api.Builder reset password", emailBody));
     }
 
     #endregion
