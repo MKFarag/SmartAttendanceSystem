@@ -72,4 +72,3 @@ public class DepartmentsController(IDepartmentService deptService) : ControllerB
     #endregion
 
 }
-//TODO: Add a method to put the relationship between courses and departments

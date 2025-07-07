@@ -61,6 +61,7 @@ public class UserService
 
     #region Add
 
+    //TODO: User normalized email
     public async Task<Result<UserResponse>> AddAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
         if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))

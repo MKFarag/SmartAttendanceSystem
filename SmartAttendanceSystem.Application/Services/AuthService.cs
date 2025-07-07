@@ -138,15 +138,18 @@ public class AuthService
 
     #region Register
 
+    //TODO: Look Here
     public async Task<Result<string>> RegisterAsync(RegisterRequest request, bool confirmWithLink = true, CancellationToken cancellationToken = default)
     {
         await _registrationLock.WaitAsync(cancellationToken);
         try
         {
+            var email = _userManager.NormalizeEmail(request.Email);
+
             if (!request.InstructorPassword.Equals(_instructorPassword.Value))
                 return Result.Failure<string>(UserErrors.InvalidRolePassword);
 
-            if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
+            if (await _userManager.Users.AnyAsync(x => x.NormalizedEmail == email, cancellationToken))
                 return Result.Failure<string>(UserErrors.DuplicatedEmail);
 
             var user = request.Adapt<ApplicationUser>();

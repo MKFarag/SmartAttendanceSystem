@@ -44,7 +44,7 @@ public class StudentService
 
         var students = await PaginatedList<StudentResponseV2>.CreateAsync
             (
-            query.ProjectToType<StudentResponseV2>(),
+            query.OrderBy(x => x.Id).ProjectToType<StudentResponseV2>(),
             filters.PageNumber,
             filters.PageSize,
             cancellationToken

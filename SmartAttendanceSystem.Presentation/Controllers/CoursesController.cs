@@ -26,6 +26,12 @@ public class CoursesController(ICourseService courseService) : ControllerBase
             : courseResult.ToProblem();
     }
 
+    //TODO: Check for route
+    [HttpGet("department/{Id}")]
+    [HasPermission(Permissions.GetCourses)]
+    public async Task<IActionResult> GetAllByDepartment([FromRoute] int Id, CancellationToken cancellationToken)
+        => Ok (await _courseService.GetAllAsync(Id, cancellationToken));
+
     #endregion
 
     #region ModifyCourses

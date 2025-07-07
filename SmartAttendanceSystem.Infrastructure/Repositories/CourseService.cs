@@ -5,6 +5,7 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
 {
     private readonly ApplicationDbContext _context = context;
 
+    //TODO: Change that
     public override async Task<Result<CourseResponse>> AddAsync(CourseRequest request, CancellationToken cancellationToken = default)
     {
         if (await AnyAsync(x => x.Name == request.Name || x.Code == request.Code, cancellationToken))
@@ -50,4 +51,18 @@ public class CourseService(ApplicationDbContext context) : GenericRepository<Cou
         .Where(x => x.Id == courseId)
         .Select(x => x.Level)
         .FirstOrDefaultAsync(cancellationToken);
+
+    public async Task<IEnumerable<CourseResponse>> GetAllAsync(int departmentId, CancellationToken cancellationToken)
+    {
+        //var coursesId = await GetAllIDsAsync(departmentId, cancellationToken);
+
+        var courses = await _context.DepartmentCourses
+            .AsNoTracking()
+            .Where(x => x.DepartmentId == departmentId)
+            .Select(x => x.Course)
+            .ProjectToType<CourseResponse>()
+            .ToListAsync(cancellationToken);
+
+        return courses;
+    }
 }

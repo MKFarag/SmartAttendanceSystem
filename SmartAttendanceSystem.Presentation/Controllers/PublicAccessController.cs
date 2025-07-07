@@ -17,7 +17,7 @@ public class PublicAccessController(IAuthService authService) : ControllerBase
         var confirmResult = await _authService.ConfirmEmailAsync(request.UserId, request.Code);
 
         return confirmResult.IsSuccess
-            ? Redirect("http://localhost:4200/log")
+            ? Redirect("http://localhost:4200/auth/login")
             : confirmResult.ToProblem();
     }
 }

@@ -54,7 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IUserService, UserService>();
 
-        // Add Lazy registration for IStudentService
+        //TODO: Add Lazy registration for IStudentService
         services.AddScoped(provider => new Lazy<IStudentService>(() => provider.GetRequiredService<IStudentService>()));
 
         services.AddHttpContextAccessor();

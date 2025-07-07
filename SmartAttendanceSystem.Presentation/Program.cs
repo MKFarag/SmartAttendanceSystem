@@ -10,8 +10,6 @@ using SmartAttendanceSystem.Presentation;
 
 #endregion
 
-//CRTL + Shift + F
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDependencies(builder.Configuration);
@@ -22,7 +20,6 @@ builder.Host.UseSerilog((context, configuration) =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -44,10 +41,12 @@ app.UseHangfireDashboard("/jobs", new DashboardOptions
         }
     ],
     DashboardTitle = "SmartAttendanceSystem Dashboard",
-    IsReadOnlyFunc = (DashboardContext context) => true
+    IsReadOnlyFunc = context => true
 });
 
 app.UseCors();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
