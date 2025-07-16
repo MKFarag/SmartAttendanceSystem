@@ -11,12 +11,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SmartAttendanceSystem.Application.Services;
-using SmartAttendanceSystem.Fingerprint;
 using SmartAttendanceSystem.Infrastructure.Authentication;
 using SmartAttendanceSystem.Infrastructure.Health;
-using SmartAttendanceSystem.Infrastructure.Helpers;
 using SmartAttendanceSystem.Infrastructure.Persistence;
-using SmartAttendanceSystem.Infrastructure.Repositories;
+using SmartAttendanceSystem.Infrastructure.Services;
 using SmartAttendanceSystem.Presentation.OpenApiTransformers;
 using System.Reflection;
 using System.Text;
@@ -34,7 +32,7 @@ public static class DependencyInjection
         services.AddMapsterConfig();
         services.AddFluentValidationConfig();
         services.AddExceptionHandlerConfig();
-        services.AddOptionsLoadConfig(configuration);
+        services.AddOptionsLoadConfig();
         services.AddDbSqlConfig(configuration);
         services.AddCorsConfig(configuration);
         services.AddAuthConfig(configuration);
@@ -46,6 +44,9 @@ public static class DependencyInjection
         services.AddFingerprint();
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ISignInService, SignInService>();
+        services.AddScoped<IAttendanceService, AttendanceService>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ICourseService, CourseService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IEmailSender, EmailService>();
@@ -53,9 +54,6 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IUserService, UserService>();
-
-        //TODO: Add Lazy registration for IStudentService
-        services.AddScoped(provider => new Lazy<IStudentService>(() => provider.GetRequiredService<IStudentService>()));
 
         services.AddHttpContextAccessor();
 
@@ -101,7 +99,9 @@ public static class DependencyInjection
             throw new InvalidOperationException("The ConnectionString is not found");
 
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseLazyLoadingProxies().UseSqlServer(connectionString)
+            options
+                .UseLazyLoadingProxies()
+                .UseSqlServer(connectionString)
         );
 
         return services;
@@ -253,7 +253,7 @@ public static class DependencyInjection
 
     #region Options
 
-    private static IServiceCollection AddOptionsLoadConfig(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddOptionsLoadConfig(this IServiceCollection services)
     {
         services.AddOptions<MailSettings>()
             .BindConfiguration(nameof(MailSettings))
@@ -364,6 +364,25 @@ public static class DependencyInjection
             options.GroupNameFormat = "'v'V";
             options.SubstituteApiVersionInUrl = true;
         });
+
+        return services;
+    }
+
+    #endregion
+
+    #region Fingerprint
+
+    public static IServiceCollection AddFingerprint(this IServiceCollection services)
+    {
+        // Register SerialPortService as a singleton
+        services.AddSingleton<ISerialPortService>(provider =>
+            new SerialPortService("COM3", 9600, provider.GetRequiredService<ILogger<SerialPortService>>()));
+
+        // Register AttendanceRepository
+        services.AddScoped<IFingerprintService, FingerprintService>();
+
+        // Register Fingerprint TempData
+        services.AddSingleton<FpTempData>();
 
         return services;
     }

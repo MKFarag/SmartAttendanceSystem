@@ -13,48 +13,48 @@ public class UsersController(IUserService userService) : ControllerBase
     public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         => Ok(await _userService.GetAllAsync(cancellationToken));
 
-    [HttpGet("{Id}")]
+    [HttpGet("{id}")]
     [HasPermission(Permissions.GetUsers)]
-    public async Task<IActionResult> Get([FromRoute] string Id)
+    public async Task<IActionResult> Get([FromRoute] string id)
     {
-        var getResult = await _userService.GetAsync(Id);
+        var result = await _userService.GetAsync(id);
 
-        return getResult.IsSuccess
-            ? Ok(getResult.Value)
-            : getResult.ToProblem();
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
     }
 
     [HttpPost("")]
     [HasPermission(Permissions.AddUsers)]
     public async Task<IActionResult> Add([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var addResult = await _userService.AddAsync(request, cancellationToken);
+        var result = await _userService.AddAsync(request, cancellationToken);
 
-        return addResult.IsSuccess
-            ? CreatedAtAction(nameof(Get), new { addResult.Value.Id }, addResult.Value)
-            : addResult.ToProblem();
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { result.Value.Id }, result.Value)
+            : result.ToProblem();
     }
 
-    [HttpPut("{Id}")]
+    [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateUsers)]
-    public async Task<IActionResult> Update([FromRoute] string Id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update([FromRoute] string id, [FromBody] UpdateUserRequest request, CancellationToken cancellationToken)
     {
-        var updateResult = await _userService.UpdateAsync(Id, request, cancellationToken);
+        var result = await _userService.UpdateAsync(id, request, cancellationToken);
 
-        return updateResult.IsSuccess
+        return result.IsSuccess
             ? NoContent()
-            : updateResult.ToProblem();
+            : result.ToProblem();
     }
 
     [HttpPut("{id}/toggle-status")]
     [HasPermission(Permissions.ToggleStatusUsers)]
     public async Task<IActionResult> ToggleStatus([FromRoute] string id)
     {
-        var toggleStatusResult = await _userService.ToggleStatusAsync(id);
+        var result = await _userService.ToggleStatusAsync(id);
 
-        return toggleStatusResult.IsSuccess
+        return result.IsSuccess
             ? NoContent()
-            : toggleStatusResult.ToProblem();
+            : result.ToProblem();
     }
 
     [HttpPut("{id}/unlock")]

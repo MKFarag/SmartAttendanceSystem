@@ -26,6 +26,13 @@ public class ApplicationRoleConfiguration : IEntityTypeConfiguration<Application
                 NormalizedName = DefaultRoles.Instructor.Name.ToUpper(),
                 ConcurrencyStamp = DefaultRoles.Instructor.ConcurrencyStamp,
                 IsDefault = true
+            },
+            new ApplicationRole
+            {
+                Id = DefaultRoles.Graduate.Id,
+                Name = DefaultRoles.Graduate.Name,
+                NormalizedName = DefaultRoles.Graduate.Name.ToUpper(),
+                ConcurrencyStamp = DefaultRoles.Graduate.ConcurrencyStamp
             }
         ]);
     }

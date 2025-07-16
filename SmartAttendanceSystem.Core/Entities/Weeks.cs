@@ -1,4 +1,6 @@
-﻿namespace SmartAttendanceSystem.Core.Entities;
+﻿using System.Reflection;
+
+namespace SmartAttendanceSystem.Core.Entities;
 
 public class Weeks
 {
@@ -15,7 +17,15 @@ public class Weeks
     public bool? Week11 { get; set; }
     public bool? Week12 { get; set; }
 
+    #region Methods
+
     public bool? Week(int num) => GetWeek(num);
+
+    public static PropertyInfo? GetProperty(int weekNum)
+        => typeof(Weeks).GetProperty($"Week{weekNum}");
+
+    public static bool? GetValue(PropertyInfo propertyInfo, Weeks weeks)
+        => (bool?)propertyInfo.GetValue(weeks);
 
     private bool? GetWeek(int num)
     {
@@ -30,4 +40,6 @@ public class Weeks
 
         return weeks[--num];
     }
+
+    #endregion
 }

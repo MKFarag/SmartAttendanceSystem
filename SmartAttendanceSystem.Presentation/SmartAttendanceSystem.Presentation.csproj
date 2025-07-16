@@ -13,20 +13,19 @@
     <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.20" />
     <PackageReference Include="Hangfire.Dashboard.Basic.Authentication" Version="8.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.6">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Scalar.AspNetCore" Version="2.5.3" />
+    <PackageReference Include="Scalar.AspNetCore" Version="2.6.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SmartAttendanceSystem.Application\SmartAttendanceSystem.Application.csproj" />
     <ProjectReference Include="..\SmartAttendanceSystem.Core\SmartAttendanceSystem.Core.csproj" />
-    <ProjectReference Include="..\SmartAttendanceSystem.Fingerprint\SmartAttendanceSystem.Fingerprint.csproj" />
     <ProjectReference Include="..\SmartAttendanceSystem.Infrastructure\SmartAttendanceSystem.Infrastructure.csproj" />
   </ItemGroup>
 	

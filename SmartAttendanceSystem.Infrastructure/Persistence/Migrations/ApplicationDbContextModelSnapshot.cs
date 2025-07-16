@@ -17,7 +17,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.4")
+                .HasAnnotation("ProductVersion", "9.0.7")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true)
@@ -96,173 +96,187 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                         {
                             Id = 7,
                             ClaimType = "permissions",
-                            ClaimValue = "students:courses",
+                            ClaimValue = "students:upgrade",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 8,
                             ClaimType = "permissions",
-                            ClaimValue = "attendance:read",
+                            ClaimValue = "students:courses",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 9,
                             ClaimType = "permissions",
-                            ClaimValue = "attendance:remove",
+                            ClaimValue = "attendance:read",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 10,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:admin",
+                            ClaimValue = "attendance:remove",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 11,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:match",
+                            ClaimValue = "fingerprint:admin",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 12,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:add",
+                            ClaimValue = "fingerprint:match",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 13,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:action",
+                            ClaimValue = "fingerprint:add",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 14,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:register",
+                            ClaimValue = "fingerprint:action",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 15,
                             ClaimType = "permissions",
-                            ClaimValue = "Role:read",
+                            ClaimValue = "fingerprint:register",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 16,
                             ClaimType = "permissions",
-                            ClaimValue = "Role:add",
+                            ClaimValue = "Role:read",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 17,
                             ClaimType = "permissions",
-                            ClaimValue = "Role:update",
+                            ClaimValue = "Role:add",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 18,
                             ClaimType = "permissions",
-                            ClaimValue = "user:read",
+                            ClaimValue = "Role:update",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 19,
                             ClaimType = "permissions",
-                            ClaimValue = "user:add",
+                            ClaimValue = "user:read",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 20,
                             ClaimType = "permissions",
-                            ClaimValue = "user:update",
+                            ClaimValue = "user:add",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 21,
                             ClaimType = "permissions",
-                            ClaimValue = "user:toggle-status",
+                            ClaimValue = "user:update",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 22,
                             ClaimType = "permissions",
-                            ClaimValue = "user:unlock",
+                            ClaimValue = "user:toggle-status",
                             RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 23,
                             ClaimType = "permissions",
-                            ClaimValue = "courses:read",
-                            RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
+                            ClaimValue = "user:unlock",
+                            RoleId = "0194ba0b-a50d-7568-b187-227d0faed2e9"
                         },
                         new
                         {
                             Id = 24,
                             ClaimType = "permissions",
-                            ClaimValue = "departments:read",
+                            ClaimValue = "courses:read",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 25,
                             ClaimType = "permissions",
-                            ClaimValue = "students:read",
+                            ClaimValue = "departments:read",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 26,
                             ClaimType = "permissions",
-                            ClaimValue = "students:create",
+                            ClaimValue = "students:read",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 27,
                             ClaimType = "permissions",
-                            ClaimValue = "attendance:read",
+                            ClaimValue = "students:create",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 28,
                             ClaimType = "permissions",
-                            ClaimValue = "attendance:remove",
+                            ClaimValue = "students:upgrade",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 29,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:match",
+                            ClaimValue = "attendance:read",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 30,
                             ClaimType = "permissions",
-                            ClaimValue = "fingerprint:add",
+                            ClaimValue = "attendance:remove",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
                         },
                         new
                         {
                             Id = 31,
+                            ClaimType = "permissions",
+                            ClaimValue = "fingerprint:match",
+                            RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
+                        },
+                        new
+                        {
+                            Id = 32,
+                            ClaimType = "permissions",
+                            ClaimValue = "fingerprint:add",
+                            RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
+                        },
+                        new
+                        {
+                            Id = 33,
                             ClaimType = "permissions",
                             ClaimValue = "fingerprint:action",
                             RoleId = "0194bd46-ceca-7ea4-9d02-9e268a031756"
@@ -416,6 +430,15 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                             IsDisabled = false,
                             Name = "Instructor",
                             NormalizedName = "INSTRUCTOR"
+                        },
+                        new
+                        {
+                            Id = "01981255-1cb9-7997-ac73-b1213daf4a8a",
+                            ConcurrencyStamp = "01981255-526f-71af-b4cb-492dc3aef871",
+                            IsDefault = false,
+                            IsDisabled = false,
+                            Name = "Graduate",
+                            NormalizedName = "GRADUATE"
                         });
                 });
 
@@ -539,7 +562,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("StudentId", "CourseId")
                         .IsUnique();
 
-                    b.ToTable("Attendances", (string)null);
+                    b.ToTable("Attendances");
                 });
 
             modelBuilder.Entity("SmartAttendanceSystem.Core.Entities.Course", b =>
@@ -571,7 +594,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
 
                     b.HasData(
                         new
@@ -1287,7 +1310,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
 
                     b.HasData(
                         new
@@ -1324,7 +1347,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.ToTable("DepartmentCourses", (string)null);
+                    b.ToTable("DepartmentCourses");
 
                     b.HasData(
                         new
@@ -1906,7 +1929,7 @@ namespace SmartAttendanceSystem.Infrastructure.Persistence.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

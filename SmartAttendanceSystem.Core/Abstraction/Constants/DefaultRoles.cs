@@ -16,6 +16,13 @@ public static class DefaultRoles
         public const string ConcurrencyStamp = "0194ba0b-a50d-7568-b187-227aba8bc12f";
     }
 
+    public partial class Graduate
+    {
+        public const string Name = nameof(Graduate);
+        public const string Id = "01981255-1cb9-7997-ac73-b1213daf4a8a";
+        public const string ConcurrencyStamp = "01981255-526f-71af-b4cb-492dc3aef871";
+    }
+
     public partial class Instructor
     {
         public const string Name = nameof(Instructor);

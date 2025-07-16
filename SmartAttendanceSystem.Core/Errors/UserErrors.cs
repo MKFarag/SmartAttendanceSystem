@@ -46,4 +46,10 @@ public record UserErrors
 
     public static readonly Error InvalidRolePassword =
         new("User.InvalidRolePassword", "Invalid role password", StatusCodes.Status400BadRequest);
+
+    public static readonly Error InvalidToken =
+        new("User.InvalidToken", "The token is invalid", StatusCodes.Status400BadRequest);
+
+    public static readonly Error SameEmail =
+        new("User.SameEmail", "You cannot enter the same email", StatusCodes.Status400BadRequest);
 }

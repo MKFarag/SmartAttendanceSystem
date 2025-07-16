@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Core"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Application", "SmartAttendanceSystem.Application\SmartAttendanceSystem.Application.csproj", "{1EC2E99A-557E-4E26-8287-469886909366}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Fingerprint", "SmartAttendanceSystem.Fingerprint\SmartAttendanceSystem.Fingerprint.csproj", "{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,12 +33,11 @@ Global
 		{1EC2E99A-557E-4E26-8287-469886909366}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1EC2E99A-557E-4E26-8287-469886909366}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1EC2E99A-557E-4E26-8287-469886909366}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A1EDB52E-659F-412A-AD5D-B5724AE6DC1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {00359D73-68AA-4000-8746-338390521265}
 	EndGlobalSection
 EndGlobal

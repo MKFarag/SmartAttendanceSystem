@@ -4,230 +4,78 @@
 [ApiController]
 [Authorize]
 [EnableRateLimiting(RateLimiters.Concurrency)]
-public class StudentsController
-
-#region Initial
-
-    (IStudentService studentService,
-    IDepartmentService deptService) : ControllerBase
+public class StudentsController(IStudentService studentService) : ControllerBase
 {
-
     private readonly IStudentService _studentService = studentService;
-    private readonly IDepartmentService _deptService = deptService;
-
-    #endregion
-
-    #region Get
 
     [HttpGet("")]
     [HasPermission(Permissions.GetStudents)]
     public async Task<IActionResult> GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
-        Ok(await _studentService.GetAllAsync(filters, cancellationToken: cancellationToken));
+        Ok(await _studentService.GetAllAsync(filters, cancellationToken));
 
     [HttpGet("no-finger")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> NoFingerId_GetAll([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
-        Ok(await _studentService.GetAllAsync(filters, x => x.FingerId == null, cancellationToken));
+    public async Task<IActionResult> GetAllMissingFingerId([FromQuery] RequestFilters filters, CancellationToken cancellationToken) =>
+        Ok(await _studentService.GetAllMissingFingerIdAsync(filters, cancellationToken));
 
-    [HttpGet("dept/{DeptId}")]
+    [HttpGet("{id}")]
     [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> Department_GetAll([FromRoute] int DeptId, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
+    public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
     {
-        if (DeptId <= 0)
+        if (id <= 0)
             return BadRequest();
 
-        if (!await _deptService.AnyAsync(x => x.Id == DeptId, cancellationToken))
-            return Result.Failure(GlobalErrors.IdNotFound("Department")).ToProblem();
+        var result = await _studentService.GetAsync(id, cancellationToken);
 
-        var Students = await _studentService.GetAllAsync(filters, x => x.DepartmentId == DeptId, cancellationToken);
-
-        return Ok(Students);
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
     }
-
-    [HttpGet("dept/{DeptId}/{Lvl}")]
-    [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> GetAll([FromRoute] int DeptId, [FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
-    {
-        if (DeptId <= 0 || Lvl <= 0 || Lvl > 4)
-            return BadRequest();
-
-        if (!await _deptService.AnyAsync(x => x.Id == DeptId, cancellationToken))
-            return NotFound(GlobalErrors.IdNotFound("Department"));
-
-        var Students = await _studentService.GetAllAsync(filters, x => x.DepartmentId == DeptId && x.Level == Lvl, cancellationToken);
-
-        return Ok(Students);
-    }
-
-    [HttpGet("level/{Lvl}")]
-    [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> Level_GetAll([FromRoute] int Lvl, [FromQuery] RequestFilters filters, CancellationToken cancellationToken)
-    {
-        if (Lvl <= 0 || Lvl > 4)
-            return BadRequest();
-
-        var Students = await _studentService.GetAllAsync(filters, x => x.Level == Lvl, cancellationToken);
-
-        return Ok(Students);
-    }
-
-    [HttpGet("{Id}")]
-    [HasPermission(Permissions.GetStudents)]
-    public async Task<IActionResult> Get([FromRoute] int Id, CancellationToken cancellationToken)
-    {
-        var stdResult = await _studentService.GetAsync(x => x.Id == Id, cancellationToken: cancellationToken);
-
-        return stdResult.IsSuccess
-            ? Ok(stdResult.Value)
-            : stdResult.ToProblem();
-    }
-
-    #endregion
-
-    #region Add
 
     [HttpPost("")]
     [HasPermission(Permissions.AddStudents)]
     public async Task<IActionResult> Add([FromBody] CreateStudentRequest request, CancellationToken cancellationToken)
     {
-        var response = await _studentService.AddAsync(request, cancellationToken);
+        var result = await _studentService.AddAsync(request, cancellationToken);
 
-        return response.IsSuccess
-            ? CreatedAtAction(nameof(Get), new { response.Value.Id }, response.Value)
-            : response.ToProblem();
+        return result.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { result.Value.Id }, result.Value)
+            : result.ToProblem();
     }
 
-    #endregion
+    [HttpPut("{id}")]
+    [HasPermission(Permissions.UpgradeStudents)]
+    public async Task<IActionResult> Upgrade([FromRoute] int id, [FromBody] StudentCourseRequest request, CancellationToken cancellationToken)
+    {
+        if (id <= 0)
+            return BadRequest();
 
-    #region Courses
+        var result = await _studentService.UpgradeAsync(id, request.CoursesId, cancellationToken);
 
-    #region Add
+        return result.IsSuccess
+            ? Ok()
+            : result.ToProblem();
+    }
 
     [HttpPost("courses")]
     [HasPermission(Permissions.StudentCourses)]
-    public async Task<IActionResult> AddCourses([FromBody] StudentCoursesRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> AddCourses([FromBody] StudentCourseRequest request, CancellationToken cancellationToken)
     {
-        var response = await _studentService.AddCourseAsync(request.CoursesId, User.GetId()!, cancellationToken);
+        var result = await _studentService.AddCoursesAsync(User.GetId()!, request.CoursesId, cancellationToken);
 
-        return response.IsSuccess
+        return result.IsSuccess
             ? Created()
-            : response.ToProblem();
+            : result.ToProblem();
     }
-
-    #endregion
-
-    #region Remove
 
     [HttpDelete("courses")]
     [HasPermission(Permissions.StudentCourses)]
-    public async Task<IActionResult> RemoveCourses([FromBody] StudentCoursesRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> RemoveCourses([FromBody] StudentCourseRequest request, CancellationToken cancellationToken)
     {
-        var response = await _studentService.DeleteCourseAsync(request.CoursesId, User.GetId()!, cancellationToken);
+        var result = await _studentService.DeleteCoursesAsync(User.GetId()!, request.CoursesId, cancellationToken);
 
-        return response.IsSuccess
+        return result.IsSuccess
             ? NoContent()
-            : response.ToProblem();
+            : result.ToProblem();
     }
-
-    #endregion
-
-    #endregion
-
-    #region Attendance
-
-    #region Get by course
-
-    [HttpGet("attendance/{courseId}")]
-    [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetAttendance([FromRoute] int courseId, CancellationToken cancellationToken)
-    {
-        if (courseId <= 0)
-            return BadRequest();
-
-        var courseAttendance = await _studentService.GetCourseAttendanceAsync(courseId, cancellationToken: cancellationToken);
-
-        return courseAttendance.IsSuccess
-            ? Ok(courseAttendance.Value)
-            : courseAttendance.ToProblem();
-    }
-
-    #endregion
-
-    #region Get by week
-
-    [HttpGet("attendance/{courseId}/{weekNum}")]
-    [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetAttendance([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
-    {
-        if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
-            return BadRequest();
-
-        var weekAttendance = await _studentService.GetWeekAttendanceAsync(weekNum, courseId, cancellationToken: cancellationToken);
-
-        return weekAttendance.IsSuccess
-            ? Ok(weekAttendance.Value)
-            : weekAttendance.ToProblem();
-    }
-
-    #endregion
-
-    #region For one student
-
-    #region Get by course
-
-    [HttpGet("{stdId}/attendance/{courseId}")]
-    [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetOneAttendance([FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
-    {
-        if (courseId <= 0)
-            return BadRequest();
-
-        var courseAttendance = await _studentService.GetCourseAttendanceAsync(courseId, stdId, cancellationToken);
-
-        return courseAttendance.IsSuccess
-            ? Ok(courseAttendance.Value)
-            : courseAttendance.ToProblem();
-    }
-
-    #endregion
-
-    #region Get by week
-
-    [HttpGet("{stdId}/attendance/{courseId}/{weekNum}")]
-    [HasPermission(Permissions.GetAttendance)]
-    public async Task<IActionResult> GetOneAttendance([FromRoute] int weekNum, [FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
-    {
-        if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
-            return BadRequest();
-
-        var weekAttendance = await _studentService.GetWeekAttendanceAsync(weekNum, courseId, stdId, cancellationToken);
-
-        return weekAttendance.IsSuccess
-            ? Ok(weekAttendance.Value)
-            : weekAttendance.ToProblem();
-    }
-
-    #endregion
-
-    #region Remove by week
-
-    [HttpDelete("{stdId}/attendance/{courseId}/{weekNum}")]
-    [HasPermission(Permissions.RemoveAttendance)]
-    public async Task<IActionResult> RemoveOneAttendance([FromRoute] int weekNum, [FromRoute] int courseId, [FromRoute] int stdId, CancellationToken cancellationToken)
-    {
-        if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
-            return BadRequest();
-
-        var removeAttendance = await _studentService.RemoveStudentAttendanceAsync(weekNum, courseId, stdId, cancellationToken);
-
-        return removeAttendance.IsSuccess
-            ? NoContent()
-            : removeAttendance.ToProblem();
-    }
-
-    #endregion
-
-    #endregion
-
-    #endregion
 }

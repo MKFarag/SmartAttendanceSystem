@@ -1,84 +1,49 @@
-﻿namespace SmartAttendanceSystem.Application.Services;
+﻿using Microsoft.AspNetCore.WebUtilities;
+
+namespace SmartAttendanceSystem.Application.Services;
 
 public class UserService
-
-#region Initial
-
-    (UserManager<ApplicationUser> userManager,
-    Lazy<IStudentService> studentService,
-    IRoleService roleService) : IUserService
+    (IEmailTemplateService emailTemplateService, ILogger<UserService> logger, IUnitOfWork unitOfWork) : IUserService
 {
-    private readonly UserManager<ApplicationUser> _userManager = userManager;
-    private readonly Lazy<IStudentService> _studentService = studentService;
-    private readonly IRoleService _roleService = roleService;
+    private readonly IEmailTemplateService _emailTemplateService = emailTemplateService;
+    private readonly ILogger<UserService> _logger = logger;
+    private readonly IUnitOfWork _unitOfWork = unitOfWork;
 
-    #endregion
+    #region For dashboard
 
-    #region Admin (Dashboard)
-
-    #region Get
-
-    //GET ALL
     public async Task<IEnumerable<UserResponse>> GetAllAsync(CancellationToken cancellationToken = default)
-    => await (from u in _userManager.Users
-              join ur in _roleService.UserRoles
-              on u.Id equals ur.UserId
-              join r in _roleService.Roles
-              on ur.RoleId equals r.Id into roles
-              select new
-              {
-                  u.Id,
-                  u.Name,
-                  u.Email,
-                  u.IsDisabled,
-                  Roles = roles.Select(x => x.Name!).ToList()
-              })
-              .GroupBy(u => new { u.Id, u.Name, u.Email, u.IsDisabled })
-              .Select(u => new UserResponse
-              (
-                  u.Key.Id,
-                  u.Key.Name,
-                  u.Key.Email,
-                  u.Key.IsDisabled,
-                  u.SelectMany(x => x.Roles)
-              ))
-              .ToListAsync(cancellationToken);
+        => await _unitOfWork.Users.GetAllProjectionWithRolesAsync<UserResponse>(false, cancellationToken);
 
-    //GET
-    public async Task<Result<UserResponse>> GetAsync(string Id)
+    public async Task<Result<UserResponse>> GetAsync(string userId)
     {
-        if (await _userManager.FindByIdAsync(Id) is not { } user)
+        if (await _unitOfWork.Users.GetAsync(userId) is not { } user)
             return Result.Failure<UserResponse>(UserErrors.NotFound);
 
-        var roles = await _userManager.GetRolesAsync(user);
+        var roles = await _unitOfWork.Users.GetRolesAsync(user);
 
         var response = (user, roles).Adapt<UserResponse>();
 
         return Result.Success(response);
     }
 
-    #endregion
-
-    #region Add
-
-    //TODO: User normalized email
     public async Task<Result<UserResponse>> AddAsync(CreateUserRequest request, CancellationToken cancellationToken = default)
     {
-        if (await _userManager.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
+        if (await _unitOfWork.Users.AnyAsync(x => x.Email == request.Email, cancellationToken))
             return Result.Failure<UserResponse>(UserErrors.DuplicatedEmail);
 
-        var allowedRoles = await _roleService.GetAllNamesAsync(cancellationToken: cancellationToken);
+        var allowedRoles = await _unitOfWork.Roles.FindAllProjectionAsync
+            (r => !r.IsDefault, r => r.Name, true, cancellationToken);
 
         if (request.Roles.Except(allowedRoles).Any())
             return Result.Failure<UserResponse>(UserErrors.InvalidRoles);
 
         var user = request.Adapt<ApplicationUser>();
 
-        var result = await _userManager.CreateAsync(user, request.Password);
+        var result = await _unitOfWork.Users.CreateAsync(user, request.Password);
 
         if (result.Succeeded)
         {
-            await _userManager.AddToRolesAsync(user, request.Roles);
+            await _unitOfWork.Users.AddToRolesAsync(user, request.Roles);
 
             var response = (user, request.Roles).Adapt<UserResponse>();
 
@@ -89,35 +54,29 @@ public class UserService
         return Result.Failure<UserResponse>(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
-    #endregion
-
-    #region Update
-
-    //UPDATE
-    public async Task<Result> UpdateAsync(string Id, UpdateUserRequest request, CancellationToken cancellationToken = default)
+    public async Task<Result> UpdateAsync(string userId, UpdateUserRequest request, CancellationToken cancellationToken = default)
     {
-        if (await _userManager.Users.AnyAsync(x => x.Email == request.Email && x.Id != Id, cancellationToken))
+        if (await _unitOfWork.Users.AnyAsync(x => x.Email == request.Email && x.Id != userId, cancellationToken))
             return Result.Failure(UserErrors.DuplicatedEmail);
 
-        var allowedRoles = await _roleService.GetAllNamesAsync(cancellationToken: cancellationToken);
+        var allowedRoles = await _unitOfWork.Roles.FindAllProjectionAsync
+            (r => !r.IsDefault, r => r.Name, true, cancellationToken);
 
         if (request.Roles.Except(allowedRoles).Any())
             return Result.Failure(UserErrors.InvalidRoles);
 
-        if (await _userManager.FindByIdAsync(Id) is not { } user)
+        if (await _unitOfWork.Users.GetAsync(userId, cancellationToken) is not { } user)
             return Result.Failure(UserErrors.NotFound);
 
         user = request.Adapt(user);
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _unitOfWork.Users.UpdateAsync(user);
 
         if (result.Succeeded)
         {
-            await _roleService.UserRoles
-                    .Where(x => x.UserId == Id)
-                    .ExecuteDeleteAsync(cancellationToken);
+            await _unitOfWork.Users.BulkDeleteAllRolesAsync(userId, cancellationToken);
 
-            await _userManager.AddToRolesAsync(user, request.Roles);
+            await _unitOfWork.Users.AddToRolesAsync(user, request.Roles);
 
             return Result.Success();
         }
@@ -126,15 +85,14 @@ public class UserService
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
-    //TOGGLE STATUS
-    public async Task<Result> ToggleStatusAsync(string Id)
+    public async Task<Result> ToggleStatusAsync(string userId)
     {
-        if (await _userManager.FindByIdAsync(Id) is not { } user)
+        if (await _unitOfWork.Users.GetAsync(userId) is not { } user)
             return Result.Failure(UserErrors.NotFound);
 
         user.IsDisabled = !user.IsDisabled;
 
-        var result = await _userManager.UpdateAsync(user);
+        var result = await _unitOfWork.Users.UpdateAsync(user);
 
         if (result.Succeeded)
             return Result.Success();
@@ -143,16 +101,15 @@ public class UserService
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
-    //UNLOCK
-    public async Task<Result> UnlockAsync(string Id)
+    public async Task<Result> UnlockAsync(string userId)
     {
-        if (await _userManager.FindByIdAsync(Id) is not { } user)
+        if (await _unitOfWork.Users.GetAsync(userId) is not { } user)
             return Result.Failure(UserErrors.NotFound);
 
-        if (!await _userManager.IsLockedOutAsync(user))
+        if (!await _unitOfWork.Users.IsLockedOutAsync(user))
             return Result.Failure(UserErrors.NotLockedUser);
 
-        var result = await _userManager.SetLockoutEndDateAsync(user, null);
+        var result = await _unitOfWork.Users.SetLockoutEndDateAsync(user, null);
 
         if (result.Succeeded)
             return Result.Success();
@@ -163,103 +120,103 @@ public class UserService
 
     #endregion
 
-    #endregion
+    #region For user profile
 
-    #region User Profile (Public)
-
-    #region Get
-
-    public async Task<object> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
+    public async Task<Result<UserProfileResponse>> GetProfileAsync(string userId, CancellationToken cancellationToken = default)
     {
-        var stdCheck = await _roleService.UserRoles.AnyAsync(x => x.UserId == userId && x.RoleId == DefaultRoles.Student.Id, cancellationToken: cancellationToken);
+        var userResponse = await _unitOfWork.Users.FindProjectionAsync<UserProfileResponse>
+            (x => x.Id == userId, cancellationToken);
 
-        if (stdCheck)
-        {
-            var user = await _studentService.Value.Students
-                .Where(x => x.UserId == userId)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.User.Name,
-                    x.User.Email,
-                    x.Level,
-                    x.Department
-                }
-                )
-                .AsNoTracking()
-                .FirstAsync(cancellationToken);
-
-            var courses = await _studentService.Value.GetCoursesWithAttendancesDTOsAsync(user.Id, cancellationToken: cancellationToken);
-
-            StudentProfileResponse response = new
-                (
-                    user.Id,
-                    user.Name,
-                    user.Email!,
-                    user.Level,
-                    (user.Department).Adapt<DepartmentResponse>(),
-                    courses
-                );
-
-            return response;
-        }
-
-        return await _userManager.Users
-            .Where(x => x.Id == userId)
-            .ProjectToType<UserProfileResponse>()
-            .AsNoTracking()
-            .FirstAsync(cancellationToken);
+        return userResponse is not null
+            ? Result.Success(userResponse)
+            : Result.Failure<UserProfileResponse>(UserErrors.NotFound);
     }
 
-    #endregion
-
-    #region Update
-
-    public async Task<Result> UpdateProfileAsync(string userId, UpdateProfileRequest request)
+    public async Task<Result> UpdateProfileAsync(string userId, UpdateProfileRequest request, CancellationToken cancellationToken = default)
     {
-        await _userManager.Users
-            .Where(x => x.Id == userId)
-            .ExecuteUpdateAsync(setters =>
-                setters
-                    .SetProperty(x => x.Name, request.Name)
-            );
+        if (!await _unitOfWork.Users.ExistsAsync(userId, cancellationToken))
+            return Result.Failure(UserErrors.NotFound);
+
+        await _unitOfWork.Users.BulkNameUpdateAsync(userId, request.Name, cancellationToken);
+
+        if (await _unitOfWork.Users.GetAsync(userId, cancellationToken) is not { } user)
+            return Result.Failure(UserErrors.NotFound);
+
+        user.Name = request.Name;
+
+        await _unitOfWork.CompleteAsync(cancellationToken);
 
         return Result.Success();
     }
 
     public async Task<Result> ChangePasswordAsync(string userId, ChangePasswordRequest request)
     {
-        var user = await _userManager.FindByIdAsync(userId);
+        if (await _unitOfWork.Users.GetAsync(userId) is not { } user)
+            return Result.Failure(UserErrors.NotFound);
 
-        var result = await _userManager.ChangePasswordAsync(user!, request.CurrentPassword, request.NewPassword);
+        var result = await _unitOfWork.Users.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
 
         if (result.Succeeded)
             return Result.Success();
 
         var error = result.Errors.First();
-
         return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
-    #endregion
-
-    #endregion
-
-    #region Get User Roles & Claims
-
-    public async Task<(IEnumerable<string> roles, IEnumerable<string> permissions)> GetRolesAndClaimsAsync(ApplicationUser user, CancellationToken cancellationToken = default)
+    public async Task<Result> ChangeEmailRequestAsync(string userId, string newEmail)
     {
-        var userRoles = await _userManager.GetRolesAsync(user);
+        newEmail = _unitOfWork.Users.NormalizeEmail(newEmail);
 
-        var userPermissions = await (from r in _roleService.Roles
-                                     join p in _roleService.RoleClaims
-                                     on r.Id equals p.RoleId
-                                     where userRoles.Contains(r.Name!)
-                                     select p.ClaimValue!)
-                                     .Distinct()
-                                     .ToListAsync(cancellationToken);
+        if (await _unitOfWork.Users.AnyAsync(x => x.NormalizedEmail == newEmail && x.Id != userId))
+            return Result.Failure(UserErrors.DuplicatedEmail);
 
-        return (userRoles, userPermissions);
+        if (await _unitOfWork.Users.GetAsync(userId) is not { } user)
+            return Result.Failure(UserErrors.NotFound);
+
+        if (user.NormalizedEmail == newEmail)
+            return Result.Failure(UserErrors.SameEmail);
+
+        var code = await _unitOfWork.Users.GenerateChangeEmailTokenAsync(user, newEmail);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
+        _logger.LogInformation("Change email code: {code}", code);
+
+        _emailTemplateService.SendConfirmationLink(user, code);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> ConfirmChangeEmailAsync(string userId, ConfirmChangeEmailRequest request)
+    {
+        if (await _unitOfWork.Users.GetAsync(userId) is not { } user)
+            return Result.Failure(UserErrors.NotFound);
+
+        var oldEmail = user.Email;
+        IdentityResult result;
+
+        try
+        {
+            var code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(request.Code));
+            result = await _unitOfWork.Users.ChangeEmailAsync(user, request.NewEmail, code);
+        }
+        catch (FormatException)
+        {
+            result = IdentityResult.Failed(new IdentityError
+            {
+                Code = UserErrors.InvalidToken.Code,
+                Description = UserErrors.InvalidToken.Description
+            });
+        }
+
+        if (result.Succeeded)
+        {
+            _emailTemplateService.SendChangeEmailNotification(user, oldEmail!, DateTime.UtcNow);
+
+            return Result.Success();
+        }
+
+        var error = result.Errors.First();
+        return Result.Failure(new Error(error.Code, error.Description, StatusCodes.Status400BadRequest));
     }
 
     #endregion

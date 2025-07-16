@@ -8,75 +8,75 @@ public class CoursesController(ICourseService courseService) : ControllerBase
 {
     private readonly ICourseService _courseService = courseService;
 
-    #region GetCourses
-
     [HttpGet("")]
     [HasPermission(Permissions.GetCourses)]
-    public async Task<IActionResult> GetAll(CancellationToken cancellationToken) =>
-        Ok(await _courseService.GetAllAsync(cancellationToken: cancellationToken));
+    public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
+        => Ok(await _courseService.GetAllAsync(cancellationToken));
 
-    [HttpGet("{Id}")]
+    [HttpGet("department/{id}")]
     [HasPermission(Permissions.GetCourses)]
-    public async Task<IActionResult> Get([FromRoute] int Id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetAllByDepartment([FromRoute] int id, CancellationToken cancellationToken)
     {
-        var courseResult = await _courseService.GetAsync(Id, cancellationToken);
+        if (id <= 0)
+            return BadRequest();
 
-        return courseResult.IsSuccess
-            ? Ok(courseResult.Value)
-            : courseResult.ToProblem();
+        var result = await _courseService.GetAllAsync(id, cancellationToken);
+
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
     }
 
-    //TODO: Check for route
-    [HttpGet("department/{Id}")]
+    [HttpGet("{id}")]
     [HasPermission(Permissions.GetCourses)]
-    public async Task<IActionResult> GetAllByDepartment([FromRoute] int Id, CancellationToken cancellationToken)
-        => Ok (await _courseService.GetAllAsync(Id, cancellationToken));
+    public async Task<IActionResult> Get([FromRoute] int id, CancellationToken cancellationToken)
+    {
+        if (id <= 0)
+            return BadRequest();
 
-    #endregion
+        var result = await _courseService.GetAsync(id, cancellationToken);
 
-    #region ModifyCourses
+        return result.IsSuccess
+            ? Ok(result.Value)
+            : result.ToProblem();
+    }
 
     [HttpPost("")]
     [HasPermission(Permissions.ModifyCourses)]
     public async Task<IActionResult> Add([FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
-        var courseResult = await _courseService.AddAsync(request, cancellationToken);
+        var response = await _courseService.AddAsync(request, cancellationToken);
 
-        return courseResult.IsSuccess
-            ? CreatedAtAction(nameof(Get), new { courseResult.Value.Id }, courseResult.Value)
-            : courseResult.ToProblem();
+        return response.IsSuccess
+            ? CreatedAtAction(nameof(Get), new { response.Value.Id }, response.Value)
+            : response.ToProblem();
     }
 
-    [HttpDelete("{Id}")]
+    [HttpDelete("{id}")]
     [HasPermission(Permissions.ModifyCourses)]
-    public async Task<IActionResult> Delete([FromRoute] int Id, CancellationToken cancellationToken)
+    public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
     {
-        if (Id == 0)
+        if (id <= 0)
             return BadRequest();
 
-        var courseResult = await _courseService.DeleteAsync(Id, cancellationToken);
+        var response = await _courseService.DeleteAsync(id, cancellationToken);
 
-        return courseResult.IsSuccess
+        return response.IsSuccess
             ? NoContent()
-            : courseResult.ToProblem();
+            : response.ToProblem();
     }
 
-    [HttpPut("{Id}")]
+    [HttpPut("{id}")]
     [HasPermission(Permissions.ModifyCourses)]
-    public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] CourseRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Update([FromRoute] int id, [FromBody] CourseRequest request, CancellationToken cancellationToken)
     {
-        if (Id == 0)
+        if (id <= 0)
             return BadRequest();
 
-        var courseResult = await _courseService.UpdateAsync(Id, request, cancellationToken);
+        var response = await _courseService.UpdateAsync(id, request, cancellationToken);
 
-        return courseResult.IsSuccess
+        return response.IsSuccess
             ? NoContent()
-            : courseResult.ToProblem();
+            : response.ToProblem();
     }
-
-    #endregion
 }
-//TODO: Add a method to get all courses by department id
-//TODO: Add a method to put the relationship between courses and departments
-//TODO: Change the method of add course to make it add a level and its department

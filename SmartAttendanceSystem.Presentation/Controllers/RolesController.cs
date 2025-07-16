@@ -8,28 +8,21 @@ public class RolesController(IRoleService roleService) : ControllerBase
 {
     private readonly IRoleService _roleService = roleService;
 
-    #region Get
-
     [HttpGet("")]
     [HasPermission(Permissions.GetRoles)]
     public async Task<IActionResult> GetAll([FromQuery] bool includeDisabled, CancellationToken cancellationToken)
         => Ok(await _roleService.GetAllAsync(includeDisabled, cancellationToken));
 
-
     [HttpGet("{id}")]
     [HasPermission(Permissions.GetRoles)]
-    public async Task<IActionResult> Get([FromRoute] string id)
+    public async Task<IActionResult> Get([FromRoute] string id, CancellationToken cancellationToken)
     {
-        var result = await _roleService.GetAsync(id);
+        var result = await _roleService.GetAsync(id, cancellationToken);
 
         return result.IsSuccess
             ? Ok(result.Value)
             : result.ToProblem();
     }
-
-    #endregion
-
-    #region Add
 
     [HttpPost("")]
     [HasPermission(Permissions.AddRoles)]
@@ -42,10 +35,6 @@ public class RolesController(IRoleService roleService) : ControllerBase
             : result.ToProblem();
     }
 
-    #endregion
-
-    #region Update
-
     [HttpPut("{id}")]
     [HasPermission(Permissions.UpdateRoles)]
     public async Task<IActionResult> Update([FromRoute] string id, [FromBody] RoleRequest request)
@@ -57,20 +46,14 @@ public class RolesController(IRoleService roleService) : ControllerBase
             : result.ToProblem();
     }
 
-    #endregion
-
-    #region Toggle Status
-
     [HttpPut("{id}/toggle-status")]
     [HasPermission(Permissions.UpdateRoles)]
-    public async Task<IActionResult> ToggleStatus([FromRoute] string id)
+    public async Task<IActionResult> ToggleStatus([FromRoute] string id, CancellationToken cancellationToken)
     {
-        var result = await _roleService.ToggleStatusAsync(id);
+        var result = await _roleService.ToggleStatusAsync(id, cancellationToken);
 
         return result.IsSuccess
             ? NoContent()
             : result.ToProblem();
     }
-
-    #endregion
 }

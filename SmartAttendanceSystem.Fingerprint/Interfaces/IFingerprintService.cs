@@ -1,4 +1,6 @@
-﻿namespace SmartAttendanceSystem.Fingerprint.Interfaces;
+﻿using SmartAttendanceSystem.Application.Contracts.Attendance;
+
+namespace SmartAttendanceSystem.Fingerprint.Interfaces;
 
 public interface IFingerprintService
 {

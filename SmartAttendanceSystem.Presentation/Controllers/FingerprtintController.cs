@@ -8,13 +8,13 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 {
     private readonly IFingerprintService _fingerprintService = fingerprintService;
 
-    #region For Admin & Testing
+    #region For Testing
 
     [HttpPost("start")]
     [HasPermission(Permissions.AdminFingerprint)]
-    public IActionResult StartListening()
+    public async Task<IActionResult> StartListening()
     {
-        var startResult = _fingerprintService.Start();
+        var startResult = await _fingerprintService.StartAsync();
 
         return startResult.IsSuccess
             ? Ok("Serial port listening started successfully")
@@ -46,9 +46,9 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HttpDelete("delete-data")]
     [HasPermission(Permissions.AdminFingerprint)]
     [Authorize(Roles = DefaultRoles.Admin.Name)]
-    public async Task<IActionResult> DeleteAllFingerIds(FingerprintDeletionPasswordRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteAllFingerIds(FingerprintDeletionPasswordRequest request)
     {
-        var result = await _fingerprintService.DeleteAllData(request.Password, cancellationToken);
+        var result = await _fingerprintService.DeleteAllDataAsync(request.Password);
 
         return result.IsSuccess
             ? Ok("All fingerprint data has been successfully deleted")
@@ -59,7 +59,7 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.MatchFingerprint)]
     public async Task<IActionResult> MatchStudent(CancellationToken cancellationToken)
     {
-        var matchResult = await _fingerprintService.Match(cancellationToken);
+        var matchResult = await _fingerprintService.MatchAsync(cancellationToken);
 
         return matchResult.IsSuccess
             ? Ok(matchResult.Value)
@@ -74,7 +74,10 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     [HasPermission(Permissions.AddFingerprint)]
     public async Task<IActionResult> NewFingerprint([FromRoute] int studentId)
     {
-        var FpRegisterResult = await _fingerprintService.StartEnrollment(studentId);
+        if (studentId <= 0)
+            return BadRequest();
+
+        var FpRegisterResult = await _fingerprintService.StartEnrollmentAsync(studentId);
 
         return FpRegisterResult.IsSuccess
             ? Ok("The registration is started.")
@@ -83,9 +86,9 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     [HttpGet("attendance/start")]
     [HasPermission(Permissions.ActionFingerprint)]
-    public async Task<IActionResult> TakeAttendance_Start(CancellationToken cancellationToken)
+    public async Task<IActionResult> StartAttendance()
     {
-        var actionResult = await _fingerprintService.StartAttendance(cancellationToken);
+        var actionResult = await _fingerprintService.StartAttendance();
 
         return actionResult.IsSuccess
             ? Ok("Fingerprint registration started")
@@ -94,9 +97,12 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
 
     [HttpPut("attendance/end/{courseId}/{weekNum}")]
     [HasPermission(Permissions.ActionFingerprint)]
-    public async Task<IActionResult> TakeAttendance_End([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
+    public async Task<IActionResult> StopAttendance([FromRoute] int courseId, [FromRoute] int weekNum, CancellationToken cancellationToken)
     {
-        var actionResult = await _fingerprintService.EndAttendance(weekNum, courseId, cancellationToken);
+        if (courseId <= 0 || weekNum <= 0 || weekNum > 12)
+            return BadRequest();
+
+        var actionResult = await _fingerprintService.EndAttendance(courseId, weekNum, cancellationToken);
 
         return actionResult.IsSuccess
             ? Ok("Fingerprint registration ended")
@@ -106,21 +112,6 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
     #endregion
 
     #region Disapled Endpoints
-
-    // This endpoint is depend on the login of the student and his role.
-    [HttpPut("register")]
-    [HasPermission(Permissions.FingerprintStudentRegister)]
-    private async Task<IActionResult> RegisterToStd(CancellationToken cancellationToken)
-    {
-        if (!User.GetRoles().Contains(DefaultRoles.Student.Name))
-            return Forbid("You are not allowed to register a fingerprint for this user");
-
-        var FpRegisterResult = await _fingerprintService.Register(User.GetId()!, cancellationToken);
-
-        return FpRegisterResult.IsSuccess
-            ? Ok("The student has been registered successfully")
-            : FpRegisterResult.ToProblem();
-    }
 
     // This endpoint is getting the enrollment state form the fingerprint's arduino.
     [HttpGet("enrollment")]
@@ -144,30 +135,6 @@ public class FingerprintController(IFingerprintService fingerprintService) : Con
         return FpDataResult.IsSuccess
             ? Ok(FpDataResult.Value)
             : FpDataResult.ToProblem();
-    }
-
-    // This endpoint return the student id by the latest id read from the arduino.
-    [HttpGet("match-simple")]
-    [HasPermission(Permissions.AdminFingerprint)]
-    private async Task<IActionResult> SimpleMatchStudent(CancellationToken cancellationToken)
-    {
-        var matchResult = await _fingerprintService.SimpleMatch(cancellationToken);
-
-        return matchResult.IsSuccess
-            ? Ok(matchResult.Value)
-            : matchResult.ToProblem();
-    }
-
-    // This endpoint is used to mark the student as attended and it was for testing only.
-    [HttpPut("attend/{courseId}/{weekNum}")]
-    [HasPermission(Permissions.AdminFingerprint)]
-    private async Task<IActionResult> StudentAttended([FromRoute] int weekNum, [FromRoute] int courseId, CancellationToken cancellationToken)
-    {
-        var attendCheck = await _fingerprintService.Attend(weekNum, courseId, cancellationToken);
-
-        return attendCheck.IsSuccess
-            ? Ok()
-            : attendCheck.ToProblem();
     }
 
     #endregion

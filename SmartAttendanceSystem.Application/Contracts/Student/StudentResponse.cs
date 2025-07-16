@@ -20,7 +20,7 @@ public record StudentResponseV2(
 );
 
 /// <summary>
-/// A new version of StudentResponse for adding method.
+/// A new version of StudentResponse for adding method and getting student who has no fingerId
 /// </summary>
 public record StudentResponseV3(
     int Id,

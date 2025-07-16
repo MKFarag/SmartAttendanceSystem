@@ -22,6 +22,7 @@ public static class Permissions
 
     public const string GetStudents = "students:read";
     public const string AddStudents = "students:create";
+    public const string UpgradeStudents = "students:upgrade";
     public const string StudentCourses = "students:courses";
 
     public const string GetAttendance = "attendance:read";
@@ -60,12 +61,13 @@ public static class Permissions
     public static IList<string?> GetAllPermissions() =>
         [.. typeof(Permissions).GetFields().Select(x => x.GetValue(x) as string)];
 
-    public static IList<string?> GetInstructorPermissions() =>
+    public static IList<string> GetInstructorPermissions() =>
         [
             GetCourses,
             GetDepartments,
             GetStudents,
             AddStudents,
+            UpgradeStudents,
             GetAttendance,
             RemoveAttendance,
             MatchFingerprint,

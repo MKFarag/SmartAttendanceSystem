@@ -1,3 +1,0 @@
---Delete From TableName
-
-DBCC CHECKIDENT('TableName', RESEED, 0)

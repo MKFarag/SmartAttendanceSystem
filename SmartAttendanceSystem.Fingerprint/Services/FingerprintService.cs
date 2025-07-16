@@ -1,4 +1,6 @@
-﻿namespace SmartAttendanceSystem.Fingerprint.Services;
+﻿using SmartAttendanceSystem.Application.Contracts.Attendance;
+
+namespace SmartAttendanceSystem.Fingerprint.Services;
 
 public class FingerprintService
 
@@ -192,7 +194,7 @@ public class FingerprintService
 
         _serialPortService.SendCommand(_enrollmentOptions.Delete);
 
-        await _studentService.RemoveAllFingerIdAsync(cancellationToken);
+        await _studentService.RemoveAllFingerprintsAsync(cancellationToken);
 
         return Result.Success();
     }
@@ -375,6 +377,7 @@ public class FingerprintService
         if (_fpTempData.FpStatus)
             Stop();
 
+        _logger.LogInformation("The remaining students who did not attend are being registered.");
         _jobManager.Enqueue(() => _studentService.CheckForAllWeeksAsync(weekNum, courseId, cancellationToken));
 
         return Result.Success();
