@@ -1,0 +1,184 @@
+<div class="container-fluid">
+  <div class="d-flex justify-content-between align-items-center mb-4 content">
+    <div class="d-flex gap-3 select-content">
+      <!-- Search input with form -->
+      <form (submit)="onSearch(); $event.preventDefault()" class="d-flex">
+      <div class="search-container">
+        <i class="material-icons searchIcone">search</i>
+        <input 
+          type="text" 
+          id="search" 
+          class="search-input"
+          [(ngModel)]="searchText"
+          name="searchText"
+          placeholder="Search students..."
+          (ngModelChange)="onSearchTextChange()"
+        >
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm ms-2" style="display: none;">Search</button>
+      </form>
+    </div>
+
+    <!-- Add Student Button -->
+    <button class="btn add-btn" (click)="openAddStudentModal()">
+      <span class="material-icons">add</span>
+      Add Student
+    </button>
+  </div>
+
+  <!-- Loading Indicator -->
+  <div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error && !isLoading" class="alert alert-danger">
+    {{ error }}
+  </div>
+
+  <!-- Fingerprint Error Message -->
+  <div *ngIf="fingerprintError" class="alert alert-danger alert-dismissible">
+    {{ fingerprintError }}
+    <button type="button" class="btn-close" (click)="fingerprintError = null"></button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="showSuccess" class="alert alert-success alert-dismissible">
+    {{ successMessage }}
+    <button type="button" class="btn-close" (click)="showSuccess = false"></button>
+  </div>
+
+  <!-- Students Table -->
+  <div class="container-table" *ngIf="!isLoading && !error">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Level</th>
+          <th>Department</th>
+          <th class="action-column">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td>{{ student.name }}</td>
+          <td>Level {{ student.level }}</td>
+          <td>{{ student.department }}</td>
+          <td class="action-column">
+            <button class="btn fingerprint-btn" (click)="saveFingerprint(student.id)" [disabled]="isStudentSaving(student.id)">
+              <span class="material-icons">fingerprint</span>
+              {{ isStudentSaving(student.id) ? 'Saving...' : 'Save Fingerprint' }}
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="students.length === 0">
+          <td colspan="4" class="text-center py-4">No students found</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="totalPages > 1 && !isLoading">
+    <ul class="pagination">
+      <li class="page-item" [class.disabled]="currentPage === 1">
+        <button class="btn page-btn" (click)="onPageChange(currentPage - 1)">Previous</button>
+      </li>
+      <span class="current-page">Page {{ currentPage }} of {{ totalPages }}</span>
+      <li class="page-item" [class.disabled]="currentPage === totalPages">
+        <button class="btn page-btn" (click)="onPageChange(currentPage + 1)">Next</button>
+      </li>
+    </ul>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" [class.show]="showModal">
+  <div class="modal-dialog">
+    <div class="modal-content" style="border: none;">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New Student</h5>
+        <button type="button" class="btn-close" (click)="closeModal()" style="transition: none; pointer-events: none;">
+          <span class="material-icons" style="pointer-events: auto;">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div *ngIf="error" class="alert alert-danger">
+          {{ error }}
+        </div>
+        <form>
+          <div class="form-group">
+            <label for="studentName">Full Name</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="studentName" 
+              [(ngModel)]="newStudent.name" 
+              name="studentName"
+              placeholder="Enter student's full name"
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label for="studentEmail">Email Address</label>
+            <input 
+              type="email" 
+              class="form-control" 
+              id="studentEmail" 
+              [(ngModel)]="newStudent.email" 
+              name="studentEmail"
+              placeholder="Enter student's email"
+              required
+            >
+          </div>
+          <div class="form-group">
+            <label for="studentLevel">Level</label>
+            <select 
+              class="form-select" 
+              id="studentLevel" 
+              [(ngModel)]="newStudent.level"
+              name="studentLevel"
+              required
+            >
+              <option [ngValue]="null" disabled selected>Choose Level</option>
+              <option *ngFor="let level of levels" [value]="level">
+                Level {{ level }}
+              </option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="studentDepartment">Department</label>
+            <select 
+              class="form-select" 
+              id="studentDepartment" 
+              [(ngModel)]="newStudent.department"
+              name="studentDepartment"
+              required
+              [disabled]="departments.length === 0"
+            >
+              <option [ngValue]="null" disabled selected>
+                {{ departments.length === 0 ? 'Loading departments...' : 'Choose Department' }}
+              </option>
+              <option *ngFor="let dept of departments" [ngValue]="dept">
+                {{ dept.name }}
+              </option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()" style="height: 38px;">Cancel</button>
+        <button type="button" class="btn add-student-btn" (click)="saveStudent()" style="height: 38px;" [disabled]="isAddingStudent">
+          <span *ngIf="!isAddingStudent">Add Student</span>
+          <span *ngIf="isAddingStudent" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+          <span *ngIf="isAddingStudent"> Adding...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade" [class.show]="showModal" *ngIf="showModal"></div>

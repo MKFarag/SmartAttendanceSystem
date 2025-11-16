@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Sixtyfour+Convergence&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300..700&family=Quicksand:wght@300..700&family=Sixtyfour+Convergence&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300&display=swap');
+
+
+:root {
+
+  /*======================= Day Colors ===========================*/
+  --color-primary: #0085db;
+  --color-secondary: #05334c;
+  --color-third: #cbe8fc;
+  --color-text: #04151e;
+  --color-white: #ffffff;
+  --color-bg: #e6eff7;
+  --color-gray: #6b7f87;
+  --color-dark-gray: #b3b3b3;
+  --color-rows: #f1f1f1;
+  --color-black: #000;
+  --color-gray-text:#939393;
+  --color-log-bg: #78b5e7;
+  --color-log-box: #eeeeee;
+  --color-error: #FF0000;
+  /*======================= Font family =====================*/
+  --font-quick: 'Quicksand', sans-serif;
+  --font-Fredoka: 'Fredoka', sans-serif;
+  /*======================= properties  ======================*/
+  --card-border-radius: 2rem;
+  --border-radius-1: 0.4rem;
+  --border-radius-2: 0.8rem;
+  --border-radius-3: 1rem;
+  --border-radius-4: 1.2rem;
+  --box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+}
+
+html, body{
+  background-color: var(--color-bg);
+  overflow: hidden;
+  max-width: 100%;
+  height: 100vh;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+
+
+

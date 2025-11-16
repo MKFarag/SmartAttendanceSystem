@@ -1,0 +1,336 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.container-fluid {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-3);
+  padding: 20px;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  display: flex;
+  flex-direction: column;
+  margin: 2rem auto;
+  width: 89.5%;
+  min-height: 70vh;
+  max-height: 100vh;
+  height: 92.5vh;
+}
+
+.logContent {
+  display: grid;
+  grid-template-columns: 60% auto;
+}
+
+.logContent .left {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--color-log-bg);
+  margin-left: -1.3rem;
+  margin-top: -1.3rem;
+  padding-left: 3.6rem;
+  border-radius: var(--border-radius-3) 0 0 var(--border-radius-3);
+  max-width: 500rem;
+  width: 100%;
+  height: 92.6vh;
+  overflow: hidden;
+  position: relative;
+  box-shadow: rgba(0, 0, 0, 0.3) 3px 1.9px 4px;
+}
+
+.texture {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+  opacity: 0.15;
+}
+
+.leftContent {
+  z-index: 999;
+}
+
+.logContent .left .logo {
+  display: flex;
+  width: 50%;
+  height: auto;
+  margin: 0 auto;
+  position: relative;
+  top: 6%;
+  right: 3%;
+}
+
+.logContent .left .logLogo {
+  display: flex;
+  width: 90%;
+  height: auto;
+  margin: 0 auto;
+  position: relative;
+  right: 15%;
+  bottom: 2%;
+}
+
+.logContent .right {
+  flex: 1 1 80%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  left: 1;
+  margin-left: 0;
+  padding: 1rem;
+}
+
+.rightContent {
+  position: relative;
+  right: 0;
+  text-align: center;
+  left: 10%;
+}
+
+.logContent .right .rightContent {
+  left: 0;
+  top: 0;
+}
+
+.logContent .right .rightLogo {
+  display: none;
+}
+
+.logContent .right .rightContent h1 {
+  font-family: var(--font-Fredoka);
+  color: var(--color-log-bg);
+  font-size: 3rem;
+  font-weight: 600;
+}
+
+h6 {
+  font-family: var(--font-quick);
+  color: var(--color-text);
+}
+
+.logContent .right .rightContent .form-group {
+  position: relative;
+}
+
+.logContent .right .rightContent .labels {
+  margin-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.label-container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  text-align: center;
+  position: relative;
+  width: 100%;
+  max-width: 19rem;
+}
+
+.logContent .right .rightContent .form-group input {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem;
+  padding-left: 2rem;
+  margin-bottom: 1rem;
+  width: 100%;
+  max-width: 19rem;
+  border: none;
+  background-color: var(--color-log-box);
+  border-radius: 0.5rem;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+::placeholder {
+  font-weight: 600;
+}
+
+.logContent .right .rightContent .form-group .user,
+.pass {
+  position: absolute;
+  left: 0.5rem;
+  top: 35%;
+  transform: translateY(-50%);
+  color: var(--color-text);
+  font-size: 0.9rem;
+}
+
+button {
+  font-size: 1.3rem;
+  font-family: var(--font-quick);
+  font-weight: 600;
+  width: 19rem;
+  height: 2.5rem;
+  border-radius: var(--border-radius-2);
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 1rem;
+  border: none;
+  background-color: var(--color-log-bg);
+  color: var(--color-white);
+  position: relative;
+}
+
+button:hover {
+  transform: scale(1.1);
+}
+
+hr {
+  border-top: 3px solid var(--color-gray);
+  margin: 1rem 0;
+}
+
+.icons {
+  margin: 0.5rem auto;
+  margin-right: 1.8rem;
+}
+
+.icons i {
+  margin-left: 1.5rem;
+  font-size: 1.7rem;
+  color: var(--color-text);
+  margin-top: 0.8rem;
+}
+
+h6 a {
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-gray-text);
+  position: absolute;
+  top: 62%;
+  right: 15%;
+}
+
+.icons i:hover,
+h6 a:hover {
+  color: var(--color-log-bg);
+  cursor: pointer;
+  scale: 1.1;
+}
+.account p{
+  color: var(--color-gray-text);
+  font-size: 0.9rem;
+  margin-top: 2rem;
+}
+.account a{
+color: var(--color-text);
+text-decoration: underline;
+cursor: pointer;
+}
+.account a:hover {
+  color: var(--color-log-bg);
+  cursor: pointer;
+  scale: 1.1;
+}
+footer {
+  position: absolute;
+  bottom: -25%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  text-align: center;
+}
+
+footer p {
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: var(--font-quick);
+  color: var(--color-gray-text);
+  margin: 0;
+  margin-bottom: 5rem;
+}
+
+.error-message {
+  color: var(--color-error);
+  position: absolute;
+  left: 15%;
+  font-size: 0.8rem;
+  top: 50%;
+}
+
+
+
+@media screen and (max-width: 768px) {
+  .logContent .left{
+    display: none;
+  }
+
+  .logContent {
+    grid-template-columns: 1fr;
+  }
+
+  .rightContent img{
+    display: block !important;
+    width: 35%;
+    margin-bottom: 1rem;
+    position: relative;
+    left: 35%;
+  }
+
+  footer{
+    bottom: -10%;
+  }
+
+  .error-message {
+    top: 58%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .rightContent img {
+    width: 50%;
+    left: 25%;
+  }
+
+  .logContent .right .rightContent h1 {
+    font-size: 1.5rem;
+  }
+
+  .logContent .right .rightContent h6 {
+    font-size: 0.8rem;
+  }
+
+  .logContent .right .rightContent .form-group input {
+    padding: 0.4rem;
+    padding-left: 1.2rem;
+    width: 16rem;
+  }
+
+  .logContent .right .rightContent .form-group input {
+    padding-left: 1.8rem;
+    top: 23%;
+    }
+
+  button {
+    font-size: 0.9rem;
+    width: 16rem;
+    margin-top: 1.5rem;
+  }
+
+  .icons i {
+    font-size: 1.2rem;
+  }
+
+  h6 a {
+    font-size: 0.7rem;
+    top: 64%;
+    right: 5%;
+  }
+
+  footer p {
+    font-size: 0.6rem;
+  }
+
+  .error-message {
+    top: 60%;
+    left: 4%;
+    font-size: 0.65rem;
+  }
+}

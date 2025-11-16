@@ -1,0 +1,21 @@
+<app-login *ngIf="!isLoggedIn && isLoginRoute" (loginSuccess)="onLoginSuccess()"></app-login>
+
+<ng-container *ngIf="!isLoggedIn; else mainLayout">
+  <router-outlet></router-outlet>
+</ng-container>
+<ng-template #mainLayout>
+  <app-nav></app-nav>
+  <div class="content-wrapper" [class.blur-content]="showModal">
+    <div class="center-container">
+      <div class="container-fluid page-container">
+        <div class="sidebar" *ngIf="userDetails">
+          <app-side-bar [userDetails]="userDetails" (logout)="onLogout()"></app-side-bar>
+        </div>
+        <div class="main-content">
+          <router-outlet></router-outlet>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<div class="modal-overlay" *ngIf="showModal"></div>

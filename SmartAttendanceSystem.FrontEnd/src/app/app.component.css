@@ -1,0 +1,125 @@
+/* Main container styles */
+.page-container {
+  display: grid;
+  width: 96%;
+  height: 94%;
+  margin: 0 auto;
+  grid-template-columns: 20rem 1fr;
+  gap: 1rem;
+  position: relative; /* Needed for z-index to work properly */
+}
+
+/* Sidebar styles */
+.sidebar {
+  width: 20rem;
+  height: 92.5vh;
+  background-color: var(--color-white);
+  overflow: hidden;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--box-shadow);
+  border-radius: var(--border-radius-3);
+  margin: auto;
+  font-family: var(--font-quick);
+  font-weight: 600;
+  position: sticky;
+  margin-top: 2rem;
+  z-index: 100;
+}
+
+/* Main content styles */
+.main-content {
+  background-color: var(--color-white);
+  border-radius: var(--border-radius-3);
+  padding: 20px;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  margin-top: 2rem;
+  width: 100%;
+  min-height: 70vh;
+  max-height: 100vh;
+  height: 92.5vh;
+  z-index: 110;
+}
+
+/* Modal overlay styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 1);
+  z-index: 1000; /* Higher than all other content */
+}
+
+/* Content wrapper for blur effect */
+.content-wrapper {
+  transition: filter 0.3s ease;
+}
+
+.content-wrapper.blur-content {
+  filter: blur(5px);
+  pointer-events: none; /* Disable interactions */
+  position: relative;
+}
+
+/* Ensure nav is properly positioned */
+app-nav {
+  padding-top: 13rem;
+  position: relative;
+  z-index: 10;
+}
+/* Media Queries for Responsiveness */
+@media only screen and (max-width: 1200px) {
+  .page-container {
+    grid-template-columns: 10rem 1fr;
+  }
+  
+  .sidebar {
+    width: 10rem;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .page-container {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    margin-top: 1rem;
+    position: static;
+  }
+
+  .main-content {
+    margin-top: 1rem;
+    height: auto;
+  }
+
+  app-nav {
+    padding-top: 1rem;
+  }
+}
+
+/* For screens smaller than 576px */
+@media only screen and (max-width: 576px) {
+  .page-container {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .sidebar {
+    width: 100%;
+    height: auto;
+    margin-top: 0.5rem;
+  }
+
+  .main-content {
+    margin-top: 0.5rem;
+    padding: 10px;
+  }
+}

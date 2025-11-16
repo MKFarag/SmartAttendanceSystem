@@ -1,0 +1,433 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+/* ...End of base style... */
+
+select, input, table{
+  font-family: "Quicksand";
+}
+
+.container-fluid {
+  padding: 20px;
+  position: relative;
+  min-height: 100vh;
+}
+
+.content {
+  margin-bottom: 20px;
+}
+
+.select-content {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-select {
+  min-width: 200px;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.container-table {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-top: 20px;
+  max-height: 70vh;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th {
+  font-weight: 600;
+  color: #333;
+  padding: 15px;
+}
+
+.table td {
+  padding: 15px;
+  vertical-align: middle;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.thead-checkbox-container {
+  margin-bottom: 5px;
+}
+
+.badge {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+}
+
+.eye {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.alert {
+  margin-bottom: 20px;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}
+
+/* .container-fluid {
+  background-color: var( --color-white) !important ;
+  border-radius: var(--border-radius-3);
+  padding: 20px;
+  box-shadow:  rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 2px 6px 2px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 2rem;
+  margin-left: 7.3rem;
+  width: 89.5%;
+  min-height: 70vh;
+  max-height: 100vh;
+  height: 92.5vh;
+
+} */
+
+
+.content {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: var( --color-white);
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-select, #search {
+  padding: 0.3rem;
+  border: none;
+  border-radius: 0.5rem;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+
+}
+/* search style */
+#search {
+  width: 19rem;
+  margin-top: 2rem;
+  color: var( --color-search);
+  position: relative;
+  padding-left: 2.3rem;
+
+}
+::placeholder {
+  color: var(--color-dark-gray);
+}
+
+.searchIcone {
+  position: absolute;
+  right: 18rem;
+  top: 66%;
+  transform: translateY(-50%);
+  color: var(--color-text);
+  font-size: 1rem;
+  pointer-events: none;
+
+}
+
+/* choose style */
+select{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  color: var(--color-dark-gray) ;
+}
+
+select option {
+  color: var(--color-dark-gray) ;
+}
+#courseSelect, #weekSelect{
+  width: 23rem;
+  margin-top: 2rem;
+
+}
+
+
+select option {
+  background-color: var(--color-white) !important;
+  color: var(--color-black);
+  transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transitions */
+}
+
+
+/* Table Style */
+.container-table{
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+.table {
+  box-sizing: border-box;
+  background-color: var(--color-white);
+  border-radius: 10px;
+  margin-top: 2rem;
+  overflow: hidden;
+
+}
+
+/* background for row Style */
+.table tbody tr:nth-child(even) {
+  background-color: var(--color-rows) !important;
+
+}
+.table tbody tr:nth-child(even) td {
+  background-color: inherit !important;
+  color: inherit !important;
+
+}
+
+/* border for rows */
+
+.table tbody tr:nth-child(even) td:first-child {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+
+}
+
+.table tbody tr:nth-child(even) td:last-child {
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+/* border for head */
+
+.table thead th:first-child {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.table thead th:last-child {
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+/* style for rows */
+
+.table thead th {
+  text-align: left;
+  color: var(--color-text);
+  background-color: var( --color-rows) !important;
+  padding-top: 0.9rem; -webkit-hyphens: auto; hyphens: auto;
+  padding-bottom: 0.9rem ;
+  font-family: "Quicksand", serif;
+
+
+}
+
+
+.table .btn {
+  padding: 5px 10px;
+}
+
+.badge {
+  font-size: 0.9rem;
+  padding: 5px 10px;
+}
+.table button .eye{
+  color: var(--color-dark-gray);
+  font-size: 1.4rem;
+}
+
+
+/* check style */
+
+.checkbox-container {
+  display: inline-block;
+  width: 20%;
+}
+
+.checkbox-container input[type="checkbox"] {
+  width: 1.2rem ;
+  height: 1.2rem ;
+  appearance: none;
+  border-radius: 5px;
+  background-color: var(--color-bg);
+  margin: 0 auto;
+  position: relative;
+  top: 0.2rem;
+  left: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+table th:first-of-type {
+padding: 7px 7px 7px 7px;
+}
+
+.checkbox-container input[type="checkbox"]:checked {
+  background-color: var(--color-bg);
+}
+
+.checkbox-container input[type="checkbox"]:checked::after {
+  content: "";
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  width: 0.7rem;
+  height: 0.7rem;
+  background-color: var(--color-dark-gray);
+
+  border-radius: 2px;
+}
+
+
+/* Add these styles to fix table overflow without changing existing styles */
+.container-table {
+  overflow: hidden;
+  position: relative;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 250px); /* Adjust based on your layout */
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  min-width: 100%;
+  table-layout: fixed;
+}
+
+/* Ensure table cells respect overflow */
+.table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Keep header fixed during vertical scroll */
+.table thead {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: var(--color-rows);
+}
+
+/* Responsive adjustments */
+@media only screen and (max-width: 769px) {
+  .table-wrapper {
+    max-height: calc(100vh - 300px);
+  }
+}
+
+@media only screen and (max-width: 769px )
+{
+  .select-content{
+    margin-left: -0.6rem;
+  }
+  .form-select {
+    padding: 0.3rem;
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+
+
+  }
+  #courseSelect, #weekSelect{
+    width: 9rem;
+    margin-top: 2rem;
+
+
+  }
+  .table{
+    width: 95%;
+  }
+td{
+  font-size: 0.8rem;
+}
+.badge {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+}
+.table button .eye{
+  color: var(--color-dark-gray);
+  font-size: 1rem;
+}
+
+
+}
+
+/* Pagination container */
+.pagination-container {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.page-btn {
+  background-color: var(--color-third);
+  color: var(--color-primary);
+  font-weight: 600;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  cursor: pointer !important;
+  transition: 0.2s;
+}
+
+.current-page {
+  color: var(--color-text);
+  font-weight: 600;
+  margin: 0 0.5rem;
+}
+
+.page-item.disabled .page-btn {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.page-item.disabled .page-btn:hover {
+  transform: none;
+}
+
+/* Make all buttons have pointer cursor */
+button {
+  cursor: pointer !important;
+}

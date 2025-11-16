@@ -1,0 +1,81 @@
+<div class="container-fluid">
+  <div class="logContent">
+    <div class="left">
+      <img src="assets/Graduation Project Assets/login designs/texture.png" alt="texture" class="texture">
+      <div class="leftContent">
+        <img src="assets/Graduation Project Assets/login designs/wLogo.png" alt="logo" class="logo">
+        <img src="assets/Graduation Project Assets/login designs/logLogo.png" alt="logLogo" class="logLogo">
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="rightContent">
+        <img src="assets/Graduation Project Assets/Logo & Photos/rightLogo.png" alt="logLogo" class="rightLogo">
+        <h1>Welcome Back!</h1>
+        <h6>We are happy to see you again.</h6>
+
+        <div *ngIf="errorMessage" class="error-message">
+          {{ errorMessage }}
+        </div>
+
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+          <div class="labels">
+            <div class="form-group label-name label-container">
+              <i class="fa-solid fa-envelope user"></i>
+              <input 
+                type="email" 
+                id="Email" 
+                [(ngModel)]="loginObj.email" 
+                name="email" 
+                required 
+                placeholder="Email" 
+                class="email"
+                #email="ngModel"
+              />
+            </div>
+
+            <div class="form-group label-pass label-container">
+              <i class="fa-solid fa-lock pass"></i>
+              <input 
+                type="password" 
+                id="password" 
+                [(ngModel)]="loginObj.password" 
+                name="password" 
+                required 
+                placeholder="Password"
+                #password="ngModel"
+              />
+            </div>
+          </div>
+<!-- 
+          <h6>
+            <a href="">Forgot password?</a>
+          </h6> -->
+
+          <button type="submit" [disabled]="isLoading || !loginForm.form.valid">
+            <span *ngIf="!isLoading">Login</span>
+            <span *ngIf="isLoading">Logging in...</span>
+          </button>
+        </form>
+
+        <div class="account">
+          <p class="askSign">Don't have an account? <a routerLink="/auth/signup">Sign Up</a></p>
+        </div>
+
+        <hr>
+
+        <h6>or login with</h6>
+        <div class="icons">
+          <i class="fa-brands fa-google"></i>
+          <i class="fa-brands fa-github"></i>
+          <i class="fa-brands fa-apple"></i>
+          <i class="fa-brands fa-linkedin"></i>
+        </div>
+
+        <footer>
+          <p class="copyRight">Copyright &copy; 2024 - 2025 Gener8 Team, All Rights Reserved</p>
+        </footer>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.12.35506.116
+# Visual Studio Version 18
+VisualStudioVersion = 18.3.11206.111 d18.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartAttendanceSystem.Presentation", "SmartAttendanceSystem.Presentation\SmartAttendanceSystem.Presentation.csproj", "{1E170D39-46B5-42CC-AFE2-B43DE6DE55A3}"
 EndProject

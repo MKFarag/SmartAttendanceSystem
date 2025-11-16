@@ -1,0 +1,637 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+.content {
+  padding: 20px;
+  background-color: var(--color-white);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Header container */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align header content to the left */
+  gap: 1rem;
+  padding: 1rem 20px;
+  margin-bottom: 1rem;
+}
+
+/* Search input container */
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto; /* Push the add button to the right */
+}
+
+/* Search input */
+.search-input {
+  padding: 0.7rem 1rem;
+  border: 2px solid var(--color-border);
+  border-radius: var(--border-radius-2);
+  font-size: 0.95rem;
+  width: 300px;
+  color: var(--color-text);
+  background-color: var(--color-white);
+  transition: all 0.3s ease;
+  font-family: "Quicksand", serif;
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+  border: none;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-third);
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 2px 4px 0px, rgba(60, 64, 67, 0.15) 0px 2px 4px 2px;
+  transform: translateY(-1px);
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* Table container */
+.container-table {
+  height: calc(100% - 180px);
+  overflow-y: auto;
+  padding: 0 20px;
+  margin-left: 0; /* Align table container to the left */
+}
+
+/* Table styling */
+.table {
+  width: 100%;
+  margin-left: 0; /* Align table to the left */
+  box-sizing: border-box;
+  background-color: var(--color-white);
+  border-radius: 10px;
+  margin-top: 0;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Align name column to the left, keep others centered */
+.table th:first-child,
+.table td:first-child {
+  text-align: left;
+  padding-left: 20px;
+}
+
+/* Keep other columns centered */
+.table th:not(:first-child), 
+.table td:not(:first-child) {
+  text-align: center;
+}
+
+/* Keep vertical alignment consistent */
+.table th, 
+.table td {
+  vertical-align: middle;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: var(--color-rows) !important;
+}
+
+.table tbody tr:nth-child(even) td {
+  background-color: inherit !important;
+  color: inherit !important;
+}
+
+/* Table border radius */
+.table tbody tr:nth-child(even) td:first-child {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.table tbody tr:nth-child(even) td:last-child {
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+.table thead th:first-child {
+  border-top-left-radius: 1rem;
+  border-bottom-left-radius: 1rem;
+  box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+}
+
+.table thead th:last-child {
+  border-top-right-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+}
+
+/* Button styling */
+.add-btn {
+  font-size: 1rem;
+  font-family: var(--font-quick);
+  font-weight: 600;
+  border-radius: var(--border-radius-2);
+  cursor: pointer;
+  transition: 0.2s;
+  border: none;
+  background-color: var(--color-log-bg);
+  color: var(--color-white);
+  padding: 0.4rem 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.add-btn:hover {
+  transform: scale(1.1);
+}
+
+.add-btn .material-icons {
+  font-size: 1.2rem;
+}
+
+/* Pagination container */
+.pagination-container {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.page-btn {
+  background-color: var(--color-third);
+  color: var(--color-primary);
+  font-weight: 600;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.current-page {
+  color: var(--color-text);
+  font-weight: 600;
+  margin: 0 0.5rem;
+}
+
+.page-item.disabled .page-btn {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-item.disabled .page-btn:hover {
+  transform: none;
+}
+
+/* Modal styling */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Blur overlay */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 1);
+  z-index: 9998;
+}
+
+/* Apply blur to everything except modal when shown */
+.modal.show + .modal-backdrop {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.modal-dialog {
+  background: white;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 500px;
+  position: relative;
+  z-index: 10000;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: modalFadeIn 0.3s ease;
+  padding: 2rem;
+}
+
+/* Ensure modal content stays clear */
+.modal-dialog * {
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  padding-bottom: 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2c2c2c;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  font-size: 1.5rem;
+  margin-right: 1rem;
+  /* padding: 0.5rem; */
+  /* transition: all 0.2s ease; */
+}
+
+.btn-close:hover {
+  color: #333;
+  /* transform: rotate(90deg); */
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #2c2c2c;
+  font-size: 0.9rem;
+}
+
+/* Update input and select styles without icons */
+.form-control, .form-select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 2px solid #eee;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: var(--font-quick);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background-color: white;
+  color: var(--color-text);
+}
+
+/* Update select styling */
+.form-select {
+  background-position: right 15px center;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+/* Remove icon-related styles */
+.input-with-icon {
+  width: 100%;
+}
+
+/* Modal footer */
+.modal-footer {
+  padding-top: 1.5rem;
+  margin-top: 1rem;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+/* Button styling */
+.btn-secondary, .add-student-btn {
+  /* padding: 0.8rem 1.5rem; */
+  border-radius: 10px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-secondary {
+  background-color: #f0f0f0;
+  color: #666;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+.add-student-btn {
+  background-color: var(--color-primary);
+  color: white;
+  width: auto;
+  padding: 0.5rem 1rem;
+}
+
+.add-student-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.15);
+}
+
+/* Responsive adjustments */
+@media (max-width: 576px) {
+  .modal-dialog {
+    padding: 1.5rem;
+    margin: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.25rem;
+  }
+
+  .btn-secondary, .add-student-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+/* Media Queries */
+@media screen and (max-width: 768px) {
+  .content {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .search-container {
+    width: 100%;
+  }
+
+  #search {
+    width: 100%;
+  }
+
+  .add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .container-table {
+    height: calc(100% - 220px);
+  }
+}
+
+@media only screen and (max-width: 1200px) {
+  .container-fluid {
+    padding: 15px;
+  }
+}
+
+@media only screen and (max-width: 769px) {
+  .container-fluid {
+    height: auto;
+    min-height: 92.5vh;
+  }
+
+  .pagination {
+    margin-top: 1rem;
+  }
+
+  .pagination .page-link {
+    padding: 0.3rem 0.8rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .content {
+    margin-top: 0.5rem;
+  }
+
+  .table td, .table th {
+    font-size: 0.7rem;
+    padding: 0.4rem;
+  }
+
+  .fingerprint-btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .modal-body {
+    padding: 0.5rem;
+  }
+
+  .form-control, .form-select {
+    font-size: 0.9rem;
+  }
+}
+
+.container-table::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100px;
+  background: linear-gradient(to bottom, 
+      var(--color-white) 0%, 
+      rgba(255,255,255,0.9) 50%, 
+      transparent 100%);
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.container-table.scrolled::before {
+  opacity: 1;
+}
+
+
+.student-info {
+  padding: 1rem;
+}
+
+.info-row {
+  display: flex;
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--color-rows);
+}
+
+.info-label {
+  font-weight: 600;
+  width: 120px;
+  color: var(--color-text);
+}
+
+.info-value {
+  flex: 1;
+  color: var(--color-dark-gray);
+}
+
+/* Add these form-related styles */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.form-control, .form-select {
+  width: 100%;
+  padding: 0.5rem;
+  border: none;
+  border-radius: var(--border-radius-2);
+  box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--color-rows);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background-color: var(--color-gray);
+  color: var(--color-white);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-secondary:hover {
+  opacity: 0.9;
+}
+
+.d-flex {
+  margin-bottom: 10px;
+}
+
+/* Update Save Fingerprint button style */
+.fingerprint-btn {
+  background-color: var(--color-third);
+  color: var(--color-primary);
+  font-weight: 600;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius-2);
+  cursor: pointer;
+  transition: 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  font-size: 0.9rem;
+}
+
+.fingerprint-btn:hover {
+  transform: scale(1.1);
+}
+
+.fingerprint-btn .material-icons {
+  font-size: 1.3rem;
+}
+
+/* Action column width and alignment */
+.action-column {
+  text-align: center !important;
+  width: 200px;
+}
+
+.table td.action-column {
+  text-align: center !important;
+}
+
+/* Ensure even rows maintain alignment */
+.table tbody tr:nth-child(even) td.action-column {
+  text-align: center !important;
+}
+
+/* Update placeholder styling */
+.form-control::placeholder,
+.form-select::placeholder {
+  color: var(--color-dark-gray);
+  font-weight: 600;
+  font-family: var(--font-quick);
+  opacity: 0.7;
+}
+
+/* For Firefox */
+.form-control::-moz-placeholder,
+.form-select::-moz-placeholder {
+  color: var(--color-dark-gray);
+  font-weight: 600;
+  font-family: var(--font-quick);
+  opacity: 0.7;
+}
+
+/* For Internet Explorer */
+.form-control:-ms-input-placeholder,
+.form-select:-ms-input-placeholder {
+  color: var(--color-dark-gray);
+  font-weight: 600;
+  font-family: var(--font-quick);
+  opacity: 0.7;
+}
+
+/* For Microsoft Edge */
+.form-control::-ms-input-placeholder,
+.form-select::-ms-input-placeholder {
+  color: var(--color-dark-gray);
+  font-weight: 600;
+  font-family: var(--font-quick);
+  opacity: 0.7;
+}
+
+/* Style for the select's default option */
+.form-select option[disabled] {
+  color: var(--color-dark-gray);
+  font-weight: 600;
+  font-family: var(--font-quick);
+} 

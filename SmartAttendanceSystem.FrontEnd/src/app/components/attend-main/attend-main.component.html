@@ -1,0 +1,85 @@
+<div class="container-fluid">
+    <main>
+        <div class="main-content">
+            <div class="main-logo">
+                <img src="assets/Graduation Project Assets/Logo & Photos/logo.png" alt="Main logo">
+            </div>
+            <div class="main-body">
+                <!-- Left Section -->
+                <div class="left" *ngIf="showContent">
+                    <div class="filters">
+                        <div class="first">
+                            <div class="dropdown-container">
+                                <select class="form-select" id="courseSelect" (change)="onCourseChange($event)">
+                                    <option selected class="boxText" id="courseBox">Choose Course</option>
+                                    <option *ngFor="let course of courses" [value]="course.id">{{ course.name }}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="second">
+                            <div class="dropdown-container">
+                                <select class="form-select" id="weekSelect" (change)="onWeekChange($event)">
+                                    <option selected class="boxText">Choose Week</option>
+                                    <option *ngFor="let week of weeks" [value]="week">{{ week }}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info">
+                        <ul>
+                            <li>At first, you must choose the week and the course.</li>
+                            <li>When you click on <span class="start-word">“Start”</span>, the attendance starts being recorded.</li>
+                            <li>When you click on <span class="end-word">“End”</span>, the attendance will be saved.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Right Section -->
+                <div class="right" *ngIf="showContent">
+                    <img src="assets/Graduation Project Assets/Logo & Photos/PNG/Asset 1.png" alt="Main body image">
+                </div>
+
+                <!-- Loading State -->
+                <div class="bookContainer" *ngIf="loading">
+                    <div class="book">
+                        <div class="inner">
+                            <div class="left-book"></div>
+                            <div class="middle"></div>
+                            <div class="right-book"></div>
+                        </div>
+                        <ul>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                            <li></li>
+                        </ul>
+                    </div>
+                    <h2>Taking Attendance, Please Wait ....... </h2>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="actions">
+                <!-- Show "Start" button only if not loading -->
+                <button class="btn start" *ngIf="!loading" (click)="onStart()">Start</button>
+                <!-- Show "End" button only if loading -->
+                <button class="btn end" *ngIf="loading" (click)="onEnd()">End</button>
+            </div>
+        </div>
+    </main>
+</div>

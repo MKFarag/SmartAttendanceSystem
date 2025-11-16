@@ -1,0 +1,87 @@
+<div class="container-fluid">
+  <!-- Error Alert -->
+  <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error }}
+    <button type="button" class="btn-close" (click)="clearError()" aria-label="Close"></button>
+  </div>
+
+  <div class="d-flex justify-content-between align-items-center mb-4 content">
+    <div class="d-flex gap-3 select-content">
+      <!-- Course Select -->
+      <select class="form-select" id="courseSelect" (change)="onCourseChange($event)" [disabled]="isLoading">
+        <option selected class="boxText" id="courseBox">Choose Course</option>
+        <option *ngFor="let course of courses" [value]="course.id">{{ course.name }}</option>
+      </select>
+
+      <!-- Week Select -->
+      <select class="form-select" id="weekSelect" (change)="onWeekChange($event)" [disabled]="isLoading">
+        <option selected class="boxText" [value]="0">Choose Week</option> 
+        <option *ngFor="let week of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]" [value]="week">Week {{ week }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="isLoading" class="text-center my-4">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="container-table" *ngIf="!isLoading">
+    <div class="table-wrapper">
+      <table class="table table-borderless align-middle">
+        <thead class="bg-light">
+          <tr>
+            <th scope="col">
+              <div class="checkbox-container thead-checkbox-container">
+                <input type="checkbox" [(ngModel)]="selectAll" (change)="toggleSelectAll()" />
+              </div>
+            </th>
+            <th scope="col">Name</th>
+            <th scope="col" style="width: 25%;" class="level">Level</th>
+            <th scope="col" style="width: 25%;" class="attend">Attendance</th>
+            <th scope="col" style="width: 10%;" class="view">View</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let student of filteredStudents">
+            <td>
+              <div class="checkbox-container">
+                <input type="checkbox" [(ngModel)]="student.selected" />
+              </div>
+            </td>
+            <td>{{ student.name }}</td>
+            <td>Level {{ student.level }}</td>
+            <td>
+              <span
+                *ngIf="selectedWeek !== 0 && selectedWeek !== null"
+                class="badge"
+                [ngStyle]="{
+                  'background-color': getAttendanceStatus(student, selectedWeek) === 'Attend' ? '#d5fee2' : '#f8bbbb',
+                  'color': getAttendanceStatus(student, selectedWeek) === 'Attend' ? '#08862f' : '#ad0b0b',
+                  'border': getAttendanceStatus(student, selectedWeek) === 'Attend' ? '2px solid #08862f' : '2px solid #ad0b0b'
+                }">
+                <i
+                  class="fa-solid"
+                  [ngClass]="getAttendanceStatus(student, selectedWeek) === 'Attend' ? 'fa-check' : 'fa-xmark'"
+                  style="margin-right: 5px;"></i>
+                {{ getAttendanceStatus(student, selectedWeek) }}
+              </span>
+
+              <span *ngIf="selectedWeek === 0 || selectedWeek === null">
+                {{ student.total || '0/0' }} 
+              </span>
+            </td>
+            <td>
+              <button class="btn">
+                <i class="fa-solid fa-eye eye"></i>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

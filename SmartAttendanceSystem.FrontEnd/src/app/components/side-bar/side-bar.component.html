@@ -1,0 +1,46 @@
+<div class="container">
+    <!-- Toggle Button -->
+    <button class="btn toggle-btn d-sm-none" (click)="toggleSidebar()">
+        <span class="material-icons">menu</span>
+    </button>
+
+    <!-- Sidebar -->
+    <aside [class.hidden]="!isSidebarVisible" id="sidebar">
+        <div class="sidebar">
+            <div class="logo">
+                <img src="assets/Graduation Project Assets/Logo & Photos/logo.png" alt="Logo">
+            </div>
+
+            <div class="content">
+                <a [routerLink]="'/attend'" routerLinkActive="active">
+                    <span class="material-icons">verified</span>
+                    <h3 class="content-text">Attendance</h3>
+                </a>
+                <a [routerLink]="'/students'" routerLinkActive="active">
+                    <span class="material-icons">groups</span>
+                    <h3 class="content-text">Students</h3>
+                </a>
+                <a [routerLink]="'/attend'">
+                    <span class="material-icons">checklist</span>
+                    <h3 class="content-text">Quiz & Sheets</h3>
+                </a>
+                <a [routerLink]="'/fingerprint'" routerLinkActive="active">
+                    <span class="material-icons">fingerprint</span>
+                    <h3 class="content-text">Fingerprint</h3>
+                </a>
+            </div>
+            <div class="logout">
+                <img src="assets/Graduation Project Assets/Logo & Photos/main-char.png" alt="Sidebar user image">
+
+                <div class="text-box">
+                    <h3>{{ userDetails?.name || 'Loading...' }}</h3> 
+                    <h5>{{ userDetails?.type || 'Instractor' }}</h5> 
+                </div>
+                <h6>Logout</h6>
+                <a (click)="onLogout()" class="log">
+                    <span class="material-icons logout-i logout">login</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+</div>

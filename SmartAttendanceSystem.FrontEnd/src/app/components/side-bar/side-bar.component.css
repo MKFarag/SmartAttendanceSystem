@@ -1,0 +1,472 @@
+
+
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    appearance: none;
+    border: 0;
+    text-decoration: none;
+    box-sizing: border-box;
+    font-size: 1.4rem ;
+
+}
+
+h3 {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+
+.rotate-icon {
+    transform: rotate(-45deg);
+    transition: transform 0.3s ease;
+}
+
+.toggle-btn {
+    width: 40px;
+    height: 40px;
+    padding: 5px;
+    font-size: 20px;
+}
+
+
+.logo img{
+    display: block;
+    width: 14rem;
+    height: auto;
+    margin: 0 auto;
+}
+.logo {
+    max-width: 100%;
+    margin-top: 2.6rem;
+    cursor: pointer;
+    transition: 0.3s ease;
+}
+.sidebar .content {
+    display: flex;
+    flex-direction: column;
+    height: 86%;
+    position: relative;
+    top: 3.4rem;
+    flex-grow: 1;
+    gap: 1.5rem;
+    margin-left: 1.3rem;
+
+}
+
+
+
+aside .content a {
+    display: flex;
+    color: var(--color-text);
+    margin-left: 1.8rem;
+    gap: 1rem;
+    align-items: center;
+    position: relative;
+    height: 2.6rem;
+    height: 3rem;
+    transition: all 0.3s ease;
+}
+
+aside .content a span {
+    font-size: 1.5rem ;
+    transition: all 0.3s ease;
+}
+
+aside .content a.active {
+    background-color: var(--color-third);
+    border-radius:  0 var(--border-radius-3) var(--border-radius-3) 0 ;
+    margin-left: -1.8rem;
+    padding-left: 3.6rem;
+    width: calc(105% + 10rem);
+    max-width: 100%;
+    height: 3.6rem;
+
+}
+
+
+
+aside .content a:hover {
+    color: var(--color-primary);
+}
+
+aside .content a:hover span {
+    margin-left: 1rem;
+}
+aside .log{
+    color: var(--color-text);
+}
+aside .logout {
+    display: grid;
+    align-items: center;
+    background-color: var(--color-third);
+    border-radius: var(--border-radius-2);
+    width: 88%;
+    height: 8.5rem;
+    max-width: 100%;
+    margin: 0 auto;
+    padding-bottom: -1rem;
+    overflow: hidden;
+    grid-template-columns: 2rem auto 2.5rem;
+    position: absolute;
+    bottom: 2%;
+    left: 1;
+    margin-left: 1rem;
+
+}
+
+aside .logout img {
+    height: 12rem;
+    width: auto;
+    margin-right: 0.5rem;
+    margin-left:  0.5rem;
+    margin-top: 0.3rem;
+    transform: scaleX(-1);
+}
+
+
+aside .logout .text-box {
+    display: flex;
+    flex-direction: column;
+    width: 10rem;
+    text-align: center;
+    margin: 0 auto;
+    margin-left: 3rem;
+    margin-top: -3rem;
+    gap: 0.1rem;
+
+}
+
+
+
+
+aside .logout .text-box h3 {
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+
+aside .logout .text-box h5 {
+    font-weight: 400;
+    font-size: 0.8rem ;
+    color:var( --color-gray-text);
+}
+
+aside .logout h6 {
+    display: none;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text);
+    padding: 0.2rem 0.5rem;
+}
+
+
+aside .logout span {
+    position: relative;
+    font-size: 1.7rem;
+    text-align: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+    margin-right: 2.3rem;
+    margin-left: -0.3rem;
+    margin-bottom: 2.5rem;
+}
+
+aside .logout span:hover {
+    color: var(--color-primary);
+    cursor: pointer;
+    margin-left: 0.03rem;
+}
+
+
+
+.toggle-btn {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1050;
+    display: block;
+    color: var(--color-text);
+    background-color: transparent;
+    margin-top: -0.25rem;
+}
+
+    @media only screen and (max-width: 1200px ) {
+
+    .container {
+        width: 94%;
+        grid-template-columns: 10rem auto;
+    }
+
+    aside {
+        width: 10rem;
+    }
+
+    .logo {
+        width: 5rem;
+        margin-top: 3.1rem;
+    }
+
+    aside .logo img{
+    width: 7.2rem;
+    margin-left: 1.3rem;
+
+    }
+        aside .content-text {
+        display: none;
+    }
+
+    aside .content a span {
+        font-size: 1.5rem;
+        margin-left: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    aside .content a:hover span {
+        margin-left: 1.6rem;
+    }
+
+    aside .logout {
+    background-color: var(--color-white);
+    margin-top: 6.5rem;
+    margin-left: 1rem;
+    }
+
+    aside .logout img{
+        display: none;
+    }
+
+    aside .logout .text-box {
+        display: none;
+    }
+
+    aside .logout h6 {
+        display: block;
+        font-size: 1.2rem;
+        margin-left: 0.5rem;
+        margin-top: -6rem;
+        transition: all 0.3s ease;
+    }
+
+    aside .logout span {
+        font-size: 1.5rem;
+        margin-left: 3.3rem;
+        margin-top: -3.2rem;
+        transition: all 0.3s ease;
+    }
+
+    aside .logout span:hover {
+        color: var(--color-primary);
+        cursor: pointer;
+        margin-left: 4rem;
+    }
+}
+
+
+@media (max-width: 769px) {
+
+    #sidebar {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 300px;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        z-index: 1200;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+
+    aside .logout .text-box {
+        display: flex;
+        flex-direction: column;
+        width: 4rem;
+        text-align: center;
+        margin: 0 auto;
+        margin-left: 2rem;
+        gap: 0.1rem;
+    }
+
+
+    #sidebar:not(.hidden) {
+        transform: translateX(0);
+    }
+
+
+
+    aside {
+        width: 20rem;
+        height: 100%;
+        background-color: var(--color-white);
+        overflow: hidden;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: var(--box-shadow);
+        border-radius: var(--border-radius-3);
+        margin: auto;
+        font-family: var(--font-quick);
+        font-weight: 600;
+        position: sticky;
+        margin-top: 2rem;
+
+    }
+        aside .logo img{
+            display: block;
+            width: 11rem ;
+            height: auto;
+            margin: 0 auto;
+            margin-left: 4rem;
+    }
+
+    .logo {
+        max-width: 100%;
+        margin-top: 2.6rem;
+        cursor: pointer;
+        transition: 0.3s ease;
+    }
+
+    .sidebar .content {
+        display: flex;
+        flex-direction: column;
+        height: 86%;
+        position: relative;
+        top: 3.4rem;
+        flex-grow: 1;
+        gap: 1.5rem;
+        margin-left: 1.3rem;
+    }
+
+
+
+    aside .content a {
+        display: flex;
+        color: var(--color-text);
+        margin-left: 1.8rem;
+        gap: 1rem;
+        align-items: center;
+        position: relative;
+        height: 2.6rem;
+        height: 3rem;
+        transition: all 0.3s ease;
+    }
+
+    aside .content a span {
+        font-size: 1.5rem ;
+        transition: all 0.3s ease;
+    }
+
+    aside .content-text {
+    display: block;
+}
+
+    aside .content a.active {
+        background-color: var(--color-third);
+        border-radius:  0 var(--border-radius-3) var(--border-radius-3) 0 ;
+        margin-left: -1.8rem;
+        padding-left: 3.6rem;
+        width: calc(105% + 10rem);
+        max-width: 100%;
+        height: 3.6rem;
+    }
+
+
+
+    aside .content a:hover {
+        color: var(--color-primary);
+    }
+
+    aside .content a:hover span {
+        margin-left: 1rem;
+    }
+
+    aside .log{
+        color: var(--color-text);
+    }
+
+    aside .logout {
+        display: grid;
+        align-items: center;
+        background-color: var(--color-third);
+        border-radius: var(--border-radius-2);
+        width: 92%;
+        height: 8.5rem;
+        max-width: 100%;
+        margin: 0 auto;
+        margin-top: 7.3rem;
+        padding-bottom: -1rem;
+        overflow: hidden;
+        grid-template-columns: 2rem auto 2.5rem;
+    }
+
+    aside .logout img {
+        display: block;
+        height: 12rem;
+        width: auto;
+        margin-right: 0.5rem;
+        margin-left:  0.5rem;
+        margin-top: 0.3rem;
+        transform: scaleX(-1);
+}
+
+
+aside .logout .text-box {
+        display: block;
+        flex-direction: column;
+        width: 10rem;
+        text-align: center;
+        margin: 0 auto;
+        margin-left: 3rem;
+        margin-top: -3rem;
+        gap: 0.1rem;
+}
+
+    aside .logout .text-box h3 {
+        font-weight: 600;
+        font-size: 1.3rem;
+    }
+
+
+    aside .logout .text-box h5 {
+        font-weight: 400;
+        font-size: 0.8rem ;
+        color:var( --color-gray-text);
+    }
+
+    aside .logout h6 {
+        display: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text);
+        padding: 0.2rem 0.5rem;
+    }
+
+    aside .logout span {
+        font-size: 1.5rem;
+        text-align: center;
+        margin: 0 auto;
+        transition: all 0.3s ease;
+        margin-right: 2.3rem;
+        margin-left: -0.3rem;
+        margin-bottom: 3rem;
+}
+
+
+    aside .logout span:hover {
+        color: var(--color-primary);
+        cursor: pointer;
+        margin-left: 0.03rem;
+    }
+
+    .toggle-btn {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1000;
+        display: block;
+        color: var(--color-text);
+        background-color: transparent;
+    } 
+
+}
